@@ -1,0 +1,25 @@
+
+#charts {
+    height: 100%;
+}
+
+#charts .top-container {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+#charts h3 {
+    font-size: var(--font-size-20);
+    display: flex;
+    align-items: center;
+}
+
+#charts .artificial-horizontal-center {
+    width: 250px; /* = DropDownMenu width */
+}
+
+#charts .canvas-container {
+    position: relative;
+}

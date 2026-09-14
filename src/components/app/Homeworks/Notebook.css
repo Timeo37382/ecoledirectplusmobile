@@ -1,0 +1,294 @@
+#notebook {
+    display: flex;
+    flex-flow: nowrap column;
+}
+
+.notebook-container {
+    display: flex;
+    flex-flow: nowrap row;
+    padding: 20px;
+    gap: 40px;
+    overflow-y: visible;
+    overflow-x: auto;
+    scroll-padding-inline: 20px;
+    scroll-behavior: smooth;
+    height: 100%;
+    width: 100%;
+    cursor: grab;
+}
+
+.notebook-container:active {
+    cursor: grabbing;
+}
+.notebook-container:not(:has(.no-homework-placeholder)).mouse-moved * {
+    cursor: grabbing !important;
+}
+
+.no-homework-placeholder, .no-homework-placeholder * {
+    color: rgb(var(--text-color-alt));
+}
+
+.no-homework-placeholder {
+    width: 60%;
+    text-align: center;
+}
+
+.notebook-container:has(.no-homework-placeholder) {
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+}
+
+.date-selector {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    height: 40px;
+    gap: 7px;
+}
+
+.date-selector span.change-date-arrow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 8px;
+    transition: .15s;
+    background-color: rgba(var(--text-color-alt), 0);
+    cursor: pointer;
+}
+
+.date-selector span.change-date-arrow path {
+    stroke: rgb(var(--text-color-alt));
+    transition: .1s;
+}
+
+.date-selector span.change-date-arrow:hover {
+    background-color: rgba(var(--text-color-alt), .1);
+}
+
+.date-selector span.change-date-arrow:active {
+    background-color: rgba(var(--text-color-alt), .2);
+}
+
+.date-selector svg {
+    height: 13px;
+    overflow: visible;
+}
+
+.date-selector span.change-date-arrow:active svg path {
+    transform: translateY(2px);
+}
+
+.date-selector :first-child svg {
+    transform: rotate(90deg);
+}
+
+.date-selector :last-child svg {
+    transform: rotate(-90deg);
+}
+
+.selected-date {
+    text-align: center;
+    min-width: 115px;
+    color: rgb(var(--text-color-alt));
+    border: 2px solid rgb(var(--text-color-alt));
+    border-radius: 50px;
+    user-select: none;
+    transition: .2s;
+    height: 100%;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.selected-date:hover {
+    background-color: rgba(var(--text-color-alt), .07);
+}
+
+.selected-date div {
+    height: 200%;
+    display: flex;
+    flex-flow: column nowrap;
+    transition: .3s;
+}
+
+.selected-date:is(:hover, :focus-visible) div {
+    transform: translateY(-50%);
+}
+
+.selected-date time {
+    flex: 1;
+    color: rgb(var(--text-color-alt));
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notebook-day {
+    flex-shrink: 0;
+    width: min(300px, 100%);
+    max-height: 100%;
+    background: rgb(var(--background-color-2));
+    border-radius: 25px;
+    box-shadow: var(--box-shadow-element);
+    filter: brightness(.9);
+    opacity: .8;
+    scroll-snap-align: center;
+    cursor: grab;
+    transition: .2s;
+    
+    display: flex;
+    flex-flow: column nowrap;
+}
+.light .notebook-day {
+    filter: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+}
+.light .notebook-day .notebook-day-header {
+    background-color: rgba(var(--text-color-main-reverse), 0.3) ;
+}
+
+.performance .notebook-day {
+    border: 2px solid rgb(var(--background-color-3));
+}
+
+.notebook-day:active {
+    cursor: grabbing;
+}
+
+.notebook-day.selected {
+    width: min(600px, 100%);
+    filter: brightness(1.05);
+    opacity: 1;
+}
+
+.notebook-window:fullscreen .notebook-day {
+    width: min(400px, 100%);
+}
+
+.notebook-window:fullscreen .notebook-day.selected {
+    width: min(800px, 100%);
+}
+
+.notebook-day.selected .tasks-container {
+    gap: 30px;
+}
+
+.notebook-day .notebook-day-header {
+    border-top-left-radius: 25px;
+    border-top-right-radius: 25px;
+    padding: .5em;
+    display: flex;
+    height: 4em;
+    align-items: center;
+    background: rgb(var(--background-color-3));
+    position: relative;
+    overflow: hidden;
+}
+
+.notebook-day .notebook-day-header::after {
+    --reflect-color: #fff5;
+    content: "";
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    left: 0;
+    opacity: var(--after-opacity);
+    transition: .5s;
+    background: linear-gradient(123deg, transparent 10%,  var(--reflect-color) 10%, var(--reflect-color) 15%, transparent 15%, transparent 25%, var(--reflect-color) 25%, var(--reflect-color) 40%, transparent 40%);
+    animation: reflection 4s linear infinite;
+}
+
+
+#dashboard .notebook-day .notebook-day-header {
+    height: 3em;
+}
+
+.notebook-day .notebook-day-header .notebook-day-date {
+    text-align: center;
+    width: 100%;
+    z-index: 1;
+}
+
+.notebook-day .notebook-day-header+hr,
+.notebook-container .section-separator,
+.detailed-task-separator {
+    background-color: rgb(var(--border-color-contrast));
+    height: 3px;
+    border-radius: 3px;
+    border: none;
+    transform: translateY(-1.5px);
+    flex-shrink: 0;
+    
+    margin-inline: 15%;
+}
+
+.notebook-container .detailed-section-separator {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.notebook-container .detailed-section-separator span {
+    flex-shrink: 0;
+    font-size: var(--font-size-20);
+    font-weight: var(--font-weight-extra-bold);
+}
+
+.notebook-container .detailed-section-separator hr {
+    flex: 1;
+    margin-inline: 20px;
+    color: transparent;
+    background-color: rgb(var(--border-color-contrast));
+    height: 3px;
+    border-radius: 50px;
+}
+
+.detailed-task-separator {
+    transform: none;
+}
+
+.tasks-container {
+    overflow: auto;
+    height: 100%;
+    display: flex;
+    flex-flow: nowrap column;
+    gap: 15px;
+    padding: 15px;
+    scroll-behavior: smooth;
+}
+
+@keyframes reflection { /* pretty sad but it works */
+    0% {
+        left: -100%;
+    }
+    20% {
+        left: 100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@media only screen and (max-width: 869px) {
+    .notebook-window {
+        background-color: transparent;
+        box-shadow: none;
+    }
+    .notebook-window .window-header {
+        display: none;
+    }
+    .notebook-container {
+        padding-inline: 0;
+        height: min(700px, 70vh);
+        scroll-snap-type: x mandatory;
+    }
+    .notebook-container .notebook-day {
+        scroll-snap-align: center;
+    }
+}

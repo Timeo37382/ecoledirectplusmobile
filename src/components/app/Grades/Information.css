@@ -1,0 +1,248 @@
+
+.information .clear-button, .information .expand-reduce-button {
+    position: absolute;
+    line-height: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 8px;
+    background: none;
+    border: none;
+    color: rgba(var(--text-color-alt), .5);
+    font-size: var(--font-size-20);
+    font-weight: var(--font-weight-extra-bold);
+    cursor: pointer;
+    pointer-events: auto;
+    transition: all .1s, outline 0s;
+}
+.information .clear-button {
+    right: 6.5px;
+    padding: 5.5px 9px;
+}
+.information .clear-button:is(:hover, :focus-visible) {
+    color: rgb(var(--text-color-main));
+    background-color: rgba(var(--text-color-main), .15);
+}
+.information .clear-button:active {
+    color: rgb(var(--text-color-main), .5);
+    background-color: rgba(var(--text-color-main), .10);
+}
+
+.information .expand-reduce-button {
+    padding: 3px 6px;
+    right: 46px;
+    width: 35px;
+}
+
+.information .expand-reduce-button svg {
+    fill: rgba(var(--text-color-alt), .5);
+    transform: translateY(2px);
+    transition: .1s;
+}
+.information .expand-reduce-button:is(:hover, :focus-visible) {
+    background-color: rgba(var(--text-color-main), .15);
+}
+.information .expand-reduce-button:is(:hover, :focus-visible) svg {
+    fill: rgba(var(--text-color-main));
+}
+.information .expand-reduce-button:active {
+    background-color: rgba(var(--text-color-main), .10);
+}
+.information .expand-reduce-button:active svg {
+    fill: rgba(var(--text-color-main), .5);
+}
+
+.information .element-information {
+    padding: 10px;
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.information .element-information hr {
+    height: 2px;
+    width: 100%;
+    background-color: rgba(var(--text-color-alt), .5);
+    border: none;
+}
+.information .selected-coefficient {
+    text-align: center;
+    font-size: var(--font-size-14);
+    color: rgb(var(--text-color-alt));
+}
+
+.information .information-hr {
+    margin-top: 5px;
+}
+
+.information .grade-zone {
+    width: 100%;
+    /* min-height: 70px; */
+    margin-block: 5px;
+    
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+
+.information .grade-zone > div {
+    text-align: center;
+    flex-basis: 24%;
+    max-width: 85px;
+}
+
+.information .number-name {
+    margin-bottom: 5px;
+    /* font-size: var(--font-size-18); */
+}
+
+.information .number-value {
+    padding: 5px 0px;
+    background-color: rgb(var(--border-color-0));
+    border-radius: 10px;
+    width: 100%;
+}
+.information .number-value:hover {
+    background-color: rgba(var(--border-color-0), .8);
+}
+.information .number-value:active {
+    background-color: rgba(var(--border-color-0), .6);
+}
+
+
+.information .info-zone {
+    padding: 10px;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.information .text {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 5px;
+}
+
+.information .files {
+    display: flex;
+    flex-grow: 1;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.information .file {
+    flex: 1;
+    height: 85px;
+    background-color: rgb(var(--background-color-3));
+    border-radius: 10px;
+    
+    cursor: pointer;
+    
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+.information .file:is(:focus-visible, :hover) {
+    background-color: rgba(var(--background-color-3), .6);
+}
+.information .file:active {
+    background-color: rgba(var(--background-color-3), .8);    
+}
+
+.information .file .download-icon {
+    height: 40px;
+}
+.information .file .download-icon * {
+    stroke: rgb(var(--text-color-alt));
+}
+
+.information .file .download-loading-animation {
+    height: 40px;
+}
+.information .file .download-loading-animation circle {
+    height: 40px;
+    stroke: rgb(var(--text-color-alt));
+}
+
+.information .file .sub-text {
+    color: rgb(var(--text-color-alt));
+}
+
+.information .badges-zone {
+    padding-bottom: 0;
+    display: flex;
+    gap: 10px;
+}
+
+.information .badges-zone .badge-value {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 3px;
+}
+.information .badges-zone .badge-value .badge-number {
+    color: rgb(var(--text-color-alt));
+    font-size: var(--font-size-12);
+}
+
+.information .badges-zone .badge {
+    vertical-align: middle;
+}
+
+.information .element-information .appreciation {
+    margin-top: 5px;
+    padding-left: 7px;
+    border-left: 3px solid rgb(var(--text-color-alt));
+    color: rgb(var(--text-color-alt));
+}
+
+.information .no-selected-grades {
+    padding-block: 10px;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.information .no-selected-grades svg {
+    min-height: 70px;
+    max-height: 120px;
+    height: 60%;
+}
+
+.information .no-selected-grades p {
+    text-align: center;
+    width: 70%;
+    color: rgb(var(--text-color-alt));
+}
+
+.skill-container {
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 50px;
+}
+
+.skill-text {
+    width: 75%;
+}
+
+.skill-text p {
+    color: rgb(var(--text-color-alt));
+}
+
+.skill-name {
+    font-weight: var(--font-weight-extra-bold);
+}
+
+.skill-value {
+    flex-grow: 1;
+    text-align: center;
+    font-weight: var(--font-weight-extra-bold);
+}

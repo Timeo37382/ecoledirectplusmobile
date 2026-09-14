@@ -1,0 +1,42 @@
+
+#proxy-error-notification {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translate(-50%, calc(-100% - 10px));
+    
+    padding: 10px;
+    text-align: center;
+    width: max-content;
+    max-width: 80vw;
+    
+    color: rgb(var(--text-color-soft-error-alt));
+    
+    border: 2px solid rgb(var(--background-color-soft-error));
+    border-radius: 10px;
+    
+    animation: proxy-error-notification-pop-in .3s var(--timing-function-spring-effect) forwards;
+    transition: background-color .2s;
+    cursor: default;
+    z-index: 50;
+}
+.dark #proxy-error-notification {
+    background-color: rgba(var(--background-color-soft-error), .2);
+    backdrop-filter: blur(8px) brightness(.5);
+}
+.light #proxy-error-notification {
+    background-color: rgba(var(--background-color-1));
+}
+
+#proxy-error-notification:hover {
+    background-color: rgb(var(--background-color-0));
+}
+
+@keyframes proxy-error-notification-pop-in {
+    from {
+        transform: translate(-50%, calc(-100% - 15px));
+    }
+    to {
+        transform: translate(-50%, 0);
+    }
+}

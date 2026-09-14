@@ -1,0 +1,21 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "remote": {
+    "urls": ["https://ecole-directe.plus/*"]
+  },
+  "windows": ["main"],
+  "permissions": [
+    "core:webview:default",
+    "shell:default",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://api.ecoledirecte.com/*"
+        }
+      ]
+    }
+  ]
+}

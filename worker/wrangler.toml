@@ -1,0 +1,22 @@
+# Deploiement du proxy EcoleDirecte sur Cloudflare Workers.
+#
+#   npm install -g wrangler
+#   wrangler login
+#   wrangler deploy
+#
+# Remplacer TON-DOMAINE.fr par ton domaine (le meme que celui qui sert le front,
+# pour rester en same-origin et n'avoir aucun CORS a gerer).
+
+name = "edp-proxy"
+main = "edp-proxy.js"
+compatibility_date = "2026-01-01"
+
+# Le front et le proxy partagent la meme origine : tout ce qui commence par
+# /edp-api/ part vers le worker, le reste est servi normalement.
+[[routes]]
+pattern = "TON-DOMAINE.fr/edp-api/*"
+zone_name = "TON-DOMAINE.fr"
+
+# Aucun log des requetes : elles contiennent les identifiants EcoleDirecte.
+[observability]
+enabled = false

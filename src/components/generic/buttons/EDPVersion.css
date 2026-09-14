@@ -1,0 +1,18 @@
+
+#edp-version {
+    background: rgba(var(--text-color-main), 0);
+    font-size: var(--font-size-14);
+    color: rgb(var(--text-color-alt));
+    position: fixed;
+    right: 6px; /*=10px - padding -> aligne avec policy*/
+    bottom: 6px;
+    padding: 4px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.1s;
+}
+
+#edp-version:hover, #edp-version:focus, #edp-version:active {
+    background: rgba(var(--text-color-main), 0.2);
+    color: rgb(var(--text-color-main));
+}

@@ -1,0 +1,179 @@
+body:has(#bottom-sheet) {
+    overflow: hidden;
+}
+
+#bottom-sheet {
+    position: fixed;
+    inset: 0;
+    
+    background-color: rgba(0, 0, 0, 0.4);
+    animation: 0.5s ease 0s fade-in;
+    animation-fill-mode: forwards;
+    z-index: 99;
+    overscroll-behavior: none;
+}
+
+#bottom-sheet.closing {
+    animation: 0.5s ease 0s fade-out;
+    animation-fill-mode: forwards;
+}
+
+
+#bottom-sheet-box {
+    position: fixed;
+    transform: translateX(-50%);
+    left: 50%;
+    width: 100%;
+    max-width: 800px;
+    min-height: 0%;
+    max-height: 100%;
+    overscroll-behavior: none;
+    
+    background-color: rgb(var(--background-color-0));
+    padding: 0 25px;
+    border-radius: 20px 20px 0 0;
+    box-shadow: var(--box-shadow-window);
+    filter: none;
+    animation: 0.5s ease-in-out 0s slide-in;
+    animation-fill-mode: forwards;
+    transition: 0.3s;
+    transition-timing-function: var(--timing-function-spring-effect);
+}
+
+#bottom-sheet-box.closing {
+    animation: 0.5s ease-in-out 0s slide-out;
+    animation-fill-mode: forwards;
+}
+
+
+#bottom-sheet-container {
+    position: relative;
+    display: flex;
+    flex-flow: column nowrap;
+    height: 100%;
+}
+
+#bottom-sheet-container #close-button {
+    position: absolute;
+    top: 10px;
+    right: -10px;
+    background: none;
+    line-height: 22px;
+    border: none;
+    color: rgb(var(--background-color-2));
+    font-size: var(--font-size-24);
+    font-weight: var(--font-weight-extra-bold);
+    cursor: pointer;
+    transition: 0.1s;
+}
+#bottom-sheet-container #close-button:hover {
+    color: rgb(var(--text-color-main));
+}
+#bottom-sheet-container #close-button:active {
+    color: rgb(var(--text-color-main), .7);
+}
+
+/* - - inner bottom sheet - - */
+/* resize handle */
+#bottom-sheet-container #resize-handle {
+    padding-block: 10px 10px;
+    position: relative;
+    cursor: grab;
+}
+#bottom-sheet-container #resize-handle:active {
+    cursor: grabbing;
+    user-select: none;
+}
+
+#resize-handle #inner-resize-handle {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 8px;
+    width: 100px;
+    border-radius: 15px;
+
+    background-color: rgb(var(--background-color-2));
+    cursor: n-resize;
+}
+
+#resize-handle:focus-visible {
+    outline: none;
+}
+
+#resize-handle:hover #inner-resize-handle,
+#resize-handle:focus-visible #inner-resize-handle {
+    background-color: rgba(var(--background-color-2), 0.7);
+}
+
+#resize-handle:active #inner-resize-handle {
+    background-color: rgba(var(--background-color-2), 0.5);
+}
+
+/* heading */
+#bottom-sheet-heading {
+    text-align: center;
+    margin-inline: 10px;
+    margin-block: 12.5px 15px; /*= padding pop-up-background*/
+    font-size: var(--font-size-36);
+    color: rgb(var(--border-color-1));
+}
+
+/* content */
+#bottom-sheet-content {
+    flex-grow: 1;
+    width: 100%;
+    list-style-position: inside;
+    overflow-y: auto;
+    text-align: justify;
+}
+
+#bottom-sheet-content .content {
+    height: 100%;
+}
+
+@media only screen and (max-width: 460px) {
+    #bottom-sheet-box {
+        padding: 0px 15px;
+    }
+    
+    #bottom-sheet-container #close-button {
+        right: 0px;
+    }
+}
+
+@keyframes slide-in {
+    from {
+        bottom: -100%;
+    }
+    to { 
+        bottom: 0;
+    }
+}
+
+@keyframes slide-out {
+    from {
+        bottom: 0;
+    }
+    to { 
+        bottom: -100%;
+    }
+}
+
+@keyframes fade-in {
+    from {
+        background-color: rgba(0, 0, 0, 0);
+    }
+    to {
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+}
+
+@keyframes fade-out {
+    from {
+        background-color: rgba(0, 0, 0, 0.4);
+    }
+    to {
+        background-color: rgba(0, 0, 0, 0);
+    }
+}

@@ -1,0 +1,28 @@
+#info-pop-up-content li {
+    color: rgb(var(--text-color-main));
+    margin-bottom: 8px;
+}
+
+#info-pop-up-content hr {
+    height: 3px;
+    background-color: rgb(var(--background-color-2));
+    border-color: rgb(var(--background-color-2));
+    border-style: solid;
+}
+
+#info-pop-up-content .first-paragraph {
+    margin-top: 15px;
+}
+
+#patch-notes .contributor {
+    font-size: var(--font-size-14);
+}
+
+#patch-notes .sub-paragraph {
+    font-size: var(--font-size-16);
+}
+
+#discord-picture-new-version {
+    width: 100%;
+    padding: 15px 10px;
+}

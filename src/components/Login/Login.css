@@ -1,0 +1,280 @@
+
+#edp-unblock-ad {
+    position: fixed;
+    top: 15px;
+    left: 50%;
+    transform: translate(-50%, calc(-100% - 10px));
+    
+    padding: 10px;
+    text-align: center;
+    width: 95%;
+    max-width: 900px;
+    
+    border: 2px solid rgb(var(--text-color-alt));
+    border-radius: 10px;
+    
+    opacity: 0;
+    animation: edp-unblock-ad-pop-in .3s var(--timing-function-spring-effect) forwards;
+    animation-delay: .5s;
+    transition: border-color .1s, background-color .1s;
+    cursor: pointer;
+    text-decoration: none;
+    outline: none;
+    z-index: 50;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.dark #edp-unblock-ad {
+    background-color: rgba(var(--text-color-alt), .2);
+    -webkit-backdrop-filter: blur(8px) brightness(.5);
+    backdrop-filter: blur(8px) brightness(.5);
+}
+.light #edp-unblock-ad {
+    background-color: rgba(var(--background-color-1));
+}
+
+#edp-unblock-ad:is(:hover, :focus-visible) {
+    background-color: rgb(var(--background-color-0));
+    border-color: rgba(var(--text-color-main), .9);
+}
+#edp-unblock-ad:active {
+    opacity: .8;
+}
+
+#edp-unblock-ad .extension-icon {
+    height: 35px;
+    fill: rgb(var(--text-color-alt));
+    transition: .1s;
+}
+
+#edp-unblock-ad:is(:hover, :focus-visible) .extension-icon {
+    fill: rgba(var(--text-color-main), .9);
+}
+
+#edp-unblock-ad span:not(:last-child) {
+    flex: 1;
+    color: rgb(var(--text-color-alt));
+    transition: .1s;
+}
+
+#edp-unblock-ad .edpu-explanation {
+    color: rgb(var(--text-color-alt));
+    transition: .1s;
+}
+
+#edp-unblock-ad span {
+    color: rgb(var(--text-color-alt));
+    transition: .1s;
+}
+
+#edp-unblock-ad:is(:hover, :focus-visible) span {
+    color: rgba(var(--text-color-main), .9);
+}
+
+@keyframes edp-unblock-ad-pop-in {
+    from {
+        opacity: 1;
+        transform: translate(-50%, calc(-100% - 15px));
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.login-logo {
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    height: 50px;
+    width: auto;
+}
+
+.login-logo#outside-container {
+    display: block;
+}
+
+.login-logo#inside-container {
+    display: none;
+}
+
+.login-social {
+    position: fixed;
+    top: 0;
+    right: 0;
+    display: flex;
+    gap: 15px;
+    padding: 20px;
+}
+
+.login-box {
+    padding: 6px 28px;
+    text-align: center;
+    position: absolute;
+    width: 100vw;
+    max-width: 480px;
+    min-width: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* border: 1px solid rgb(var(--border-color-0)); */
+    border-radius: 20px;
+    background-color: rgb(var(--background-color-1));
+    box-shadow: var(--box-shadow-window);
+    z-index: 1;
+}
+
+.login-box .info-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    margin: 3px;
+}
+
+.login-box h1 {
+    color: rgb(var(--text-color-main));
+    font-size: var(--font-size-42);
+    font-weight: var(--font-weight-extra-bold);
+    margin: 3rem 0 3.5rem 0;
+}
+
+/* .login-box :is(.login-input, #submit-login, .login-option) {
+    margin-bottom: 20px;
+} */
+
+/* .login-option {
+    width: 100%;
+    margin-bottom: 20px;
+    text-align: center;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-around;
+    gap: 10px;
+} */
+
+/* .login-option a#password-forgotten-link {
+    text-align: right;
+    text-decoration: none;
+    color: rgb(var(--text-color-alt));
+    cursor: pointer;
+} */
+/* .login-option a#password-forgotten-link:hover {
+    color: rgba(var(--text-color-alt), 0.7);
+} */
+
+p.not-affiliated-mention {
+    position: absolute;
+    left: 10px;
+    bottom: 10px; /* aligne avec la baseline du numéro de version */
+    font-size: var(--font-size-14);
+    color: rgb(var(--text-color-alt));
+}
+
+p.policy {
+    width: calc(100vw - 2*50px); /* fullscreen width - taille de EDPVersion */
+    text-align: center;
+    font-size: var(--font-size-14);
+    color: rgb(var(--text-color-alt));
+    position: absolute;
+    left: 50%;
+    bottom: 10px; /* aligne avec la baseline du numéro de version */
+    transform: translateX(-50%);
+}
+
+#login .policy-link {
+    text-decoration: none;
+    color: rgb(var(--border-color-1));
+    font-size: var(--font-size-14);
+    cursor: pointer;
+}
+
+#login .policy-link:hover {
+    color: rgb(var(--border-color-0));    
+}
+
+@media only screen and (max-width: 869px) {
+    p.not-affiliated-mention {
+        display: none;
+    }
+    #edp-unblock-ad {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 460px) {
+    body :has(.login) {
+        background-color: rgb(var(--background-color-1)) !important;
+    }
+
+    #edp-unblock-ad .edpu-explanation {
+        display: none;
+    }
+
+    .login-social {
+        z-index: 1;
+        position: fixed;
+        top: 0;
+        right: unset;
+        left: 0;
+        display: flex;
+        gap: 15px;
+        padding: 20px;
+    }
+
+    /* Solution de gros golem exécutée par des professionnels à ne pas reproduire à la maison*/
+    .login-logo#outside-container {
+        display: none;
+    }
+    
+    .login-logo#inside-container {
+        display: block !important;
+        position: static;
+        top: auto;
+        left: auto;
+        transform: none;
+        margin: 5dvh auto; /*dvh = dynamic vh -> prend en compte la barre de recherche sur mobile */
+        width: 90px;
+        height: auto;
+    }
+
+    .login-box {
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transform: none;
+        box-shadow: none;
+        border: none;
+        border-radius: 0;
+        /* background-color: transparent; */
+        background-color: rgb(var(--background-color-1));
+        margin: 0;
+        /* padding: 5px; */
+        padding: 6px 28px;
+        min-width: 0;
+        width: 100%;
+        z-index: auto;
+    }
+    
+    .login-box h1 {
+        font-size: 10vw;
+        margin-top: 0;
+    }
+
+
+    #login p.policy {
+        font-size: 0;
+    }
+
+    #login .policy-link {
+        /*font-size: min(var(--font-size-16), 4.5vw);*/
+        font-size: var(--font-size-16);
+    }
+}

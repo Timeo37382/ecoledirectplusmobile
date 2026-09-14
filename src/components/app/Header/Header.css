@@ -1,0 +1,218 @@
+/* - - - header - - - */
+
+#app {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: stretch;
+}
+
+.header-container {
+    position: sticky;
+    width: 100%;
+    height: inherit;
+    max-height: 100px;
+    max-width: 2360px;
+    display: block;
+    margin: 0 auto;
+    z-index: 1;
+}
+
+.header-menu {
+    display: flex;
+    height: inherit;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    background-color: rgb(var(--background-color-header));
+    /* background: linear-gradient(135deg, #FE0000 16.66%,
+		#FD8C00 16.66%, 33.32%,
+		#FFE500 33.32%, 49.98%,
+		#119F0B 49.98%, 66.64%,
+		#0644B3 66.64%, 83.3%,
+		#C22EDC 83.3%); */
+    /* box-shadow: 0 4px 20px rgba(0, 0, 0, 1); */
+    box-shadow: var(--box-shadow-window);
+}
+
+/* - - - EDP Logo - - - */
+
+.header-logo-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* flex-grow: 0.125;
+    flex-grow: 0.2; */
+    flex-grow: 0.25;
+    width: 100px;
+    
+    /* background-color: red; */
+}
+
+.header-logo-container a {
+    outline: none;
+    position: relative;
+}
+
+.header-logo-container #version-tag {
+    width: max-content;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    transform: translate(55%, 50%);
+    background-color: rgb(var(--background-color-1));
+    color: rgb(var(--text-color-alt));
+    font-size: var(--font-size-12);
+    padding: 4px 7px;
+    border-radius: 7px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    pointer-events: none;
+}
+
+.header-logo-container #header-logo {
+    height: 55px;
+    width: auto;
+    transition: 0.2s;
+}
+
+.header-logo-container #header-logo:hover {
+    filter: drop-shadow(0 0 20px rgba(var(--text-color-main), 0.2));
+}
+
+.header-logo-container #header-logo:active {
+    filter: drop-shadow(0 0 20px rgba(var(--text-color-main), 0.4));
+}
+
+/* - - - navbar - - - */
+
+.navbar {
+    height: inherit;
+    flex-grow: 1;
+}
+
+.navbar ul.header-button-list {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    align-items: center;
+    list-style-type: none;
+    height: inherit;
+}
+
+.navbar .header-button-list li.header-button-container {
+    flex-grow: 1;
+    max-width: 150px;
+    flex-basis: 150px;
+    height: inherit;
+}
+
+li#dashboard.header-button-container { order: 1; }
+li#grades.header-button-container { order: 2; }
+li#homeworks.header-button-container { order: 3; }
+li#timetable.header-button-container { order: 4; }
+li#messaging.header-button-container { order: 5; }
+
+
+/* - - - account-selection - - - */
+
+.header-menu .account-selection {
+    height: inherit;
+    flex-grow: 0.10;
+    /* width: 400px; */
+    /* padding: 5px; */
+}
+
+.header-menu .account-selection #account-selector {
+    width: 100%;
+    width: 400px;
+    margin-inline: auto 0;
+}
+
+
+/* - - - main content - - - */
+
+main.content {
+    height: 100%;
+    overflow: auto;
+    scroll-behavior: smooth;
+    /* overscroll-behavior: contain; */
+    width: 100%;
+    max-width: 2360px;
+    margin: 0 auto;
+}
+
+@media only screen and (max-width: 969px) {
+    .header-logo-container {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 869px) {
+    .header-container {
+        order: 1;
+    }
+
+    .header-menu {
+        border-radius: 20px 20px 0 0;
+        overflow: hidden;
+    }
+
+    li#dashboard.header-button-container {
+        order: 4;
+    }
+
+    .header-button-title {
+        display: none;
+    }
+
+    main.content .account-selection {
+        padding: 30px clamp(15px, 3.5vw, 30px);
+        padding-bottom: 0;
+    }
+
+    main.content #account-selector {
+        max-height: 80px;
+        padding: 0;
+    }
+
+    main.content #account-selector #options-wrapper {
+        background-color: rgb(var(--background-color-1));
+        box-shadow: var(--box-shadow-window);
+    }
+}
+
+@media only screen and (max-width: 869px) and (min-height: 750px) {
+    main.content .account-selection {
+        display: block;
+        position: sticky;
+        top: 0;
+        left: 0;
+        z-index: 1;
+    }
+}
+
+@media only screen and (max-width: 450px) {
+    .standalone .header-menu {
+        padding-bottom: 25px;
+    }
+
+
+    .header-container:not(.standalone) {
+        max-height: 75px;
+    }
+
+    .header-button .icon-container svg {
+        height: 45px
+    }
+
+    .header-button .notifications {
+        left: 30px;
+    }
+}
+
+@media only screen and (min-width: 2361px) {
+    .header-menu {
+        border-radius: 0 0 20px 20px;
+    }
+}

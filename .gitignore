@@ -1,0 +1,42 @@
+# IDE config file
+.vscode/
+.idea/
+
+# nodeJS dependencies
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+
+# packager files
+# package-lock.json
+# package.json
+
+# useless dependencies
+replit.nix
+.replit
+
+# vite-config file
+*.mjs
+tsconfig.json
+# vite.config.js
+
+# other
+build_history
+local/
+test_grades.json
+diff
+
+# --- Secrets : le depot est public, rien de ce qui suit ne doit y monter ---
+# Cles de signature Android (le tuto APK en fait creer une)
+*.jks
+*.keystore
+keystore.properties
+key.properties
+# Variables d'environnement
+.env
+.env.*
+!.env.example
+# Vercel CLI
+.vercel

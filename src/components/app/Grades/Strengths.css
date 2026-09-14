@@ -1,0 +1,213 @@
+
+.strengths .window-content {
+    container-type: size;
+}
+
+.strengths .strengths-info * {
+    pointer-events: auto;
+}
+
+
+.strengths .display-type-reverse-button {
+    background-color: transparent;
+    border: none;
+    border-radius: 8px;
+    position: absolute;
+    top: 50%;
+    left: 6px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* padding: 3px; */
+    height: 35px;
+    width: 35px;
+    cursor: pointer;
+    transition: .1s;
+}
+.strengths .display-type-reverse-button:is(:hover, :focus-visible) {
+    background-color: rgba(var(--text-color-main), .15);
+}
+.strengths .display-type-reverse-button:active {
+    background-color: rgba(var(--text-color-main), .10);
+}
+
+.strengths .display-type-reverse-button svg {
+    height: 22px;
+}
+.strengths .display-type-reverse-button svg path {
+    fill: rgba(var(--text-color-alt), .5);
+    transition: .1s;
+}
+.strengths .display-type-reverse-button:is(:hover, :focus-visible) svg path {
+    fill: rgba(var(--text-color-main));
+}
+.strengths .display-type-reverse-button:active svg path {
+    fill: rgba(var(--text-color-main), .5);
+}
+
+
+.strengths .strengths-info {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: auto;
+}
+
+.strengths .strengths-info.info-strengths .fill {
+    fill: rgba(var(--background-color-strength-li-1), 0.8);
+}
+.strengths .strengths-info.info-strengths .stroke {
+    stroke: rgba(var(--background-color-strength-li-1), 0.8);
+}
+.strengths .strengths-info.info-strengths:is(:hover, :focus-within) .fill {
+    fill: rgb(var(--background-color-strength-li-3));
+}
+.strengths .strengths-info.info-strengths:is(:hover, :focus-within) .stroke {
+    stroke: rgb(var(--background-color-strength-li-3));
+}
+
+.strengths .strengths-info.info-weaknesses .fill {
+    fill: rgba(var(--background-color-weakness-li-1), 0.8);
+}
+.strengths .strengths-info.info-weaknesses .stroke {
+    stroke: rgba(var(--background-color-weakness-li-1), 0.8);
+}
+.strengths .strengths-info.info-weaknesses:is(:hover, :focus-within) .fill {
+    fill: rgb(var(--background-color-weakness-li-3));
+}
+.strengths .strengths-info.info-weaknesses:is(:hover, :focus-within) .stroke {
+    stroke: rgb(var(--background-color-weakness-li-3));
+}
+
+ol.strengths-container {
+    height: 100%;
+    padding: 15px;
+    display: flex;
+    flex-flow: column nowrap;
+    justify-content: space-around;
+    gap: 10px;
+    perspective: 500px;
+}
+
+@container (max-height: 180px) {
+    ol.strengths-container {
+        height: auto;        
+    }
+}
+
+.strengths-container li.strength-container {
+    display: block;
+    padding: 7px;
+    border-radius: 50px;
+    box-shadow: var(--box-shadow-element);
+
+
+    visibility: hidden;
+    transform: rotateX(-90deg);
+    animation: .5s var(--timing-function-spring-effect) 0s unroll forwards;
+    animation-delay: calc(calc(3 - var(--order)) * 75ms); /* 3 is the number of weaknesses that are displayed */
+    
+    cursor: pointer;
+    transition: all 0.1s, outline 0s;
+}
+
+.strengths-container.display-strengths li.strength-container {
+    animation: .5s var(--timing-function-spring-effect) 0s unroll-2 forwards;
+    animation-delay: calc(var(--order) * 75ms);
+    /* animation-delay: calc((3 - var(--order)) * 75ms); */
+}
+
+@keyframes unroll {
+    from {
+        transform: rotateX(-90deg);
+        visibility: visible;
+    }
+    to {
+        transform: rotateX(0deg);
+        visibility: visible;
+    }
+}
+@keyframes unroll-2 {
+    from {
+        transform: rotateX(90deg);
+        visibility: visible;
+    }
+    to {
+        transform: rotateX(0deg);
+        visibility: visible;
+    }
+}
+
+.strengths-container.display-strengths li.strength-container:nth-child(1) { background-color: rgba(var(--background-color-strength-li-1), 0.8) }
+.strengths-container.display-strengths li.strength-container:nth-child(2) { background-color: rgba(var(--background-color-strength-li-2), 0.8) }
+.strengths-container.display-strengths li.strength-container:nth-child(3) { background-color: rgba(var(--background-color-strength-li-3), 0.8) }
+
+.strengths-container.display-weaknesses li.strength-container:nth-child(1) { background-color: rgba(var(--background-color-weakness-li-1), 0.8) }
+.strengths-container.display-weaknesses li.strength-container:nth-child(2) { background-color: rgba(var(--background-color-weakness-li-2), 0.8) }
+.strengths-container.display-weaknesses li.strength-container:nth-child(3) { background-color: rgba(var(--background-color-weakness-li-3), 0.8) }
+
+.strengths-container li.strength-container:hover {
+    opacity: 0.8;
+}
+
+.strengths-container li.strength-container:has(:focus-visible) {
+    outline: 2px solid rgba(var(--text-color-main), .7);
+}
+
+.strengths-container li.strength-container:active {
+    opacity: 0.7;
+}
+
+.strengths-container .strength-wrapper {
+    text-decoration: none;
+    outline: none;
+    
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+}
+
+.strengths-container span {
+    color: rgba(var(--text-color-main), .7);
+    font-weight: var(--font-weight-semi-bold);
+}
+
+
+.strengths-container .subject-container {
+    flex: 1;    
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 10px;
+}
+
+
+.strengths-container .subject-rank {
+    margin-left: 10px;
+}
+
+.strengths-container .subject-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 10px;
+}
+
+.strengths-container .subject-average {
+    background-color: rgba(var(--background-color-0), 0.35);
+    padding: 5px 15px;
+    border-radius: 50px;
+}
+
+@media only screen and (max-width: 869px) {
+    .strengths .window-content {
+        container-type: normal;
+    }
+    
+    ol.strengths-container {
+        height: auto;
+    }
+}
+

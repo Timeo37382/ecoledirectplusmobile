@@ -1,0 +1,65 @@
+
+.text-input-container {
+    border: 2px solid rgb(var(--border-color-0));
+    border-radius: 15px;
+    padding: 0;
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-between;
+    width: 100%;
+    /* ancienne height : 2.8em */
+    height: 3em;
+    overflow: hidden;
+    transition: 0.1s;
+}
+
+
+.text-input-container:hover {
+    border-color: rgba(var(--border-color-1), 0.8);
+}
+
+.text-input-container:focus-within {
+    background-color: rgba(var(--background-color-focus));
+    border-color: rgb(var(--border-color-1));
+}
+
+.text-input {
+    border: none;
+    display: block;
+    font-size: var(--font-size-18);
+    padding: 10px;
+    padding-right: 0;
+    flex-grow: 1;
+    min-width: 0;
+    background-color: transparent;
+    color: rgb(var(--text-color-main));
+    outline: none;
+}
+
+.text-input::-ms-reveal {
+    display: none;
+}
+
+div.text-input-container:has(:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+input.text-input:disabled {
+    cursor: not-allowed;
+}
+
+.text-input-container svg {
+    height: 100%;
+    width: auto;
+    max-width: 50px;
+    padding: 10px;
+}
+
+.text-input-container svg.eye-slash {
+    padding: 9px !important;
+}
+
+.eye-slash {
+    cursor: pointer;
+}

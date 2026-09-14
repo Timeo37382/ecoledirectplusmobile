@@ -1,0 +1,131 @@
+body:has(#bottom-sheet) {
+    overflow: hidden;
+}
+
+#pop-up {
+    position: fixed;
+    inset: 0;
+    
+    background-color: rgba(0, 0, 0, 0.4);
+    animation: 0.3s ease 0s fade-in;
+    animation-fill-mode: forwards;
+    z-index: 99;
+}
+
+#pop-up.closing {
+    animation: 0.3s ease 0s fade-out;
+    animation-fill-mode: forwards;
+}
+
+#pop-up-background {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    filter: blur(10px);
+    transform: translate(-50%, -50%) scale(1);
+    border-radius: 20px;
+    width: 100%;
+    /* max-width: 400px; */
+    max-width: 425px;
+    /* max-width: 450px; */
+    /* max-width: 500px; */
+    max-height: 100%;
+    /* overflow-y: auto; */
+    box-shadow: var(--box-shadow-window);
+    filter: none;
+    /* cubic-bezier(.31,1.83,.53,.63) */
+    animation: 0.3s ease-out 0s blur-in;
+    animation-timing-function: var(--timing-function-spring-effect);
+    /* animation-fill-mode: forwards; */
+}
+
+#pop-up-background.info .default-closing-cross {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-weight: var(--font-weight-extra-bold);
+    color: rgb(var(--text-color-alt));
+    outline: none;
+    cursor: pointer;
+    z-index: 1;
+    transition: .1s;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+}
+#pop-up-background.info .default-closing-cross:is(:hover, :focus-visible) {
+    color: rgb(var(--text-color-main));
+}
+#pop-up-background.info .default-closing-cross:active {
+    color: rgba(var(--text-color-main), .7);
+}
+
+#pop-up-background.info {
+    background-color: rgb(var(--background-color-2));
+}
+
+#pop-up-background.warning {
+    background-color: rgb(var(--background-color-warning-1));
+    box-shadow: rgb(var(--background-color-warning-1))
+}
+
+#pop-up-background.error {
+    background-color: rgb(var(--background-color-error));
+    box-shadow: rgb(var(--background-color-error))
+}
+
+#pop-up-background.closing {
+    animation: 0.3s ease-out 0s blur-out;
+    animation-fill-mode: forwards;
+}
+
+@keyframes fade-in {
+    from {
+        background-color: rgba(0, 0, 0, 0);
+        backdrop-filter: blur(0px);
+    }
+    to {
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+    }
+}
+
+@keyframes fade-out {
+    from {
+        background-color: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(14px);
+    }
+    to {
+        background-color: rgba(0, 0, 0, 0);
+        backdrop-filter: blur(0px);
+    }
+}
+
+@keyframes blur-in {
+    from {
+        opacity: 0;
+        filter: blur(10px);
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        filter: blur(0px);
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes blur-out {
+    from {
+        opacity: 1;
+        filter: blur(0px);
+        transform: translate(-50%, -50%) scale(1);
+    }
+    to {
+        opacity: 0;
+        filter: blur(10px);
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+}
