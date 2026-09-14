@@ -3,29 +3,22 @@
     "framework": "vite",
     "buildCommand": "npm run build",
     "outputDirectory": "dist",
-
-    "//": "cdg1 = Paris. Par defaut Vercel execute les fonctions a Washington (iad1) : les requetes vers EcoleDirecte partiraient des Etats-Unis, avec la latence et l'anomalie geographique que cela implique. Un seul region est autorise sur le plan Hobby.",
     "regions": ["cdg1"],
-
     "functions": {
         "api/proxy.js": {
             "maxDuration": 30
         }
     },
-
     "rewrites": [
         {
-            "//": "Le front appelle /edp-api/<chemin> ; on le route vers la fonction en conservant le chemin dans edpPath. Les parametres d'origine sont fusionnes automatiquement.",
             "source": "/edp-api/(.*)",
             "destination": "/api/proxy?edpPath=$1"
         },
         {
-            "//": "Fallback SPA : toute route inconnue rend index.html, sauf les routes d'API. Les fichiers statiques existants sont servis avant d'arriver ici.",
             "source": "/((?!api/|edp-api/).*)",
             "destination": "/index.html"
         }
     ],
-
     "headers": [
         {
             "source": "/edp-api/(.*)",
