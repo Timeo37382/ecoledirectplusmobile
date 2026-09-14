@@ -153,7 +153,15 @@ export default function Root({ currentEDPVersion, token, accountsList, fakeLogin
     // devChannel management
     useEffect(() => {
         function handleDevChannel() {
-            if (location.pathname === "/unsubscribe-emails" || window.location.hostname === "localhost" || !window.location.hostname) {
+            // Le projet amont rapatrie de force tout miroir non officiel vers
+            // ecole-directe.plus (voir la branche `else` plus bas). Cette
+            // instance est justement auto-hebergee : on la traite comme
+            // localhost, deja exempte, sinon le site se redirige tout seul vers
+            // le site officiel des le chargement.
+            const UPSTREAM_HOSTNAMES = ["ecole-directe.plus", "dev.ecole-directe.plus"];
+            const isSelfHosted = !UPSTREAM_HOSTNAMES.includes(window.location.hostname);
+
+            if (location.pathname === "/unsubscribe-emails" || window.location.hostname === "localhost" || !window.location.hostname || isSelfHosted) {
                 return 0;
             }
             if (process.env.NODE_ENV !== "development") {
