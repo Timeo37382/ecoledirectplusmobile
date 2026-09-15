@@ -3,17 +3,25 @@
   "identifier": "default",
   "description": "Capability for the main window",
   "remote": {
-    "urls": ["https://ecole-directe.plus/*"]
+    "urls": [
+      "https://ecoledirectplusmobile.vercel.app/*",
+      "https://ecoledirectplusmobile-fhz9.vercel.app/*"
+    ]
   },
   "windows": ["main"],
   "permissions": [
+    "core:default",
     "core:webview:default",
     "shell:default",
+    "dialog:default",
     {
       "identifier": "http:default",
       "allow": [
         {
           "url": "https://api.ecoledirecte.com/*"
+        },
+        {
+          "url": "https://*.ecoledirecte.com/*"
         }
       ]
     }

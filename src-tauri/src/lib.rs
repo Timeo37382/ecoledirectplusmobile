@@ -21,6 +21,22 @@ pub fn run() {
           // NOTE: will trigger a warning on mobile builds since `mut` is unused.
           let mut win = WebviewWindowBuilder::new(app, "main", app_url_external)
                 .disable_drag_drop_handler()
+                // Garde-fou anti-crash Android.
+                //
+                // Le pont Android de Wry memorise chaque URL que le WebView
+                // commence a charger et la parse avec `http::Uri`, puis
+                // `unwrap()` le resultat. Une URL sans autorite (about:srcdoc,
+                // data:..., blob:...) fait echouer ce parse. Le panic qui en
+                // decoule traverse une frontiere C : il ne peut pas se derouler,
+                // donc il abort le processus — SIGABRT, l'app se ferme d'un coup.
+                //
+                // On bloque donc la navigation vers tout ce qui n'est pas http(s),
+                // c'est-a-dire exactement ce que ce parseur sait accepter.
+                //
+                // Effet de bord a connaitre : un telechargement via une URL
+                // `blob:` est refuse par ce filtre. A revoir si les pieces
+                // jointes doivent etre telechargeables depuis l'APK.
+                .on_navigation(|url| matches!(url.scheme(), "http" | "https"))
                 .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36")
                 .initialization_script(
                     format!(
