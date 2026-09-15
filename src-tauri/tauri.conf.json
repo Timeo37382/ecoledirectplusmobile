@@ -2,12 +2,12 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Ecole Directe Plus",
   "version": "0.1.0",
-  "identifier": "fr.ton-domaine.edp",
+  "identifier": "plus.ecole-directe.app",
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
-    "devUrl": "https://TON-DOMAINE.fr/login",
-    "frontendDist": "https://TON-DOMAINE.fr/login"
+    "devUrl": "https://ecoledirectplusmobile.vercel.app/login",
+    "frontendDist": "https://ecoledirectplusmobile.vercel.app/login"
   },
   "app": {
     "macOSPrivateApi": true,

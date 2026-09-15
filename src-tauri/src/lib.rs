@@ -8,7 +8,7 @@ flate!(pub static INJECTION: str from "./injection/index.js");
 pub fn run() {
     // Domaine servant le front. Doit correspondre a devUrl/frontendDist dans
     // tauri.conf.json.
-    let app_url = Url::parse("https://TON-DOMAINE.fr/login").unwrap();
+    let app_url = Url::parse("https://ecoledirectplusmobile.vercel.app/login").unwrap();
     let app_url_external = WebviewUrl::External(app_url);
     let injection = INJECTION.clone();
 
