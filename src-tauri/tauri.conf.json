@@ -6,7 +6,7 @@
   "build": {
     "beforeDevCommand": "",
     "beforeBuildCommand": "",
-    "devUrl": "https://ecoledirectplusmobile.vercel.app/login",
+    "devUrl": "http://localhost:1420",
     "frontendDist": "https://ecoledirectplusmobile.vercel.app/login"
   },
   "app": {

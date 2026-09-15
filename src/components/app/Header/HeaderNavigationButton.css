@@ -127,15 +127,7 @@
     color: rgb(var(--text-color-main));    
 }
 
-@media only screen and (max-width: 450px) {
-    .header-button .icon-container {
-        width: 45px;
-        height: 45px;
-        flex-basis: 45px;
-    }
-
-    .header-button .icon-container svg {
-        width: 45px;
-        height: 45px;
-    }
-}
+/* NB : les tailles mobiles de la barre d'onglets sont definies dans Header.css,
+   dans le bloc `max-width: 869px`. Ce fichier ne fixe plus de taille a 450px :
+   deux blocs concurrents donnaient des icones de 45px qui ne laissaient pas la
+   place aux libelles. */

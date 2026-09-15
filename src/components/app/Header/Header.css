@@ -162,8 +162,81 @@ main.content {
         order: 4;
     }
 
-    .header-button-title {
-        display: none;
+    /* - - - barre d'onglets du bas (mobile / tablette) - - -
+     *
+     * Deux defauts corriges ici.
+     *
+     * 1. Les onglets etaient en `flex-basis: 150px` sans `min-width: 0`. Or un
+     *    item flex ne retrecit pas sous la largeur intrinseque de son contenu
+     *    (`min-width: auto` par defaut) : avec des libelles en `white-space:
+     *    nowrap` comme "Emploi du temps", 5 onglets reclamaient bien plus que
+     *    la largeur de l'ecran, la barre debordait et le dernier onglet etait
+     *    coupe.
+     *
+     * 2. La regle d'origine masquait les libelles ici (`.header-button-title
+     *    { display: none }`), mais elle n'a jamais pris effet : la regle
+     *    `.header-button .header-button-title` de HeaderNavigationButton.css
+     *    est plus specifique (0,2,0 contre 0,1,0) et gagnait donc toujours.
+     *    On garde les libelles — c'est l'usage sur une barre d'onglets — mais
+     *    a une taille qui tient vraiment, sur deux lignes si besoin.
+     */
+    .navbar .header-button-list li.header-button-container {
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .header-button {
+        gap: 2px;
+        padding: 4px 2px;
+        max-width: 100%;
+    }
+
+    .header-button .header-button-title {
+        display: block;
+        font-size: 0.68rem;
+        line-height: 1.15;
+        max-width: 100%;
+        /* Un libelle long passe sur deux lignes au lieu de pousser la barre. */
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .header-button .icon-container,
+    .header-button .icon-container svg,
+    .header-button svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    .header-button .icon-container {
+        flex: 0 0 28px;
+    }
+
+    /* Pastilles recalees sur la nouvelle taille d'icone (elles etaient
+       positionnees en dur pour une icone de 60px). */
+    .header-button .notifications {
+        left: auto;
+        right: -2px;
+        top: -2px;
+        height: 16px;
+        width: 16px;
+        font-size: 0.6rem;
+    }
+
+    .header-button .notifications.new {
+        left: auto;
+        right: -10px;
+        width: auto;
+        min-width: 28px;
+        padding-inline: 4px;
+        font-size: 0.5rem;
+    }
+
+    /* Laisse la place a la barre de gestes Android et a l'encoche iOS.
+       Necessite viewport-fit=cover dans index.html, deja en place. */
+    .header-menu {
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     main.content .account-selection {
@@ -194,20 +267,14 @@ main.content {
 
 @media only screen and (max-width: 450px) {
     .standalone .header-menu {
-        padding-bottom: 25px;
+        padding-bottom: max(25px, env(safe-area-inset-bottom, 0px));
     }
 
-
+    /* Hauteur de la barre : de quoi loger une icone de 28px et un libelle sur
+       deux lignes, plus la zone de gestes du systeme. L'ancienne valeur (75px
+       fixe) rognait le libelle et ignorait cette zone. */
     .header-container:not(.standalone) {
-        max-height: 75px;
-    }
-
-    .header-button .icon-container svg {
-        height: 45px
-    }
-
-    .header-button .notifications {
-        left: 30px;
+        max-height: calc(78px + env(safe-area-inset-bottom, 0px));
     }
 }
 

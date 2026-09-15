@@ -700,7 +700,18 @@ export default function App({ edpFetch }) {
             setIsMobileLayout(window.matchMedia(`(max-width: ${WINDOW_WIDTH_BREAKPOINT_MOBILE_LAYOUT}px)`).matches);
             setIsTabletLayout(window.matchMedia(`(max-width: ${WINDOW_WIDTH_BREAKPOINT_TABLET_LAYOUT}px)`).matches);
 
-            if (getBrowser() !== "Firefox") {
+            // Ce reglage de zoom a ete ecrit pour des fenetres de BUREAU etroites.
+            // Sur telephone, la branche `innerHeight < 900` plus bas se declenchait
+            // aussi et appliquait un zoom calcule sur la HAUTEUR de l'ecran, ce qui
+            // deformait toute la mise en page mobile (barre du bas debordante,
+            // polices disproportionnees). Le layout mobile a ses propres media
+            // queries : il n'a pas besoin de zoom, on remet donc tout a zero.
+            const isTabletOrMobileViewport = window.innerWidth < WINDOW_WIDTH_BREAKPOINT_TABLET_LAYOUT;
+
+            if (isTabletOrMobileViewport) {
+                document.documentElement.style.fontSize = "";
+                document.documentElement.style.zoom = "";
+            } else if (getBrowser() !== "Firefox") {
                 // gestion du `zoom` sur petits écrans afin d'améliorer la lisibilité et le layout global
                 if (window.innerWidth >= 869 && window.innerWidth < 1250) {
                     if (window.innerWidth >= 995) {
