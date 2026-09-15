@@ -76,3 +76,20 @@ export function isDirectTransport() {
 export function apiRoot() {
     return isProxyTransport() ? PROXY_BASE : ED_ORIGIN;
 }
+
+/**
+ * Content-Type a annoncer pour les corps `data=<json>` envoyes a EcoleDirecte.
+ *
+ * ED attend du `application/x-www-form-urlencoded` dont les valeurs sont
+ * percent-encodees (cf. encodeURIComponent dans fetchLogin). Probleme : un
+ * hebergeur qui voit ce Content-Type parse le corps et le DECODE, ce qui
+ * detruit l'encodage avant meme qu'on relaie la requete. Un identifiant
+ * contenant "@" ou un mot de passe avec un caractere special arrive alors
+ * mutile, et ED repond "identifiant et/ou mot de passe invalide".
+ *
+ * En mode proxy on annonce donc text/plain, que personne ne parse, et c'est le
+ * proxy qui remet le bon Content-Type au moment de contacter EcoleDirecte.
+ */
+export function bodyContentType() {
+    return isProxyTransport() ? "text/plain;charset=UTF-8" : "application/x-www-form-urlencoded";
+}

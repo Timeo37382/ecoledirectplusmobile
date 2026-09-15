@@ -20,7 +20,7 @@ import { useCreateNotification } from "./components/generic/PopUps/Notification"
 import { getGradeValue, calcAverage, findCategory, calcCategoryAverage, calcGeneralAverage, formatSkills, safeParseFloat, calcClassGeneralAverage, calcClassAverage } from "./utils/gradesTools";
 import { areOccurenciesEqual, createUserLists, encrypt, decrypt, getBrowser } from "./utils/utils";
 import { getCurrentSchoolYear } from "./utils/date";
-import { apiRoot, isProxyTransport, setTransport, TRANSPORT } from "./utils/api";
+import { apiRoot, bodyContentType, isProxyTransport, setTransport, TRANSPORT } from "./utils/api";
 import EdpuLogo from "./components/graphics/EdpuLogo";
 import { tr } from "date-fns/locale";
 
@@ -1582,7 +1582,7 @@ export default function App({ edpFetch }) {
                 headers: {
                   "X-Token": tokenState,
                   "2FA-Token": token2faState,
-                  "Content-Type": "application/x-www-form-urlencoded"
+                  "Content-Type": bodyContentType()
                 }
             });
 
@@ -1764,7 +1764,7 @@ export default function App({ edpFetch }) {
                     headers: {
                         "X-Token": tokenState,
                         "2FA-Token": token2faState,
-                        "Content-Type": "application/x-www-form-urlencoded",
+                        "Content-Type": bodyContentType(),
                     },
                     body: `data=${JSON.stringify(data)}`,
                     signal: controller.signal,
@@ -1792,7 +1792,7 @@ export default function App({ edpFetch }) {
                         headers: {
                             "X-Token": timetableToken,
                             "2FA-Token": token2faState,
-                            "Content-Type": "application/x-www-form-urlencoded",
+                            "Content-Type": bodyContentType(),
                         },
                         body: "data={}",
                         signal: controller.signal,
@@ -1845,7 +1845,7 @@ export default function App({ edpFetch }) {
                     headers: {
                         "X-Token": tokenState,
                         "2FA-Token": token2faState,
-                        "Content-Type": "application/x-www-form-urlencoded",
+                        "Content-Type": bodyContentType(),
                     },
                     body: "data={}",
                     signal: controller.signal,
@@ -2376,7 +2376,7 @@ export default function App({ edpFetch }) {
                 headers: {
                     "X-Token": tokenState,
                     "2FA-Token": token2faState,
-                    "Content-Type": "application/x-www-form-urlencoded"
+                    "Content-Type": bodyContentType()
                 },
                 body: `data=${choice ? JSON.stringify({ choix: choice }) : "{}"}`,
                 signal: controller.signal,
@@ -2455,7 +2455,7 @@ export default function App({ edpFetch }) {
                 headers: {
                     "X-Token": tokenState,
                     "2FA-Token": token2faState,
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                    'Content-Type': bodyContentType()
                 },
                 body: 'data={}',
                 signal: controller.signal,

@@ -22,7 +22,13 @@ const SPOOFED_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
 };
 
-const FORWARDED_REQUEST_HEADERS = ["content-type", "x-token", "2fa-token"];
+const FORWARDED_REQUEST_HEADERS = ["x-token", "2fa-token"];
+
+// Le front annonce text/plain en mode proxy pour que le corps ne soit ni parse
+// ni decode en route (voir bodyContentType() dans src/utils/api.js). C'est ici
+// qu'on remet le Content-Type qu'attend EcoleDirecte, sur le corps intact.
+const UPSTREAM_CONTENT_TYPE = "application/x-www-form-urlencoded";
+
 const FORWARDED_RESPONSE_HEADERS = ["content-type", "x-token", "2fa-token"];
 
 // Vercel parse le corps selon le Content-Type. On demande le corps brut : le
@@ -135,7 +141,7 @@ export default async function handler(req, res) {
                 headers: buildUpstreamHeaders(req, {
                     "Cookie": credentials.cookieHeader,
                     "X-GTK": credentials.gtk,
-                    "Content-Type": req.headers["content-type"] ?? "application/x-www-form-urlencoded",
+                    "Content-Type": UPSTREAM_CONTENT_TYPE,
                 }),
                 body,
             });
@@ -148,6 +154,7 @@ export default async function handler(req, res) {
             const body = await readRawBody(req);
             if (body) {
                 init.body = body;
+                init.headers["Content-Type"] = UPSTREAM_CONTENT_TYPE;
             }
         }
 

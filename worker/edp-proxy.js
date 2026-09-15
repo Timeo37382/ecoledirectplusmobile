@@ -30,10 +30,15 @@ const SPOOFED_HEADERS = {
 
 /** En-tetes du client qu'on relaie tels quels vers EcoleDirecte. */
 const FORWARDED_REQUEST_HEADERS = [
-    "content-type",
     "x-token",
     "2fa-token",
 ];
+
+// Le front annonce text/plain en mode proxy pour que le corps ne soit ni parse
+// ni decode en route (voir bodyContentType() dans src/utils/api.js). C'est ici
+// qu'on remet le Content-Type qu'attend EcoleDirecte, sur le corps intact.
+const UPSTREAM_CONTENT_TYPE = "application/x-www-form-urlencoded";
+
 
 /** En-tetes de reponse qu'on renvoie au client (les tokens sont lus par le front). */
 const FORWARDED_RESPONSE_HEADERS = [
@@ -133,7 +138,7 @@ async function handleLogin(request, url) {
         headers: buildUpstreamHeaders(request, {
             "Cookie": credentials.cookieHeader,
             "X-GTK": credentials.gtk,
-            "Content-Type": request.headers.get("content-type") ?? "application/x-www-form-urlencoded",
+            "Content-Type": UPSTREAM_CONTENT_TYPE,
         }),
         body,
     });
@@ -150,6 +155,7 @@ async function handlePassthrough(request, targetUrl) {
 
     if (request.method !== "GET" && request.method !== "HEAD") {
         init.body = await request.arrayBuffer();
+        init.headers.set("Content-Type", UPSTREAM_CONTENT_TYPE);
     }
 
     const upstream = await fetch(targetUrl, init);
