@@ -1,4 +1,5 @@
 import { useRef, useEffect, useContext, useState } from "react";
+import { pictureUrl } from "../../../utils/api";
 import { AppContext } from "../../../App";
 
 import HolographicDiv from "../../generic/CustomDivs/HolographicDiv";
@@ -111,7 +112,7 @@ export default function Account({ schoolLife, fetchSchoolLife, fetchAdministrati
                         <img
                             ref={(el) => (profilePictureRefs.current[0] = el)}
                             className="profile-picture"
-                            src={(settings.get("isStreamerModeEnabled") ? "/images/scholar-canardman.png" : ((accountsListState[activeAccount].firstName !== "Guest") ? "https:" + accountsListState[activeAccount].picture : accountsListState[activeAccount].picture))}
+                            src={(settings.get("isStreamerModeEnabled") && accountsListState[activeAccount].firstName !== "Guest" ? "/images/scholar-canardman.png" : pictureUrl(accountsListState[activeAccount].picture))}
                             alt={"Photo de profil de " + accountsListState[activeAccount].firstName}
                         />
                     </div>

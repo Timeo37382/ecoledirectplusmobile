@@ -31,6 +31,7 @@ const UPSTREAM_CONTENT_TYPE = "application/x-www-form-urlencoded";
 
 const FORWARDED_RESPONSE_HEADERS = ["content-type", "x-token", "2fa-token"];
 
+
 // Vercel parse le corps selon le Content-Type. On demande le corps brut : le
 // payload d'EcoleDirecte est un `data=<json>` non encode qu'il ne faut surtout
 // pas reserialiser.

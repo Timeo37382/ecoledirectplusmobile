@@ -41,6 +41,7 @@ const UPSTREAM_CONTENT_TYPE = "application/x-www-form-urlencoded";
 
 const FORWARDED_RESPONSE_HEADERS = ["content-type", "x-token", "2fa-token"];
 
+
 const app = express();
 
 // Corps recupere brut : EcoleDirecte attend `data=<json>` non encode, il ne

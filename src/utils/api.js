@@ -93,3 +93,42 @@ export function apiRoot() {
 export function bodyContentType() {
     return isProxyTransport() ? "text/plain;charset=UTF-8" : "application/x-www-form-urlencoded";
 }
+
+/**
+ * URL a utiliser pour une photo de profil.
+ *
+ * EcoleDirecte renvoie ce champ sous des formes variables : protocol-relative
+ * ("//doc1.ecoledirecte.com/..."), absolue, ou parfois l'hote nu. Le code
+ * d'origine prefixait "https:" dans Account.jsx et utilisait la valeur brute
+ * dans AccountSelector.jsx : selon la forme recue, l'un des deux affichait la
+ * photo et l'autre non. On normalise ici une bonne fois.
+ *
+ * Les images sont chargees en direct depuis ED, sans passer par le proxy : son
+ * serveur de medias ne filtre pas le Referer, et les relayer couterait de la
+ * bande passante pour rien.
+ */
+export function pictureUrl(raw) {
+    if (!raw || typeof raw !== "string") {
+        return "";
+    }
+
+    const value = raw.trim();
+    if (!value) {
+        return "";
+    }
+    // Chemin local servi par le site lui-meme (ex: /images/scholar-canardman.png)
+    if (value.startsWith("/") && !value.startsWith("//")) {
+        return value;
+    }
+    if (value.startsWith("//")) {
+        return "https:" + value;
+    }
+    if (/^https?:\/\//i.test(value)) {
+        return value.replace(/^http:/i, "https:");
+    }
+    // Hote nu, sans schema ni "//" (ex: "doc1.ecoledirecte.com/PhotoEleves/x.jpg")
+    if (/^[a-z0-9.-]+\.[a-z]{2,}\//i.test(value)) {
+        return "https://" + value;
+    }
+    return value;
+}

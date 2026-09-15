@@ -47,6 +47,7 @@ const FORWARDED_RESPONSE_HEADERS = [
     "2fa-token",
 ];
 
+
 function buildUpstreamHeaders(request, extra = {}) {
     const headers = new Headers(SPOOFED_HEADERS);
     for (const name of FORWARDED_REQUEST_HEADERS) {
