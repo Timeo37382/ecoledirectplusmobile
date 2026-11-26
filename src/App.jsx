@@ -1773,7 +1773,49 @@ export default function App({ edpFetch }) {
             })
     }
 
+    // Emploi du temps fictif du compte invite : meme semaine type repetee sur
+    // la periode demandee, avec un cours annule, un modifie et des devoirs.
+    function buildGuestTimetable(startDate, endDate) {
+        const weekPattern = {
+            1: [["08:00", "09:00", "MATHEMATIQUES", "MATHS", "#4f7cff", "Mme PETIT A.", "B204"], ["09:00", "10:00", "FRANCAIS", "FRANC", "#e07a5f", "M. GIRARD P.", "A112"], ["10:15", "12:15", "PHYSIQUE-CHIMIE", "PH-CH", "#3d9970", "Mme MARTIN C.", "LABO 2"], ["13:30", "14:30", "ANGLAIS LV1", "AGL1", "#b565d9", "Mme LEFEBVRE J.", "C015"], ["14:30", "16:30", "ED. PHYSIQUE & SPORT.", "EPS", "#f2a541", "M. ROUX T.", "GYMNASE"]],
+            2: [["08:00", "10:00", "HISTOIRE-GEOGRAPHIE", "HI-GE", "#c9a227", "M. BERNARD L.", "A205"], ["10:15", "11:15", "MATHEMATIQUES", "MATHS", "#4f7cff", "Mme PETIT A.", "B204"], ["11:15", "12:15", "ANGLAIS LV1", "AGL1", "#b565d9", "Mme LEFEBVRE J.", "C015"], ["13:30", "15:30", "SCIENCES ECO. & SOCIALES", "SES", "#2bb3a3", "Mme MOREL S.", "B101"]],
+            3: [["08:00", "09:00", "FRANCAIS", "FRANC", "#e07a5f", "M. GIRARD P.", "A112"], ["09:00", "11:00", "MATHEMATIQUES", "MATHS", "#4f7cff", "Mme PETIT A.", "B204"], ["11:00", "12:00", "ENS. MORAL & CIVIQUE", "EMC", "#8d99ae", "M. BERNARD L.", "A205"]],
+            4: [["08:00", "10:00", "PHYSIQUE-CHIMIE", "PH-CH", "#3d9970", "Mme MARTIN C.", "LABO 2"], ["10:15", "12:15", "FRANCAIS", "FRANC", "#e07a5f", "M. GIRARD P.", "A112"], ["13:30", "14:30", "HISTOIRE-GEOGRAPHIE", "HI-GE", "#c9a227", "M. BERNARD L.", "A205"], ["14:30", "16:30", "NUMERIQUE SC. INFORM.", "NSI", "#ef476f", "M. FOURNIER N.", "INFO 1"]],
+            5: [["08:00", "09:00", "ANGLAIS LV1", "AGL1", "#b565d9", "Mme LEFEBVRE J.", "C015"], ["09:00", "10:00", "MATHEMATIQUES", "MATHS", "#4f7cff", "Mme PETIT A.", "B204"], ["10:15", "12:15", "SCIENCES ECO. & SOCIALES", "SES", "#2bb3a3", "Mme MOREL S.", "B101"], ["13:30", "15:30", "NUMERIQUE SC. INFORM.", "NSI", "#ef476f", "M. FOURNIER N.", "INFO 1"]],
+        };
+        const courses = [];
+        for (let day = new Date(startDate); day <= endDate; day = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1)) {
+            const iso = getLocalISODate(day);
+            (weekPattern[day.getDay()] ?? []).forEach(([start, end, matiere, codeMatiere, color, prof, salle], index) => {
+                const seed = day.getDate() + index;
+                courses.push({
+                    id: Number(`${iso.replaceAll("-", "")}${index}`),
+                    text: matiere,
+                    matiere,
+                    codeMatiere,
+                    typeCours: "COURS",
+                    start_date: `${iso} ${start}`,
+                    end_date: `${iso} ${end}`,
+                    color,
+                    prof,
+                    salle,
+                    classe: "Pcpt",
+                    isAnnule: seed % 11 === 0,
+                    isModifie: seed % 13 === 0,
+                    dispense: 0,
+                    devoirAFaire: codeMatiere === "MATHS" || seed % 5 === 0,
+                    contenuDeSeance: seed % 4 === 0,
+                });
+            });
+        }
+        return courses;
+    }
+
     async function fetchTimetable({ startDate, endDate, controller = (new AbortController()) }) {
+        if (accountsListState[activeAccount]?.firstName === "Guest") {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            return buildGuestTimetable(startDate, endDate);
+        }
         abortControllers.current.push(controller);
 
         try {
@@ -1859,6 +1901,22 @@ export default function App({ edpFetch }) {
     }
 
     async function fetchTimetableCoursework({ course, controller = (new AbortController()) }) {
+        if (accountsListState[activeAccount]?.firstName === "Guest") {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            const toBase64 = (html) => btoa(unescape(encodeURIComponent(html)));
+            return [{
+                id: `guest-${course.id}`,
+                subject: course.subject,
+                teacher: course.teacher,
+                isInterrogation: course.codeMatiere === "MATHS",
+                isDone: course.devoirAFaire ? false : null,
+                hasHomework: course.devoirAFaire,
+                homeworkContent: course.devoirAFaire ? toBase64("<p>Exercices 4 et 5 page 112. Relire la leçon avant le cours.</p>") : "",
+                sessionContent: course.contenuDeSeance ? toBase64("<p>Correction du devoir, puis début du chapitre suivant.</p>") : "",
+                files: [],
+                sessionFiles: [],
+            }];
+        }
         abortControllers.current.push(controller);
 
         try {

@@ -33,7 +33,14 @@ including when the authenticated account is a family account.
 
 ## Supported behavior
 
-- Week and three-day views, Monday through Sunday
+- Day, three-day and week views, Monday through Sunday (Day is the default on
+  phones; the Day option is only offered at 650px wide and below)
+- Day view: full-width column with taller courses so subject, time, room and
+  teacher stay readable; swipe left/right on the grid to change day
+- Empty Saturdays/Sundays are skipped in the Day and three-day views once the
+  week is loaded (never hidden when the week is not loaded yet)
+- On phones, Refresh / Export / Print and the cancelled-courses toggle live in
+  a "..." menu to keep the grid high on screen
 - Three-day navigation advances continuously in three-day increments, including across week boundaries
 - Dynamic time range based on the first and last visible events
 - Previous/next week navigation and return to today

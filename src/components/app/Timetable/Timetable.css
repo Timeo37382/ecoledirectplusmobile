@@ -1036,9 +1036,9 @@
         width: 100%;
         grid-template-columns: 40px minmax(0, 1fr) 40px;
     }
-    .view-switch {
-        display: none;
-    }timetable
+    /* (l'ancien `display: none` du selecteur de vue est supprime : il cachait
+       Semaine / 3 jours sur telephone, et un `}timetable` parasite juste
+       apres desactivait la regle .week-title suivante.) */
 
     .week-title {
         width: auto;
@@ -1091,9 +1091,7 @@
         gap: 7px;
     }
     
-    .cancelled-toggle-label {
-        display: none;
-    }
+    /* Libelle "Annules" desormais garde : sans lui l'interrupteur etait muet. */
 
     .timetable-output-actions {
         gap: 5px;
@@ -1156,6 +1154,334 @@
 
     .coursework-files {
         grid-template-columns: 1fr;
+    }
+}
+
+/* - - - Menu "..." (actions secondaires) - - -
+ * Sur ordinateur et tablette les boutons Exporter / Imprimer / Actualiser
+ * restent visibles ; sur telephone ils passent dans ce menu. */
+
+.timetable-more {
+    display: none;
+    position: relative;
+}
+
+.timetable-more-button {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    padding: 0 0 6px;
+    border: 1px solid rgba(var(--border-color-contrast), 0.55);
+    border-radius: 12px;
+    background: rgba(var(--background-color-1), 0.64);
+    color: rgb(var(--text-color-main));
+    font: inherit;
+    font-size: var(--font-size-24);
+    font-weight: var(--font-weight-extra-bold);
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, scale .1s;
+}
+
+.timetable-more-button[aria-expanded="true"],
+.timetable-more-button:is(:hover, :focus-visible) {
+    border-color: rgb(var(--border-color-1));
+    background: rgba(var(--background-color-focus));
+}
+
+.timetable-more-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 20;
+    min-width: 190px;
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+    border: 1px solid rgba(var(--border-color-contrast), 0.45);
+    border-radius: 14px;
+    background: rgb(var(--background-color-1));
+    box-shadow: var(--box-shadow-window);
+    transform-origin: top right;
+    animation: timetable-pop-in 0.3s var(--timing-function-spring-effect) both;
+}
+
+.timetable-more-menu button {
+    min-height: 44px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 10px;
+    background: none;
+    color: rgb(var(--text-color-main));
+    font: inherit;
+    font-size: var(--font-size-15);
+    font-weight: var(--font-weight-semi-bold);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .15s;
+}
+
+.timetable-more-menu button:is(:hover, :focus-visible) {
+    background: rgba(var(--text-color-main), 0.1);
+}
+
+.timetable-more-menu .timetable-more-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timetable-more-check-box {
+    flex: 0 0 20px;
+    height: 20px;
+    display: grid;
+    place-items: center;
+    border: 2px solid rgba(var(--text-color-alt), .6);
+    border-radius: 6px;
+    font-size: var(--font-size-13);
+    transition: background-color .15s, border-color .15s;
+}
+
+.timetable-more-check[aria-checked="true"] .timetable-more-check-box {
+    border-color: transparent;
+    background: rgb(var(--border-color-0));
+    color: white;
+}
+
+.timetable-more-menu button:disabled {
+    opacity: .5;
+    cursor: default;
+}
+
+/* Le bouton de vue "Jour" n'a de sens que sur petit ecran. */
+.view-switch button.day-mode {
+    display: none;
+}
+
+/* - - - Animations de navigation - - -
+ * Meme langage que le reste de l'app : la grille glisse dans le sens de la
+ * navigation, le titre de la periode et les menus surgissent. */
+
+.timetable-grid-canvas.slide-from-right {
+    animation: timetable-slide-from-right 0.4s var(--timing-function-spring-effect) both;
+}
+
+.timetable-grid-canvas.slide-from-left {
+    animation: timetable-slide-from-left 0.4s var(--timing-function-spring-effect) both;
+}
+
+.week-title {
+    animation: timetable-fade-in 0.3s ease both;
+}
+
+.view-switch button,
+.day-selector button,
+.timetable-icon-button,
+.timetable-action-button {
+    transition: background-color .15s, border-color .15s, color .15s, scale .1s;
+}
+
+:is(.view-switch button, .day-selector button, .timetable-icon-button, .timetable-action-button, .timetable-more-button):active:not(:disabled) {
+    scale: .95;
+}
+
+@keyframes timetable-slide-from-right {
+    from {
+        opacity: 0;
+        transform: translateX(28px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes timetable-slide-from-left {
+    from {
+        opacity: 0;
+        transform: translateX(-28px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes timetable-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes timetable-pop-in {
+    from {
+        opacity: 0;
+        scale: 0.85;
+    }
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+/* - - - Telephone - - -
+ * En-tete compact (la grille commencait a 400px du haut) et vue Jour lisible. */
+@media only screen and (max-width: 650px) {
+    .timetable-output-actions {
+        display: none;
+    }
+
+    .timetable-more {
+        display: block;
+    }
+
+    .view-switch button.day-mode {
+        display: block;
+    }
+
+    .timetable-toolbar {
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    /* Ligne 1 : < periode > [Aujourd'hui] */
+    .week-navigation {
+        grid-template-columns: 38px minmax(0, 1fr) 38px auto;
+        gap: 6px;
+    }
+
+    .week-navigation .timetable-action-button.today-button {
+        grid-column: auto;
+        min-height: 38px;
+        padding: 6px 10px;
+        font-size: var(--font-size-13);
+    }
+
+    .week-title {
+        width: auto;
+        min-width: 0;
+        text-align: center;
+    }
+
+    .week-title span {
+        font-size: var(--font-size-12);
+    }
+
+    .week-title strong {
+        font-size: var(--font-size-15);
+    }
+
+    /* Ligne 2 : [Jour | 3 jours | Semaine] (i) [Annules] [...] */
+    .timetable-view-actions {
+        flex-wrap: nowrap;
+        justify-content: space-between;
+        gap: 6px;
+    }
+
+    .view-switch {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .view-switch button {
+        flex: 1;
+        min-height: 34px;
+        padding: 5px 6px;
+        font-size: var(--font-size-13);
+        white-space: nowrap;
+    }
+
+    /* L'interrupteur des cours annules passe dans le menu ... : la ligne
+       ne tenait pas en largeur. */
+    .timetable-view-actions > .cancelled-toggle {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 650px) {
+    /* Vue Jour : une colonne pleine largeur, le cours affiche tout. */
+    .timetable-grid-frame.day .timetable-days-header {
+        display: none;
+    }
+
+    .timetable-grid-frame.day .timetable-course {
+        padding: 8px 10px 8px 14px;
+    }
+
+    .timetable-grid-frame.day .course-title {
+        font-size: var(--font-size-16);
+        white-space: normal;
+        overflow-wrap: anywhere;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .timetable-grid-frame.day .course-time,
+    .timetable-grid-frame.day .course-meta {
+        font-size: var(--font-size-13);
+    }
+
+    /* Meme un cours court garde son horaire a droite du titre. */
+    .timetable-grid-frame.day .timetable-course.compact .course-time,
+    .timetable-grid-frame.day .timetable-course.compact.title-priority .course-time,
+    .timetable-grid-frame.day .timetable-course.compact.has-homework .course-time {
+        display: block;
+        position: static;
+        width: 100%;
+    }
+
+    .timetable-grid-frame.day .timetable-course.compact .course-title {
+        padding-right: 24px;
+        -webkit-line-clamp: 1;
+    }
+
+    .timetable-grid-frame.day .course-homework-alert {
+        width: 22px;
+        height: 22px;
+        top: 8px;
+        right: 8px;
+        transform: none;
+        font-size: var(--font-size-14);
+    }
+
+    .timetable-grid-frame.day .course-title {
+        padding-right: 28px;
+    }
+
+    .timetable-grid-frame.day .course-badge {
+        font-size: var(--font-size-12);
+        padding: 2px 8px;
+    }
+
+    /* Vue 3 jours : colonnes etroites, le titre passe sur deux lignes
+       plutot que d'etre coupe a 4 lettres. */
+    .timetable-grid-frame.three-day .timetable-course:not(.compact) .course-title {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        font-size: var(--font-size-13);
+    }
+
+    /* Grille un peu plus haute : la page defile, pas un cadre interne. */
+    .timetable-grid-frame.day {
+        border-radius: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .timetable-grid-canvas,
+    .week-title,
+    .timetable-more-menu {
+        animation: none !important;
     }
 }
 

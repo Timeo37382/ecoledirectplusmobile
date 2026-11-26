@@ -31,11 +31,28 @@ import { AppContext } from "../../../App";
 
 const WEEK_DAYS = 7;
 const THREE_DAY_WINDOW = 3;
+const SINGLE_DAY_WINDOW = 1;
+const PHONE_MAX_WIDTH = 450;
+const SWIPE_MIN_DISTANCE = 60;
 const DEFAULT_START_MINUTES = 8 * 60;
 const DEFAULT_END_MINUTES = 18 * 60;
 const TIME_OFFSET_MINUTES = 30;
 const TIME_STEP_MINUTES = 30;
 const HOUR_HEIGHT = 56; // TODO: taille dynamique dépendante de la hauteur de l'écran
+// Vue Jour : une seule colonne pleine largeur, on peut se permettre des cours
+// plus hauts pour afficher salle et professeur meme sur un cours d'une heure.
+const DAY_VIEW_HOUR_HEIGHT = 80;
+
+const VIEW_MODES = [
+    { id: "day", label: "Jour", length: SINGLE_DAY_WINDOW },
+    { id: "three-day", label: "3 jours", length: THREE_DAY_WINDOW },
+    { id: "week", label: "Semaine", length: WEEK_DAYS },
+];
+
+function isWeekend(date) {
+    const weekDay = date.getDay();
+    return weekDay === 0 || weekDay === 6;
+}
 const IDLE_COURSEWORK = { status: "idle", items: [], error: "" };
 
 function dateKey(date) {
@@ -130,10 +147,10 @@ function formatDuration(minutes) {
     return `${hours} h ${String(remaining).padStart(2, "0")}`;
 }
 
-function formatPeriodRange(periodStart, dayCount) {
+function formatPeriodRange(periodStart, dayCount, withYear = true) {
     const periodEnd = addDays(periodStart, dayCount - 1);
     const startFormat = isSameMonth(periodStart, periodEnd) ? "d" : "d MMM";
-    return `${format(periodStart, startFormat, { locale: fr })} – ${format(periodEnd, "d MMM yyyy", { locale: fr })}`;
+    return `${format(periodStart, startFormat, { locale: fr })} – ${format(periodEnd, withYear ? "d MMM yyyy" : "d MMM", { locale: fr })}`;
 }
 
 function getGridRange(courses) {
@@ -205,15 +222,15 @@ function exportCalendar(courses, weekStart) {
     URL.revokeObjectURL(url);
 }
 
-function CourseCard({ course, gridStart, gridEnd, onSelect, isStreamerModeEnabled }) {
+function CourseCard({ course, gridStart, gridEnd, onSelect, isStreamerModeEnabled, hourHeight = HOUR_HEIGHT }) {
     const startMinutes = minutesSinceMidnight(course.start);
     const endMinutes = minutesSinceMidnight(course.end);
     const visibleStart = Math.max(startMinutes, gridStart);
     const visibleEnd = Math.min(endMinutes, gridEnd);
     if (visibleStart >= visibleEnd) return null;
 
-    const top = ((visibleStart - gridStart) / 60) * HOUR_HEIGHT;
-    const height = Math.max(((visibleEnd - visibleStart) / 60) * HOUR_HEIGHT - 5, 34);
+    const top = ((visibleStart - gridStart) / 60) * hourHeight;
+    const height = Math.max(((visibleEnd - visibleStart) / 60) * hourHeight - 5, 34);
     const compact = height < 54;
     const prioritizeTitle = compact && course.subject.length > 18;
 
@@ -335,11 +352,12 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
     const currentWeekStart = useMemo(() => startOfWeek(today, { weekStartsOn: 1 }), [today]);
     const [viewMode, setViewMode] = useState(() => {
         const savedView = localStorage.getItem("edp-timetable-view");
-        if (["week", "three-day"].includes(savedView)) return savedView;
+        if (VIEW_MODES.some((mode) => mode.id === savedView)) return savedView;
+        if (window.innerWidth <= PHONE_MAX_WIDTH) return "day";
         return window.innerWidth <= 869 ? "three-day" : "week";
     });
     const [periodStart, setPeriodStart] = useState(() => (
-        viewMode === "three-day" ? currentDayStart : currentWeekStart
+        viewMode === "week" ? currentWeekStart : currentDayStart
     ));
     const [showCancelled, setShowCancelled] = useState(true);
     const [courses, setCourses] = useState([]);
@@ -351,6 +369,11 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
     const [lastUpdated, setLastUpdated] = useState(null);
     const [refreshRequest, setRefreshRequest] = useState(0);
     const [now, setNow] = useState(new Date());
+    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+    // Sens de la derniere navigation, pour l'animation de glissement.
+    const [slideDirection, setSlideDirection] = useState(0);
+    const moreMenuRef = useRef(null);
+    const touchStart = useRef(null);
     const cache = useRef(new Map());
     const courseworkCache = useRef(new Map());
     const courseworkController = useRef(null);
@@ -360,24 +383,48 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
     const { useUserSettings } = useContext(AppContext);
     const settings = useUserSettings();
 
-    const periodLength = viewMode === "three-day" ? THREE_DAY_WINDOW : WEEK_DAYS;
+    const periodLength = VIEW_MODES.find((mode) => mode.id === viewMode)?.length ?? WEEK_DAYS;
+    const hourHeight = viewMode === "day" ? DAY_VIEW_HOUR_HEIGHT : HOUR_HEIGHT;
     const periodEnd = useMemo(() => addDays(periodStart, periodLength - 1), [periodLength, periodStart]);
     const selectorWeekStart = useMemo(() => startOfWeek(periodStart, { weekStartsOn: 1 }), [periodStart]);
     const selectorDays = useMemo(
         () => Array.from({ length: WEEK_DAYS }, (_, index) => addDays(selectorWeekStart, index)),
         [selectorWeekStart],
     );
-    const visibleDays = useMemo(
-        () => viewMode === "three-day"
-            ? Array.from({ length: THREE_DAY_WINDOW }, (_, index) => addDays(periodStart, index))
-            : selectorDays,
-        [periodStart, selectorDays, viewMode],
+    const periodDays = useMemo(
+        () => viewMode === "week"
+            ? selectorDays
+            : Array.from({ length: periodLength }, (_, index) => addDays(periodStart, index)),
+        [periodLength, periodStart, selectorDays, viewMode],
     );
     const fetchStart = useMemo(() => startOfWeek(periodStart, { weekStartsOn: 1 }), [periodStart]);
     const fetchEnd = useMemo(() => (
         addDays(startOfWeek(periodEnd, { weekStartsOn: 1 }), WEEK_DAYS - 1)
     ), [periodEnd]);
     const periodKey = `${activeAccount}-${dateKey(fetchStart)}-${dateKey(fetchEnd)}`;
+
+    // Un jour de week-end est "connu vide" si une semaine chargee le couvre et
+    // n'y contient aucun cours. Semaine pas encore chargee : on ne le saute
+    // pas, pour ne jamais masquer des cours du samedi matin.
+    const isKnownEmptyWeekend = (day) => {
+        if (!isWeekend(day)) return false;
+        const key = dateKey(day);
+        for (const [cacheKey, value] of cache.current) {
+            const match = cacheKey.match(/^(.*)-(\d{4}-\d{2}-\d{2})-(\d{4}-\d{2}-\d{2})$/);
+            if (!match || match[1] !== String(activeAccount)) continue;
+            if (key >= match[2] && key <= match[3]) {
+                return !value.courses.some((course) => isSameDay(course.start, day));
+            }
+        }
+        return false;
+    };
+
+    // Vues Jour et 3 jours : les week-ends vides ne prennent pas de colonne.
+    const visibleDays = useMemo(() => {
+        if (viewMode === "week" || loading) return periodDays;
+        const days = periodDays.filter((day) => !isKnownEmptyWeekend(day));
+        return days.length > 0 ? days : periodDays;
+    }, [periodDays, viewMode, loading, courses]);
     const periodCourses = useMemo(
         () => courses.filter((course) => visibleDays.some((day) => isSameDay(course.start, day))),
         [courses, visibleDays],
@@ -387,7 +434,7 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
         [periodCourses, showCancelled],
     );
     const gridRange = useMemo(() => getGridRange(displayedCourses), [displayedCourses]);
-    const gridHeight = ((gridRange.end - gridRange.start) / 60) * HOUR_HEIGHT;
+    const gridHeight = ((gridRange.end - gridRange.start) / 60) * hourHeight;
     const timeMarkers = useMemo(
         () => Array.from(
             { length: Math.floor((gridRange.end - gridRange.start) / TIME_STEP_MINUTES) + 1 },
@@ -481,18 +528,67 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
     const cancelledCount = periodCourses.filter((course) => course.isCancelled).length;
     const modifiedCount = periodCourses.filter((course) => course.isModified && !course.isCancelled).length;
     const changePeriod = (delta) => {
-        setPeriodStart((date) => (
-            viewMode === "three-day"
-                ? addDays(date, delta * THREE_DAY_WINDOW)
-                : addWeeks(date, delta)
-        ));
+        setSlideDirection(delta);
+        setPeriodStart((date) => {
+            if (viewMode === "week") return addWeeks(date, delta);
+            let next = addDays(date, delta * periodLength);
+            if (viewMode === "day") {
+                // Saute samedi/dimanche quand on sait qu'ils sont vides.
+                for (let guard = 0; guard < 2 && isKnownEmptyWeekend(next); guard++) {
+                    next = addDays(next, delta);
+                }
+            }
+            return next;
+        });
     };
 
     const goToToday = () => {
-        setPeriodStart(viewMode === "three-day" ? currentDayStart : currentWeekStart);
+        setSlideDirection(0);
+        setPeriodStart(viewMode === "week" ? currentWeekStart : currentDayStart);
     };
 
+    const selectDay = (day) => {
+        setSlideDirection(day > periodStart ? 1 : day < periodStart ? -1 : 0);
+        setPeriodStart(day);
+    };
+
+    // Glisser a gauche / a droite sur la grille change de jour (ou de periode).
+    // La vue Semaine defile horizontalement sur telephone : pas de glissement.
+    const handleTouchStart = (event) => {
+        if (viewMode === "week" || event.touches.length !== 1) return;
+        touchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    };
+
+    const handleTouchEnd = (event) => {
+        const start = touchStart.current;
+        touchStart.current = null;
+        if (!start || event.changedTouches.length !== 1) return;
+        const dx = event.changedTouches[0].clientX - start.x;
+        const dy = event.changedTouches[0].clientY - start.y;
+        if (Math.abs(dx) >= SWIPE_MIN_DISTANCE && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            changePeriod(dx < 0 ? 1 : -1);
+        }
+    };
+
+    // Fermeture du menu "..." au clic exterieur ou avec Echap.
+    useEffect(() => {
+        if (!isMoreMenuOpen) return undefined;
+        const handlePointerDown = (event) => {
+            if (!moreMenuRef.current?.contains(event.target)) setIsMoreMenuOpen(false);
+        };
+        const handleKeyDown = (event) => {
+            if (event.key === "Escape") setIsMoreMenuOpen(false);
+        };
+        document.addEventListener("pointerdown", handlePointerDown);
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("pointerdown", handlePointerDown);
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [isMoreMenuOpen]);
+
     const changeViewMode = (nextViewMode) => {
+        setSlideDirection(0);
         setViewMode(nextViewMode);
         setPeriodStart((date) => {
             if (nextViewMode === "week") {
@@ -501,6 +597,15 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
             return isSameWeek(date, today, { weekStartsOn: 1 }) ? currentDayStart : date;
         });
     };
+
+    const periodLabel = viewMode === "day"
+        ? (isSameDay(periodStart, today) ? "Aujourd'hui" : isSameDay(periodStart, addDays(today, 1)) ? "Demain" : isSameDay(periodStart, addDays(today, -1)) ? "Hier" : "Jour")
+        : viewMode === "three-day" ? "3 jours" : `Semaine ${format(periodStart, "w")}`;
+    const periodTitle = viewMode === "day"
+        ? format(periodStart, isSameDay(periodStart, today) || periodStart.getFullYear() === today.getFullYear() ? "EEEE d MMM" : "d MMM yyyy", { locale: fr })
+        : formatPeriodRange(periodStart, periodLength, viewMode === "week" || periodStart.getFullYear() !== today.getFullYear());
+    const previousLabel = viewMode === "day" ? "Jour précédent" : viewMode === "three-day" ? "3 jours précédents" : "Semaine précédente";
+    const nextLabel = viewMode === "day" ? "Jour suivant" : viewMode === "three-day" ? "3 jours suivants" : "Semaine suivante";
 
     const refresh = () => {
         cache.current.delete(periodKey);
@@ -582,19 +687,20 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                 <section className={`timetable-content ${refreshing ? "refreshing" : ""}`} aria-busy={loading || refreshing}>
                                     <div className="timetable-toolbar">
                                         <div className="week-navigation" aria-label="Navigation entre les périodes">
-                                            <button type="button" className="timetable-icon-button" onClick={() => changePeriod(-1)} aria-label={viewMode === "three-day" ? "3 jours précédents" : "Semaine précédente"}>‹</button>
-                                            <div className="week-title">
-                                                <span>{viewMode === "three-day" ? "Période de 3 jours" : `Semaine ${format(periodStart, "w")}`}</span>
-                                                <strong>{formatPeriodRange(periodStart, periodLength)}</strong>
+                                            <button type="button" className="timetable-icon-button" onClick={() => changePeriod(-1)} aria-label={previousLabel}>‹</button>
+                                            <div className="week-title" key={`${viewMode}-${dateKey(periodStart)}`}>
+                                                <span>{periodLabel}</span>
+                                                <strong>{periodTitle}</strong>
                                             </div>
-                                            <button type="button" className="timetable-icon-button" onClick={() => changePeriod(1)} aria-label={viewMode === "three-day" ? "3 jours suivants" : "Semaine suivante"}>›</button>
-                                            <button type="button" className="timetable-action-button" onClick={goToToday} disabled={visibleDays.some((day) => isSameDay(day, today))}>Aujourd'hui</button>
+                                            <button type="button" className="timetable-icon-button" onClick={() => changePeriod(1)} aria-label={nextLabel}>›</button>
+                                            <button type="button" className="timetable-action-button today-button" onClick={goToToday} disabled={periodDays.some((day) => isSameDay(day, today))}>Aujourd'hui</button>
                                         </div>
 
                                         <div className="timetable-view-actions">
                                             <div className="view-switch" role="group" aria-label="Mode d’affichage">
-                                                <button type="button" className={viewMode === "week" ? "selected" : ""} onClick={() => changeViewMode("week")} aria-pressed={viewMode === "week"}>Semaine</button>
-                                                <button type="button" className={viewMode === "three-day" ? "selected" : ""} onClick={() => changeViewMode("three-day")} aria-pressed={viewMode === "three-day"}>3 jours</button>
+                                                {VIEW_MODES.map((mode) => (
+                                                    <button type="button" key={mode.id} className={`${viewMode === mode.id ? "selected" : ""}${mode.id === "day" ? " day-mode" : ""}`} onClick={() => changeViewMode(mode.id)} aria-pressed={viewMode === mode.id}>{mode.label}</button>
+                                                ))}
                                             </div>
                                             <InfoButton className="" options={{
                                                 placement: "bottom"
@@ -622,25 +728,40 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                             <label className="cancelled-toggle">
                                                 <input type="checkbox" checked={showCancelled} onChange={(event) => setShowCancelled(event.target.checked)} aria-label="Afficher les cours annulés" />
                                                 <span aria-hidden="true" />
-                                                <span className="cancelled-toggle-label">Cours annulés</span>
+                                                <span className="cancelled-toggle-label">Annulés</span>
                                             </label>
                                             <div className="timetable-output-actions">
                                                 <button type="button" onClick={() => exportCalendar(displayedCourses, periodStart)}>Exporter .ics</button>
                                                 <button type="button" onClick={() => window.print()}>Imprimer</button>
                                                 <button type="button" className="timetable-action-button" onClick={refresh} disabled={refreshing}>{refreshing ? "Actualisation…" : "Actualiser"}</button>
                                             </div>
+                                            {/* Telephone : les memes actions, rangees dans un menu. */}
+                                            <div className="timetable-more" ref={moreMenuRef}>
+                                                <button type="button" className="timetable-more-button" onClick={() => setIsMoreMenuOpen((old) => !old)} aria-expanded={isMoreMenuOpen} aria-haspopup="menu" aria-label="Plus d'actions">⋯</button>
+                                                {isMoreMenuOpen && (
+                                                    <div className="timetable-more-menu" role="menu">
+                                                        <button type="button" role="menuitemcheckbox" aria-checked={showCancelled} className="timetable-more-check" onClick={() => setShowCancelled((old) => !old)}>
+                                                            <span className="timetable-more-check-box" aria-hidden="true">{showCancelled && "✓"}</span>
+                                                            Afficher les cours annulés
+                                                        </button>
+                                                        <button type="button" role="menuitem" onClick={() => { setIsMoreMenuOpen(false); refresh(); }} disabled={refreshing}>{refreshing ? "Actualisation…" : "Actualiser"}</button>
+                                                        <button type="button" role="menuitem" onClick={() => { setIsMoreMenuOpen(false); exportCalendar(displayedCourses, periodStart); }}>Exporter (.ics)</button>
+                                                        <button type="button" role="menuitem" onClick={() => { setIsMoreMenuOpen(false); window.print(); }}>Imprimer</button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
 
-                                    {viewMode === "three-day" && (
-                                        <div className="day-selector" role="tablist" aria-label="Premier jour de la période affichée">
-                                            {selectorDays.map((day) => (
+                                    {viewMode !== "week" && (
+                                        <div className="day-selector" role="tablist" aria-label={viewMode === "day" ? "Jour affiché" : "Premier jour de la période affichée"}>
+                                            {selectorDays.filter((day) => !isKnownEmptyWeekend(day)).map((day) => (
                                                 <button
                                                     type="button"
                                                     role="tab"
                                                     aria-selected={isSameDay(day, periodStart)}
                                                     className={`${isSameDay(day, periodStart) ? "selected" : ""}${visibleDays.some((visibleDay) => isSameDay(day, visibleDay)) ? " in-range" : ""}${isSameDay(day, today) ? " today" : ""}`}
-                                                    onClick={() => setPeriodStart(day)}
+                                                    onClick={() => selectDay(day)}
                                                     key={dateKey(day)}
                                                 >
                                                     <span>{format(day, "EEE", { locale: fr })}</span>
@@ -667,8 +788,12 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                     )}
 
                                     {!loading && !error && (
-                                        <div className={`timetable-grid-frame ${viewMode}`}>
-                                            <div className="timetable-grid-canvas" style={{ "--visible-days": visibleDays.length }}>
+                                        <div className={`timetable-grid-frame ${viewMode}`} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+                                            <div
+                                                className={`timetable-grid-canvas${slideDirection > 0 ? " slide-from-right" : slideDirection < 0 ? " slide-from-left" : ""}`}
+                                                style={{ "--visible-days": visibleDays.length }}
+                                                key={`${viewMode}-${visibleDays.map(dateKey).join("|")}`}
+                                            >
                                                 <div className="timetable-days-header">
                                                     <div className="time-header" aria-hidden="true">Heure</div>
                                                     {visibleDays.map((day) => (
@@ -681,12 +806,12 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                                 <div className="timetable-grid-body">
                                                     <div className="time-axis" style={{ height: gridHeight }}>
                                                         {timeMarkers.filter((minutes) => minutes > gridRange.start && minutes < gridRange.end && minutes % 60 === 0).map((minutes) => (
-                                                            <span style={{ top: ((minutes - gridRange.start) / 60) * HOUR_HEIGHT }} key={minutes}>{formatMinutes(minutes)}</span>
+                                                            <span style={{ top: ((minutes - gridRange.start) / 60) * hourHeight }} key={minutes}>{formatMinutes(minutes)}</span>
                                                         ))}
                                                     </div>
                                                     <div className="days-columns" style={{ height: gridHeight }}>
                                                         {timeMarkers.map((minutes) => (
-                                                            <span className={`time-grid-line${minutes % 60 === 0 ? " hour" : ""}`} style={{ top: ((minutes - gridRange.start) / 60) * HOUR_HEIGHT }} key={minutes} aria-hidden="true" />
+                                                            <span className={`time-grid-line${minutes % 60 === 0 ? " hour" : ""}`} style={{ top: ((minutes - gridRange.start) / 60) * hourHeight }} key={minutes} aria-hidden="true" />
                                                         ))}
                                                         {visibleDays.map((day) => {
                                                             const dayCourses = displayedCourses.filter((course) => isSameDay(course.start, day));
@@ -694,9 +819,9 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                                             const showNow = isSameDay(day, now) && nowMinutes >= gridRange.start && nowMinutes <= gridRange.end;
                                                             return (
                                                                 <div className={`day-column${isSameDay(day, today) ? " today" : ""}`} key={dateKey(day)}>
-                                                                    {dayCourses.map((course) => <CourseCard course={course} gridStart={gridRange.start} gridEnd={gridRange.end} onSelect={openCourse} key={course.id} isStreamerModeEnabled={settings.get("isStreamerModeEnabled")} />)}
+                                                                    {dayCourses.map((course) => <CourseCard course={course} gridStart={gridRange.start} gridEnd={gridRange.end} onSelect={openCourse} key={course.id} isStreamerModeEnabled={settings.get("isStreamerModeEnabled")} hourHeight={hourHeight} />)}
                                                                     {showNow && (
-                                                                        <span className="current-time-line" style={{ top: ((nowMinutes - gridRange.start) / 60) * HOUR_HEIGHT }} aria-label={`Heure actuelle : ${format(now, "HH:mm")}`}>
+                                                                        <span className="current-time-line" style={{ top: ((nowMinutes - gridRange.start) / 60) * hourHeight }} aria-label={`Heure actuelle : ${format(now, "HH:mm")}`}>
                                                                             <i aria-hidden="true" />
                                                                         </span>
                                                                     )}
