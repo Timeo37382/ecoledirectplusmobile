@@ -288,3 +288,125 @@
         order: -1;
     }
 }
+
+/* - - - Animations - - -
+ * Meme langage que le reste de l'app : apparition des fenetres (go-in,
+ * Window.css), cascade des listes (jump-in, Inbox.css), petits elements qui
+ * surgissent (pop-in), courbe "ressort" --timing-function-spring-effect.
+ * Les modes "equilibre" et "performance" (App.css) mettent deja toutes les
+ * durees a 0 : rien a faire de plus pour eux. */
+
+.message-composer {
+    animation: composer-go-in 0.5s var(--timing-function-spring-effect) both;
+}
+
+/* Cascade des blocs : destinataires, contacts, objet, message, boutons. */
+.message-composer > [style*="--order"] {
+    animation: composer-jump-in 0.5s var(--timing-function-spring-effect) both;
+    animation-delay: calc(80ms + var(--order) * 60ms);
+}
+
+/* Cascade des contacts, rejouee a chaque changement d'onglet (key). */
+.message-composer .composer-picker-results > li {
+    animation: composer-jump-in 0.45s var(--timing-function-spring-effect) both;
+    animation-delay: calc(var(--order, 0) * 40ms);
+}
+
+.message-composer .composer-chip {
+    animation: composer-pop-in 0.35s var(--timing-function-spring-effect) both;
+}
+
+.message-composer .composer-check-mark {
+    display: inline-block;
+    /* App.css colore explicitement chaque element (regle `*`) : pas
+       d'heritage possible depuis la case, on fixe la couleur ici. */
+    color: rgb(var(--background-color-0));
+    animation: composer-pop-in 0.3s var(--timing-function-spring-effect) both;
+}
+
+.message-composer .composer-contact-check {
+    transition: background-color .15s, border-color .15s, scale .15s;
+}
+
+.message-composer .composer-status {
+    animation: composer-jump-in 0.4s var(--timing-function-spring-effect) both;
+}
+
+.message-composer .composer-quote-note {
+    animation: composer-jump-in 0.5s var(--timing-function-spring-effect) both;
+    animation-delay: 320ms;
+}
+
+/* Retours au toucher, comme les autres boutons de l'app. */
+.message-composer :is(.composer-button, .composer-contact, .composer-add-recipient, .composer-picker-tabs button, .composer-chip button) {
+    transition: background-color .15s, border-color .15s, color .15s, scale .1s, filter .1s;
+}
+
+.message-composer :is(.composer-button, .composer-contact, .composer-add-recipient, .composer-picker-tabs button):active:not(:disabled) {
+    scale: .97;
+}
+
+.message-composer .composer-button.primary:is(:hover, :focus-visible):not(:disabled) {
+    filter: brightness(1.15);
+}
+
+.message-composer .composer-button.primary {
+    transition: background-color .25s, scale .1s, filter .1s;
+}
+
+.message-composer .composer-button-label {
+    display: inline-block;
+    color: inherit; /* sinon la regle `*` d'App.css le recolore (theme clair) */
+    animation: composer-pop-in 0.3s var(--timing-function-spring-effect) both;
+}
+
+.message-composer .composer-input {
+    transition: border-color .15s, background-color .15s;
+}
+
+.message-composer .composer-input:focus {
+    background-color: rgba(var(--background-color-0), .6);
+}
+
+@keyframes composer-go-in {
+    from {
+        opacity: 0;
+        scale: 0.85;
+    }
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+@keyframes composer-jump-in {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes composer-pop-in {
+    from {
+        opacity: 0;
+        scale: 0;
+    }
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .message-composer,
+    .message-composer *,
+    .message-composer *::after {
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
+        transition-duration: 0s !important;
+    }
+}

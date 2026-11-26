@@ -19,6 +19,26 @@
     max-height: none;
 }
 
+/* Bascule liste <-> message : la vue qui apparait rejoue l'animation
+   d'apparition des fenetres (go-in, Window.css). display:none -> visible
+   suffit a relancer l'animation. */
+#messaging.stacked.show-inbox .window.inbox-window,
+#messaging.stacked.show-reader .window.message-content {
+    animation: go-in 0.45s var(--timing-function-spring-effect) both;
+}
+
+.compose-message-button,
+.reply-button,
+.message-back-button {
+    transition: filter .1s, background-color .15s, scale .1s;
+}
+
+.compose-message-button:active,
+.reply-button:active,
+.message-back-button:active {
+    scale: .97;
+}
+
 #messaging.stacked .window.message-content {
     min-height: 0;
 }

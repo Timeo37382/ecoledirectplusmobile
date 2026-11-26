@@ -159,7 +159,7 @@ export default function MessageComposer({ draft, allowedKinds, fetchMessageConta
 
     return (
         <form className="message-composer" onSubmit={(event) => { event.preventDefault(); submit(false); }}>
-            <div className="composer-field composer-recipients">
+            <div className="composer-field composer-recipients" style={{ "--order": 0 }}>
                 <span className="composer-label">À</span>
                 <div className="composer-recipient-list">
                     {recipients.map((recipient) => (
@@ -177,7 +177,7 @@ export default function MessageComposer({ draft, allowedKinds, fetchMessageConta
             </div>
 
             {isPickerOpen && (
-                <div className="composer-picker">
+                <div className="composer-picker" style={{ "--order": 1 }}>
                     {allowedKinds.length > 1 && (
                         <div className="composer-picker-tabs" role="tablist">
                             {allowedKinds.map((kind) => (
@@ -194,20 +194,20 @@ export default function MessageComposer({ draft, allowedKinds, fetchMessageConta
                         value={search}
                         onChange={(event) => setSearch(event.target.value)}
                     />
-                    <ul className="composer-picker-results">
+                    <ul className="composer-picker-results" key={activeKind /* rejoue la cascade a chaque onglet */}>
                         {contactsError
                             ? <li className="composer-picker-info error">{contactsError}</li>
                             : contacts[activeKind] === undefined
                                 ? <li className="composer-picker-info">Chargement des contacts…</li>
                                 : filteredContacts.length === 0
                                     ? <li className="composer-picker-info">Aucun contact trouvé.</li>
-                                    : filteredContacts.map((contact) => {
+                                    : filteredContacts.map((contact, index) => {
                                         const type = contact.type ?? CONTACT_KINDS[activeKind].type;
                                         const selected = isSelected(contact, type);
                                         return (
-                                            <li key={`${type}-${contact.id}`}>
+                                            <li key={`${type}-${contact.id}`} style={{ "--order": Math.min(index, 12) }}>
                                                 <button type="button" className={"composer-contact" + (selected ? " selected" : "")} onClick={() => toggleRecipient(contact)} aria-pressed={selected}>
-                                                    <span className="composer-contact-check" aria-hidden="true">{selected ? "✓" : ""}</span>
+                                                    <span className="composer-contact-check" aria-hidden="true">{selected && <span className="composer-check-mark">✓</span>}</span>
                                                     <span className="composer-contact-text">
                                                         <span className="composer-contact-name">{contactName(contact)}{contact.isPP ? " · prof. principal" : ""}</span>
                                                         {contactDetail(contact) && <span className="composer-contact-detail">{contactDetail(contact)}</span>}
@@ -220,7 +220,7 @@ export default function MessageComposer({ draft, allowedKinds, fetchMessageConta
                 </div>
             )}
 
-            <label className="composer-field">
+            <label className="composer-field" style={{ "--order": 2 }}>
                 <span className="composer-label">Objet</span>
                 <input
                     type="text"
@@ -232,7 +232,7 @@ export default function MessageComposer({ draft, allowedKinds, fetchMessageConta
                 />
             </label>
 
-            <label className="composer-field composer-body-field">
+            <label className="composer-field composer-body-field" style={{ "--order": 3 }}>
                 <span className="composer-label">Message</span>
                 <textarea
                     className="composer-input composer-body"
@@ -246,11 +246,14 @@ export default function MessageComposer({ draft, allowedKinds, fetchMessageConta
 
             {draft.quotedHTML && <p className="composer-quote-note">Le message d'origine sera cité sous votre réponse.</p>}
 
-            <div className="composer-actions">
+            <div className="composer-actions" style={{ "--order": 4 }}>
                 <button type="button" className="composer-button secondary" onClick={onClose} disabled={isBusy}>Annuler</button>
                 <button type="button" className="composer-button secondary" onClick={() => submit(true)} disabled={isBusy}>Brouillon</button>
                 <button type="submit" className={"composer-button primary" + (status.state === "confirm" ? " confirm" : "")} disabled={isBusy}>
-                    {isBusy ? "Envoi…" : status.state === "confirm" ? "Confirmer l'envoi" : "Envoyer"}
+                    {/* key : le libelle rejoue son animation a chaque changement d'etat */}
+                    <span className="composer-button-label" key={status.state === "confirm" ? "confirm" : isBusy ? "busy" : "idle"}>
+                        {isBusy ? "Envoi…" : status.state === "confirm" ? "Confirmer l'envoi" : "Envoyer"}
+                    </span>
                 </button>
             </div>
 
