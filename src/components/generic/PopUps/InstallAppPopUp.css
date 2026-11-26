@@ -1,0 +1,242 @@
+/* - - - Pop-up "Ajouter a l'ecran d'accueil" (telephone, avant connexion) - - -
+ * Carte qui monte du bas de l'ecran, comme les BottomSheet de l'app, avec les
+ * memes courbes et cascades. */
+
+.install-popup-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: rgba(0, 0, 0, 0.45);
+    animation: install-popup-fade-in 0.35s ease both;
+}
+
+.install-popup-backdrop.closing {
+    animation: install-popup-fade-out 0.3s ease both;
+}
+
+.install-popup {
+    width: 100%;
+    max-width: 460px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: 20px 18px 14px;
+    border: 1px solid rgba(var(--text-color-main), 0.08);
+    border-radius: 22px;
+    background: rgb(var(--background-color-1));
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    animation: install-popup-slide-in 0.55s var(--timing-function-spring-effect) both;
+}
+
+.install-popup.closing {
+    animation: install-popup-slide-out 0.3s ease-in both;
+}
+
+.install-popup-close {
+    width: 36px;
+    height: 36px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background: rgba(var(--text-color-main), 0.08);
+    color: rgb(var(--text-color-alt));
+    font-size: var(--font-size-16);
+    font-weight: var(--font-weight-extra-bold);
+    cursor: pointer;
+    transition: background-color .15s, scale .1s;
+}
+
+.install-popup-close:is(:hover, :focus-visible) {
+    background: rgba(var(--text-color-main), 0.16);
+}
+
+.install-popup-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding-right: 34px;
+}
+
+.install-popup-icon {
+    flex: 0 0 58px;
+    width: 58px;
+    height: 58px;
+    border-radius: 15px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    animation: install-popup-pop-in 0.5s var(--timing-function-spring-effect) 0.2s backwards;
+}
+
+.install-popup-header h2 {
+    font-size: var(--font-size-18);
+    font-weight: var(--font-weight-extra-bold);
+    line-height: 1.2;
+}
+
+.install-popup-header p {
+    margin-top: 4px;
+    font-size: var(--font-size-14);
+    line-height: 1.35;
+    color: rgb(var(--text-color-alt));
+}
+
+.install-popup-primary {
+    min-height: 50px;
+    border: none;
+    border-radius: 14px;
+    background: rgb(var(--border-color-0));
+    color: white;
+    font: inherit;
+    font-size: var(--font-size-16);
+    font-weight: var(--font-weight-extra-bold);
+    cursor: pointer;
+    transition: filter .1s, scale .1s;
+    animation: install-popup-drop-in 0.45s var(--timing-function-spring-effect) 0.25s backwards;
+}
+
+.install-popup-primary:is(:hover, :focus-visible) {
+    filter: brightness(1.12);
+}
+
+.install-popup-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.install-popup-steps li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: rgba(var(--background-color-0), 0.45);
+    font-size: var(--font-size-15);
+    line-height: 1.35;
+    animation: install-popup-drop-in 0.45s var(--timing-function-spring-effect) backwards;
+    animation-delay: calc(0.25s + var(--order, 0) * 0.08s);
+}
+
+.install-step-number {
+    flex: 0 0 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgb(var(--border-color-0));
+    color: white;
+    font-size: var(--font-size-13);
+    font-weight: var(--font-weight-extra-bold);
+}
+
+.install-step-text strong {
+    font-weight: var(--font-weight-extra-bold);
+}
+
+.install-step-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    vertical-align: -4px;
+    margin-inline: 2px;
+    color: #4f8dff;
+}
+
+.install-popup-hint {
+    font-size: var(--font-size-13);
+    color: rgb(var(--text-color-alt));
+}
+
+.install-popup-secondary {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.install-popup-secondary button {
+    flex: 1;
+    min-height: 42px;
+    border: 1px solid rgba(var(--text-color-alt), 0.35);
+    border-radius: 12px;
+    background: none;
+    color: rgb(var(--text-color-main));
+    font: inherit;
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-semi-bold);
+    cursor: pointer;
+    transition: background-color .15s, scale .1s;
+}
+
+.install-popup-secondary button:is(:hover, :focus-visible) {
+    background: rgba(var(--text-color-main), 0.06);
+}
+
+:is(.install-popup-close, .install-popup-primary, .install-popup-secondary button):active {
+    scale: .96;
+}
+
+/* iPhone + Safari : petite fleche vers le bouton Partager de la barre du bas. */
+.install-popup-arrow {
+    width: 18px;
+    height: 18px;
+    position: absolute;
+    bottom: -9px;
+    left: 50%;
+    translate: -50% 0;
+    rotate: 45deg;
+    border-right: 1px solid rgba(var(--text-color-main), 0.08);
+    border-bottom: 1px solid rgba(var(--text-color-main), 0.08);
+    background: rgb(var(--background-color-1));
+    animation: install-popup-bounce 1.4s ease-in-out 1s infinite;
+}
+
+@keyframes install-popup-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes install-popup-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes install-popup-slide-in {
+    from { opacity: 0; translate: 0 60px; scale: 0.94; }
+    to { opacity: 1; translate: 0 0; scale: 1; }
+}
+
+@keyframes install-popup-slide-out {
+    from { opacity: 1; translate: 0 0; }
+    to { opacity: 0; translate: 0 60px; }
+}
+
+@keyframes install-popup-drop-in {
+    from { opacity: 0; translate: 0 -10px; }
+    to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes install-popup-pop-in {
+    from { opacity: 0; scale: 0.5; }
+    to { opacity: 1; scale: 1; }
+}
+
+@keyframes install-popup-bounce {
+    0%, 100% { translate: -50% 0; }
+    50% { translate: -50% 5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .install-popup-backdrop,
+    .install-popup-backdrop * {
+        animation: none !important;
+    }
+}

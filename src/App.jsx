@@ -306,8 +306,20 @@ function initData(length) {
 export const AppContext = createContext(null);
 
 let promptInstallPWA = () => { };
-window.addEventListener("beforeinstallprompt", (event) => { event.preventDefault(); promptInstallPWA = () => event.prompt() });
-window.addEventListener("appinstalled", () => { promptInstallPWA = null });
+// L'evenement d'installation (Chrome / Edge / Samsung sur Android) peut
+// arriver apres l'affichage de la page : on le garde sur window et on le
+// signale, pour que la pop-up d'installation (InstallAppPopUp) le recupere.
+window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    promptInstallPWA = () => event.prompt();
+    window.__edpInstallPrompt = event;
+    window.dispatchEvent(new Event("edp-install-available"));
+});
+window.addEventListener("appinstalled", () => {
+    promptInstallPWA = null;
+    window.__edpInstallPrompt = null;
+    window.dispatchEvent(new Event("edp-app-installed"));
+});
 
 export default function App({ edpFetch }) {
     // global account data
