@@ -1,4 +1,8 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+
+import { AppContext } from "../../../App";
+import BottomSheet from "../../generic/PopUps/BottomSheet";
 
 import StreakScore from "./StreakScore";
 import Information from "./Information";
@@ -16,6 +20,11 @@ import DOMSimulation from "./GradeSimulation";
 
 export default function Grades({ grades, fetchUserGrades, activeAccount, isLoggedIn, useUserData, sortGrades, isTabletLayout }) {
     const userData = useUserData();
+    // Disposition empilee (<= 869px, telephone et tablette) : meme seuil que
+    // l'empilement des fenetres dans Window.css.
+    const { isTabletLayout: isMobileLayout } = useContext(AppContext);
+    const location = useLocation();
+    const navigate = useNavigate();
 
     const [selectedDisplayType, setSelectedDisplayType] = useState("Évaluations");
     const [selectedPeriod, setSelectedPeriod] = useState(userData.get("activePeriod"));
@@ -51,15 +60,24 @@ export default function Grades({ grades, fetchUserGrades, activeAccount, isLogge
         }
     }, [grades, isLoggedIn, activeAccount]);
 
+    // Sur telephone, toucher une note remplissait le bloc "Informations" place
+    // tout en haut de la page, hors de l'ecran : il ne se passait rien de
+    // visible. On l'ouvre donc dans un panneau du bas des qu'une note est
+    // selectionnee (l'ancre #<id> est posee par Grade.jsx).
+    const isGradeSelected = !isNaN(parseInt(location.hash.slice(1)));
+
+    const streakWindow = <StreakScore key="streak" streakScore={(sortedGrades && sortedGrades[selectedPeriod]?.streak) ?? 0} streakHighScore={(sortedGrades && sortedGrades[selectedPeriod]?.maxStreak) ?? 0} />;
+    const strengthsWindow = <Strengths key="strengths" sortedGrades={sortedGrades} activeAccount={activeAccount} selectedPeriod={selectedPeriod} />;
+
     // JSX
     return (
-        <div id="grades">
+        <div id="grades" className={isMobileLayout ? "mobile-grades" : ""}>
             <WindowsContainer name="grades">
                 <WindowsLayout direction="row" ultimateContainer={true}>
                     <WindowsLayout direction="column">
-                        <StreakScore streakScore={(sortedGrades && sortedGrades[selectedPeriod]?.streak) ?? 0} streakHighScore={(sortedGrades && sortedGrades[selectedPeriod]?.maxStreak) ?? 0} />
-                        <Information sortedGrades={sortedGrades} activeAccount={activeAccount} selectedPeriod={selectedPeriod} />
-                        <Strengths sortedGrades={sortedGrades} activeAccount={activeAccount} selectedPeriod={selectedPeriod} />
+                        {streakWindow}
+                        {!isMobileLayout && <Information sortedGrades={sortedGrades} activeAccount={activeAccount} selectedPeriod={selectedPeriod} />}
+                        {strengthsWindow}
                     </WindowsLayout>
                     <WindowsLayout growthFactor={2}>
                         <DOMSimulation>
@@ -82,6 +100,16 @@ export default function Grades({ grades, fetchUserGrades, activeAccount, isLogge
                         </DOMSimulation>
                     </WindowsLayout>
                 </WindowsLayout>
+                {isMobileLayout && isGradeSelected && (
+                    <BottomSheet
+                        className="grade-details-sheet"
+                        heading="Détails de la note"
+                        firstResizingBreakpoint={1}
+                        onClose={() => navigate("#", { replace: true })}
+                    >
+                        <Information sortedGrades={sortedGrades} activeAccount={activeAccount} selectedPeriod={selectedPeriod} />
+                    </BottomSheet>
+                )}
             </WindowsContainer>
         </div>
     )

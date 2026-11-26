@@ -1,0 +1,138 @@
+{
+  "code": 200,
+  "data": {
+    "classeurs": [],
+    "messages": {
+      "received": [
+        {
+          "id": 9001,
+          "subject": "Sortie pédagogique au musée des Sciences",
+          "from": {
+            "civilite": "Mme",
+            "nom": "MARTIN",
+            "prenom": "Claire",
+            "id": 101,
+            "role": "P",
+            "particule": ""
+          },
+          "date": "2026-11-24 17:42:00",
+          "read": false,
+          "files": [
+            {
+              "id": 501,
+              "type": "PIECE_JOINTE",
+              "libelle": "autorisation_sortie.pdf"
+            }
+          ],
+          "idClasseur": 0
+        },
+        {
+          "id": 9002,
+          "subject": "Conseil de classe du 1er trimestre",
+          "from": {
+            "civilite": "M.",
+            "nom": "BERNARD",
+            "prenom": "Luc",
+            "id": 102,
+            "role": "P",
+            "particule": ""
+          },
+          "date": "2026-11-21 09:05:00",
+          "read": true,
+          "files": [],
+          "idClasseur": 0
+        },
+        {
+          "id": 9003,
+          "subject": "Rappel : DM de mathématiques",
+          "from": {
+            "civilite": "Mme",
+            "nom": "PETIT",
+            "prenom": "Anne",
+            "id": 103,
+            "role": "P",
+            "particule": ""
+          },
+          "date": "2026-11-18 18:20:00",
+          "read": true,
+          "files": [],
+          "idClasseur": 0
+        },
+        {
+          "id": 9004,
+          "subject": "Inscriptions à l’association sportive",
+          "from": {
+            "civilite": "M.",
+            "nom": "ROUX",
+            "prenom": "Thomas",
+            "id": 104,
+            "role": "P",
+            "particule": ""
+          },
+          "date": "2026-11-12 12:00:00",
+          "read": false,
+          "files": [
+            {
+              "id": 502,
+              "type": "PIECE_JOINTE",
+              "libelle": "fiche_inscription_AS.pdf"
+            },
+            {
+              "id": 503,
+              "type": "PIECE_JOINTE",
+              "libelle": "planning_AS.pdf"
+            }
+          ],
+          "idClasseur": 0
+        }
+      ]
+    }
+  },
+  "contents": {
+    "9001": {
+      "id": 9001,
+      "subject": "Sortie pédagogique au musée des Sciences",
+      "date": "2026-11-24 17:42:00",
+      "content": "PHA+Qm9uam91ciDDoCB0b3VzLDwvcD48cD5MYSBjbGFzc2Ugc2UgcmVuZHJhIGF1IDxiPm11c8OpZSBkZXMgU2NpZW5jZXM8L2I+IGxlIGpldWRpIDQgZMOpY2VtYnJlLiBMZSBkw6lwYXJ0IGVzdCBwcsOpdnUgw6AgOGgxNSBkZXZhbnQgbGUgbHljw6llLCByZXRvdXIgdmVycyAxNmgzMC48L3A+PHA+TWVyY2kgZGUgcmFwcG9ydGVyIGwmIzM5O2F1dG9yaXNhdGlvbiBkZSBzb3J0aWUgc2lnbsOpZSAoZW4gcGnDqGNlIGpvaW50ZSkgYXZhbnQgbGUgbHVuZGkgMWVyIGTDqWNlbWJyZS48L3A+PHA+QmllbiBjb3JkaWFsZW1lbnQsPGJyPk1tZSBNYXJ0aW48L3A+",
+      "files": [
+        {
+          "id": 501,
+          "type": "PIECE_JOINTE",
+          "libelle": "autorisation_sortie.pdf"
+        }
+      ]
+    },
+    "9002": {
+      "id": 9002,
+      "subject": "Conseil de classe du 1er trimestre",
+      "date": "2026-11-21 09:05:00",
+      "content": "PHA+Qm9uam91ciw8L3A+PHA+TGUgY29uc2VpbCBkZSBjbGFzc2UgZHUgcHJlbWllciB0cmltZXN0cmUgYXVyYSBsaWV1IGxlIDxiPm1hcmRpIDkgZMOpY2VtYnJlIMOgIDE3aDMwPC9iPiBlbiBzYWxsZSAyMDcuPC9wPjxwPkxlcyBkw6lsw6lndcOpcyBzb250IGludml0w6lzIMOgIHJlY3VlaWxsaXIgbGVzIHJlbWFycXVlcyBkZSBsZXVycyBjYW1hcmFkZXMgZCYjMzk7aWNpIGzDoC48L3A+PHA+TS4gQmVybmFyZCwgcHJvZmVzc2V1ciBwcmluY2lwYWw8L3A+",
+      "files": []
+    },
+    "9003": {
+      "id": 9003,
+      "subject": "Rappel : DM de mathématiques",
+      "date": "2026-11-18 18:20:00",
+      "content": "PHA+Qm9uam91ciw8L3A+PHA+SmUgdm91cyByYXBwZWxsZSBxdWUgbGUgZGV2b2lyIG1haXNvbiBuwrAzIGVzdCDDoCByZW5kcmUgPGI+dmVuZHJlZGk8L2I+LiBMZXMgZXhlcmNpY2VzIDQgZXQgNSBzb250IGZhY3VsdGF0aWZzIG1haXMgdml2ZW1lbnQgY29uc2VpbGzDqXMgcG91ciBwcsOpcGFyZXIgbGUgY29udHLDtGxlLjwvcD48cD5Cb24gY291cmFnZSAhPC9wPg==",
+      "files": []
+    },
+    "9004": {
+      "id": 9004,
+      "subject": "Inscriptions à l’association sportive",
+      "date": "2026-11-12 12:00:00",
+      "content": "PHA+Qm9uam91ciDDoCB0b3V0ZXMgZXQgw6AgdG91cyw8L3A+PHA+TGVzIGluc2NyaXB0aW9ucyDDoCBsJiMzOTthc3NvY2lhdGlvbiBzcG9ydGl2ZSBzb250IG91dmVydGVzIGp1c3F1JiMzOTthdSAzMCBub3ZlbWJyZS4gQXUgcHJvZ3JhbW1lIGNldHRlIGFubsOpZSA6IGJhZG1pbnRvbiwgZXNjYWxhZGUsIGhhbmRiYWxsIGV0IGNvdXJzZSBkJiMzOTtvcmllbnRhdGlvbi48L3A+PHA+RmljaGUgZCYjMzk7aW5zY3JpcHRpb24gZXQgcGxhbm5pbmcgZW4gcGnDqGNlcyBqb2ludGVzLjwvcD48cD5TcG9ydGl2ZW1lbnQsPGJyPk0uIFJvdXg8L3A+",
+      "files": [
+        {
+          "id": 502,
+          "type": "PIECE_JOINTE",
+          "libelle": "fiche_inscription_AS.pdf"
+        },
+        {
+          "id": 503,
+          "type": "PIECE_JOINTE",
+          "libelle": "planning_AS.pdf"
+        }
+      ]
+    }
+  }
+}

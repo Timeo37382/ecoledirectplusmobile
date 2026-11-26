@@ -4,6 +4,43 @@
     min-height: 100%;
 }
 
+/* - - - Telephone - - -
+ * Les notes sont la raison d'etre de la page : on les remonte en tete, devant
+ * le score de streak et les points forts. Sur tablette et plus, la disposition
+ * en colonnes reste inchangee. */
+/* !important : Window.jsx pose un `order` en style inline sur chaque fenetre
+   (rearrangement par glisser-deposer, inactif sur telephone). */
+/* Ordre sur telephone : notes, puis points forts/faibles, puis streak en bas. */
+div#grades.mobile-grades .results-container {
+    order: -1 !important;
+}
+
+div#grades.mobile-grades .window.strengths {
+    order: 0 !important;
+}
+
+div#grades.mobile-grades .window.streak-score {
+    order: 1 !important;
+}
+
+/* Le detail d'une note s'ouvre dans un BottomSheet (voir Grades.jsx). Le bloc
+   "Informations" y est rendu tel quel : on retire son habillage de fenetre,
+   le BottomSheet fournit deja le titre, la poignee et la croix. */
+.grade-details-sheet .window.information {
+    background: none;
+    box-shadow: none;
+    border: none;
+    min-height: 0;
+}
+
+.grade-details-sheet .window.information > .window-header {
+    display: none;
+}
+
+.grade-details-sheet .window.information > .window-content {
+    padding: 0 0 calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
 /* Results header */
 
 #grades .results-header {

@@ -1,0 +1,122 @@
+{
+  "professeurs": [
+    {
+      "id": 101,
+      "civilite": "Mme",
+      "prenom": "Claire",
+      "nom": "MARTIN",
+      "particule": "",
+      "type": "P",
+      "isPP": false,
+      "classes": [
+        {
+          "id": 1,
+          "libelle": "Pcpt",
+          "matiere": "SCIENCES"
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "civilite": "M.",
+      "prenom": "Luc",
+      "nom": "BERNARD",
+      "particule": "",
+      "type": "P",
+      "isPP": true,
+      "classes": [
+        {
+          "id": 1,
+          "libelle": "Pcpt",
+          "matiere": "HISTOIRE-GEOGRAPHIE"
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "civilite": "Mme",
+      "prenom": "Anne",
+      "nom": "PETIT",
+      "particule": "",
+      "type": "P",
+      "isPP": false,
+      "classes": [
+        {
+          "id": 1,
+          "libelle": "Pcpt",
+          "matiere": "MATHEMATIQUES"
+        }
+      ]
+    },
+    {
+      "id": 104,
+      "civilite": "M.",
+      "prenom": "Thomas",
+      "nom": "ROUX",
+      "particule": "",
+      "type": "P",
+      "isPP": false,
+      "classes": [
+        {
+          "id": 1,
+          "libelle": "Pcpt",
+          "matiere": "ED. PHYSIQUE & SPORT."
+        }
+      ]
+    },
+    {
+      "id": 105,
+      "civilite": "Mme",
+      "prenom": "Julie",
+      "nom": "LEFEBVRE",
+      "particule": "",
+      "type": "P",
+      "isPP": false,
+      "classes": [
+        {
+          "id": 1,
+          "libelle": "Pcpt",
+          "matiere": "ANGLAIS LV1"
+        }
+      ]
+    }
+  ],
+  "personnels": [
+    {
+      "id": 201,
+      "civilite": "M.",
+      "prenom": "Paul",
+      "nom": "GIRARD",
+      "particule": "",
+      "type": "A",
+      "fonction": {
+        "id": 1,
+        "libelle": "CPE"
+      }
+    },
+    {
+      "id": 202,
+      "civilite": "Mme",
+      "prenom": "Sophie",
+      "nom": "MOREL",
+      "particule": "",
+      "type": "A",
+      "fonction": {
+        "id": 2,
+        "libelle": "Vie scolaire"
+      }
+    },
+    {
+      "id": 203,
+      "civilite": "Mme",
+      "prenom": "Nadia",
+      "nom": "FOURNIER",
+      "particule": "",
+      "type": "A",
+      "fonction": {
+        "id": 3,
+        "libelle": "Infirmière"
+      }
+    }
+  ]
+}

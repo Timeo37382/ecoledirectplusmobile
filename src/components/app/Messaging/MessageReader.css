@@ -123,6 +123,94 @@
     }
 }
 
+/* Disposition empilee : le message prend la hauteur de son contenu (la page
+   defile, pas un cadre interne), les pieces jointes deviennent des lignes
+   compactes au lieu de grandes tuiles, et les actions sont plus faciles a
+   toucher. */
+@media (max-width: 869px) {
+    #message-reader,
+    #message-reader .message-container,
+    #message-reader .message-content-container {
+        height: auto;
+    }
+
+    #message-reader .email-header {
+        gap: 4px;
+        padding: 14px 14px 10px;
+    }
+
+    #message-reader .email-header h3 {
+        text-align: left;
+        font-size: var(--font-size-20);
+    }
+
+    #message-reader .email-header .send-date {
+        text-align: left;
+        font-size: var(--font-size-14);
+    }
+
+    #message-reader .message-content {
+        padding: 16px 14px;
+    }
+
+    #message-reader .email-footer {
+        height: auto;
+        flex-direction: column;
+        gap: 6px;
+        padding-bottom: 10px;
+    }
+
+    #message-reader .scroll-footer-div {
+        flex: none;
+    }
+
+    /* `.email-footer` en plus : ce bloc precede les regles de base dans le
+       fichier, il lui faut une specificite superieure pour l'emporter. */
+    #message-reader .email-footer .attachments-container {
+        width: 100%;
+        height: auto;
+        flex-flow: column nowrap;
+        gap: 8px;
+        padding: 12px 14px 4px;
+        overflow-x: visible;
+        white-space: normal;
+    }
+
+    #message-reader .email-footer .attachments-container li {
+        margin-right: 0;
+        min-width: 0;
+    }
+
+    #message-reader .email-footer .attachments-container .attachment {
+        width: 100%;
+        min-height: 46px;
+        padding: 8px 14px;
+        gap: 12px;
+        text-align: left;
+        overflow-wrap: anywhere;
+    }
+
+    #message-reader .email-footer .attachments-container .attachment .download-icon {
+        flex: 0 0 20px;
+    }
+
+    #message-reader .no-attatchemnts-messages {
+        justify-content: flex-start;
+    }
+
+    #message-reader .actions-container {
+        margin: 0;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    #message-reader .action-button-main,
+    #message-reader .action-button {
+        width: 46px;
+        height: 46px;
+    }
+}
+
 #message-reader .attachments-container {
     list-style-type: none;
     height: 100%;

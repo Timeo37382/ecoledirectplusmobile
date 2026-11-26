@@ -5,7 +5,7 @@ import {
     RouterProvider
 } from "react-router-dom";
 
-import { getISODate, sendToWebhook } from "./utils/utils";
+import { getISODate, sendToWebhook, removeAccents } from "./utils/utils";
 
 import "./App.css";
 
@@ -1477,7 +1477,8 @@ export default function App({ edpFetch }) {
                 email: "ecole.directe.plus@gmail.com",
                 picture: "https://i.ibb.co/GC5f9RL/IMG-1124.jpg",
                 schoolName: "École de la République",
-                class: ["Pcpt", "Précepteur d'exception"]
+                class: ["Pcpt", "Précepteur d'exception"],
+                classId: 1
             },
         ];
         resetUserData()
@@ -1485,6 +1486,17 @@ export default function App({ edpFetch }) {
     }
 
     function handleEdBan() {
+        // En mode proxy (iPhone, navigateur sans extension), l'extension n'est
+        // pas attendue : reclamer son installation serait faux et inquietant.
+        // Un echec ici est un probleme reseau ou cote EcoleDirecte.
+        if (isProxyTransport()) {
+            createNotification(<>
+                <h4>Connexion à EcoleDirecte impossible</h4>
+                <hr />
+                <p>Le serveur n'a pas répondu. Vérifiez votre connexion puis réessayez dans un instant.</p>
+            </>, { customClass: "extension-warning", timer: 8000 })
+            return;
+        }
         // Will summon a notification with JSX in it
         createNotification(<>
             <h4>
@@ -1644,6 +1656,7 @@ export default function App({ edpFetch }) {
                         picture: accounts.profile.photo, // url de la photo
                         schoolName: accounts.profile.nomEtablissement, // nom de l'établissement
                         class: (accounts.profile.classe ? [accounts.profile.classe.code, accounts.profile.classe.libelle] : ["inconnu", "inconnu"]), // classe de l'élève, code : 1G4, libelle : Première G4
+                        classId: accounts.profile.classe?.id, // requis pour chercher les professeurs dans la messagerie
                         modules: accounts.modules
                     });
                 } else {
@@ -1661,6 +1674,7 @@ export default function App({ edpFetch }) {
                             picture: account.photo,
                             schoolName: account.nomEtablissement,
                             class: (account.classe ? [account.classe.code, account.classe.libelle] : ["inconnu", "inconnu"]), // classe de l'élève, code : 1G4, libelle : Première G4
+                            classId: account.classe?.id, // requis pour chercher les professeurs dans la messagerie
                             modules: account.modules.concat(accounts.modules) // merge modules with those of parents
                         })
                     });
@@ -2216,10 +2230,16 @@ export default function App({ edpFetch }) {
                     // token invalide
                     requireLogin();
                 } else if (code === 49969) {
-                    // TODO: add data/messages.json for guest user
-                    // import("./data/messages.json").then((module) => {
-                    //     changeUserData("sortedMessages", sortMessages(module.data));;
-                    // })
+                    // Compte invite : messages fictifs de src/data/messages.json,
+                    // uniquement dans la boite de reception.
+                    import("./data/messages.json").then((module) => {
+                        const guestMessages = specialFolderType === "received" ? sortMessages(module.data, "received") : [];
+                        const oldSortedMessages = useUserData("sortedMessages").get() ?? [];
+                        const merged = oldSortedMessages.concat(guestMessages).filter((item, index, self) => self.findIndex((item2) => item2.id === item.id) === index);
+                        const guestFolderId = { sent: -1, archived: -2, draft: -4 }[specialFolderType] ?? folderId;
+                        changeUserData("sortedMessages", merged);
+                        changeUserData("messageFolders", sortMessageFolders(module.data, guestFolderId));
+                    })
                 }
                 setTokenState((old) => (response?.token || old));
             })
@@ -2271,10 +2291,9 @@ export default function App({ edpFetch }) {
                     // token invalide
                     requireLogin();
                 } else if (code === 49969) {
-                    // TODO: add data/messages.json for guest user
-                    // import("./data/messages.json").then((module) => {
-                    //      sortMessageContent(module.data)
-                    // })
+                    import("./data/messages.json").then((module) => {
+                        sortMessageContent(module.contents[id]);
+                    })
                 }
                 setTokenState((old) => (response?.token || old));
             })
@@ -2751,6 +2770,149 @@ export default function App({ edpFetch }) {
         });
     }
 
+    /*
+     * Ecriture de messages.
+     *
+     * Format releve dans le code du site officiel (messagerie-compose) :
+     *   - contacts : POST messagerie/contacts/{professeurs|personnels}.awp?verbe=get
+     *     (professeurs : + nom=<recherche>&idClasse=<id>), reponse data.contacts
+     *   - envoi    : POST {eleves|familles}/{id}/messages.awp?verbe=post
+     *     data = { message: {...}, anneeMessages: "" }
+     *     `brouillon: true` enregistre un brouillon au lieu d'envoyer.
+     */
+
+    const isGuestAccount = () => accountsListState[activeAccount]?.firstName === "Guest";
+
+    async function fetchMessageContacts(kind = "professeurs", search = "", controller = new AbortController()) {
+        if (isGuestAccount()) {
+            const module = await import("./data/messageContacts.json");
+            const contacts = module[kind] ?? [];
+            const query = removeAccents(search.toLowerCase());
+            return contacts.filter((contact) => removeAccents(`${contact.prenom} ${contact.nom}`.toLowerCase()).includes(query));
+        }
+
+        const account = accountsListState[activeAccount];
+        const params = new URLSearchParams({ verbe: "get", v: apiVersion });
+        if (kind === "professeurs") {
+            if (account.classId === undefined) {
+                // Comptes connectes avant l'ajout de classId : il faut se reconnecter.
+                throw new Error("NO_CLASS_ID");
+            }
+            params.set("nom", search);
+            params.set("idClasse", account.classId);
+        }
+
+        abortControllers.current.push(controller);
+        try {
+            const response = await edpFetch(
+                `${apiRoot()}/v3/messagerie/contacts/${kind}.awp?${params.toString()}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-Token": tokenState,
+                        "2FA-Token": token2faState,
+                        "Content-Type": bodyContentType(),
+                    },
+                    body: "data={}",
+                    signal: controller.signal,
+                    referrerPolicy: "no-referrer",
+                },
+                "json"
+            );
+            setTokenState((old) => (response?.token || old));
+            if (response.code === 520 || response.code === 525) {
+                requireLogin();
+                throw new Error("SESSION_EXPIRED");
+            }
+            if (response.code !== 200) {
+                throw new Error(response.message || "CONTACTS_ERROR");
+            }
+            return response.data?.contacts ?? [];
+        } finally {
+            abortControllers.current.splice(abortControllers.current.indexOf(controller), 1);
+        }
+    }
+
+    function encodeMessageContent(html) {
+        // Comme le site officiel : caracteres non ASCII (et $ % @) en entites
+        // HTML, puis base64. Apres l'echappement tout est ASCII, btoa suffit.
+        let escaped = "";
+        for (const char of html) {
+            const codePoint = char.codePointAt(0);
+            escaped += (codePoint > 127 || char === "$" || char === "%" || char === "@") ? `&#${codePoint};` : char;
+        }
+        return btoa(escaped);
+    }
+
+    async function sendMessage({ subject, htmlContent, recipients, responseId, isDraft = false }, controller = new AbortController()) {
+        const account = accountsListState[activeAccount];
+
+        const groupsByType = {};
+        for (const recipient of recipients) {
+            (groupsByType[recipient.type] ??= []).push({ ...recipient, isSelected: true, to_cc_cci: "to" });
+        }
+        const message = {
+            subject,
+            content: encodeMessageContent(htmlContent),
+            groupesDestinataires: Object.entries(groupsByType).map(([type, destinataires]) => ({ destinataires, selection: { type } })),
+            transfertFiles: [],
+            files: [],
+            read: true,
+            from: { role: account.accountType === "E" ? "E" : "1", id: account.accountType === "E" ? account.id : account.familyId, read: true },
+            brouillon: isDraft,
+        };
+        if (responseId) {
+            message.responseId = responseId;
+        }
+
+        if (isGuestAccount()) {
+            // Mode demonstration : rien n'est envoye.
+            await new Promise((resolve) => setTimeout(resolve, 600));
+            return { ok: true, guest: true };
+        }
+
+        abortControllers.current.push(controller);
+        try {
+            const response = await edpFetch(
+                `${apiRoot()}/v3/${account.accountType === "E" ? "eleves/" + account.id : "familles/" + account.familyId}/messages.awp?verbe=post&v=${apiVersion}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "X-Token": tokenState,
+                        "2FA-Token": token2faState,
+                        "Content-Type": bodyContentType(),
+                    },
+                    // encodeURIComponent obligatoire : le base64 contient des "+"
+                    // qu'un corps form-urlencoded transformerait en espaces.
+                    body: `data=${encodeURIComponent(JSON.stringify({ message, anneeMessages: "" }))}`,
+                    signal: controller.signal,
+                    referrerPolicy: "no-referrer",
+                },
+                "json"
+            );
+            setTokenState((old) => (response?.token || old));
+            if (response.code === 520 || response.code === 525) {
+                requireLogin();
+                return { ok: false, message: "Votre session a expiré, reconnectez-vous." };
+            }
+            if (response.code !== 200) {
+                return { ok: false, message: response.message || "EcoleDirecte a refusé le message." };
+            }
+
+            // Les dossiers Envoyes / Brouillons seront recharges a la prochaine ouverture.
+            const folders = useUserData("messageFolders").get();
+            if (folders) {
+                changeUserData("messageFolders", folders.map((folder) => (folder.id === -1 || folder.id === -4) ? { ...folder, fetchInitiated: false, fetched: false } : folder));
+                changeUserData("sortedMessages", (useUserData("sortedMessages").get() ?? []).filter((item) => item.folderId !== -1 && item.folderId !== -4));
+            }
+            return { ok: true, id: response.data?.id, message: response.message };
+        } catch (error) {
+            return { ok: false, message: "Impossible de contacter EcoleDirecte. Vérifiez votre connexion." };
+        } finally {
+            abortControllers.current.splice(abortControllers.current.indexOf(controller), 1);
+        }
+    }
+
 
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //                                                                                                                                                                                 //
@@ -3038,7 +3200,7 @@ export default function App({ edpFetch }) {
                             path: "messaging"
                         },
                         {
-                            element: <Messaging isLoggedIn={isLoggedIn} activeAccount={activeAccount} fetchMessages={fetchMessages} fetchMessageContent={fetchMessageContent} fetchMessageMarkAsUnread={fetchMessageMarkAsUnread} renameFolder={renameFolder} deleteFolder={deleteFolder} createFolder={createFolder} archiveMessage={archiveMessage} unarchiveMessage={unarchiveMessage} moveMessage={moveMessage} deleteMessage={deleteMessage} />,
+                            element: <Messaging isLoggedIn={isLoggedIn} activeAccount={activeAccount} fetchMessages={fetchMessages} fetchMessageContent={fetchMessageContent} fetchMessageMarkAsUnread={fetchMessageMarkAsUnread} renameFolder={renameFolder} deleteFolder={deleteFolder} createFolder={createFolder} archiveMessage={archiveMessage} unarchiveMessage={unarchiveMessage} moveMessage={moveMessage} deleteMessage={deleteMessage} fetchMessageContacts={fetchMessageContacts} sendMessage={sendMessage} />,
                             path: ":userId/messaging"
                         },
                     ],

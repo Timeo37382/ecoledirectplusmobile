@@ -292,3 +292,22 @@
         scroll-snap-align: center;
     }
 }
+
+/* Telephone : les devoirs passent devant le calendrier et les prochains
+   controles. Avant, il fallait defiler deux ecrans pour les voir.
+   !important car Window.jsx pose un `order` en style inline. */
+/* 869px : seuil a partir duquel les fenetres s'empilent (Window.css). */
+@media only screen and (max-width: 869px) {
+    /* Ordre : devoirs du jour, calendrier, puis prochains controles en bas. */
+    div#homeworks .notebook-window {
+        order: -1 !important;
+    }
+
+    div#homeworks .window:has(> .upcoming-assignments-container) {
+        order: 10 !important;
+    }
+
+    .notebook-container {
+        height: min(600px, 62vh);
+    }
+}

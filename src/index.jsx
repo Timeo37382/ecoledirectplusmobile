@@ -27,7 +27,28 @@ import { getOS } from "./utils/utils";
 
 const splashScreen = document.getElementById("loading-start");
 
+// Jeton du compte de demonstration (voir fakeLogin dans App.jsx).
+const GUEST_TOKEN = "thisisafaketoken";
+
+function isGuestRequest(fetchParams) {
+    const headers = fetchParams?.headers;
+    if (!headers) {
+        return false;
+    }
+    const token = headers instanceof Headers ? headers.get("X-Token") : headers["X-Token"];
+    return token === GUEST_TOKEN;
+}
+
 async function edpFetch(url, fetchParams, dataType) {
+    // Le compte invite lit ses donnees dans src/data : inutile (et nuisible) de
+    // contacter EcoleDirecte avec un faux jeton. Sans ce court-circuit, l'echec
+    // de la requete laissait les pages en squelette de chargement et declenchait
+    // la banniere "Installez EDP Unblock". Le code 49969 est celui que les
+    // fonctions de fetch d'App.jsx reconnaissent comme "donnees invite".
+    if (isGuestRequest(fetchParams)) {
+        const fakeResponse = { code: 49969, token: GUEST_TOKEN, data: {} };
+        return dataType === "json" ? fakeResponse : JSON.stringify(fakeResponse);
+    }
     return fetch(url, fetchParams).then((response) => response[dataType]())
 }
 

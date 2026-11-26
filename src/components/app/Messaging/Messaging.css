@@ -3,6 +3,123 @@
     height: 100%;
 }
 
+/* - - - Disposition empilee (telephone, tablette) - - -
+ *
+ * Avant : la liste (plafonnee a 500px, avec sa propre barre de defilement) et
+ * le lecteur etaient empiles, il fallait faire defiler la page entre les deux
+ * et le lecteur vide affichait un texte coupe. Desormais une seule vue a la
+ * fois : la liste en pleine page, ou le message ouvert avec un bouton Retour
+ * (classes posees dans Messaging.jsx). */
+#messaging.show-inbox .window.message-content,
+#messaging.show-reader .window.inbox-window {
+    display: none;
+}
+
+#messaging.stacked .window.inbox-window {
+    max-height: none;
+}
+
+#messaging.stacked .window.message-content {
+    min-height: 0;
+}
+
+#messaging.stacked .message-reader-window-header {
+    position: relative;
+    /* Place pour le bouton Retour a gauche. */
+    padding-inline: 100px 12px;
+}
+
+#messaging.stacked .message-reader-window-header h2 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.message-back-button {
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 4px 12px 4px 8px;
+    border: none;
+    border-radius: 10px;
+    background-color: rgba(var(--text-color-main), .1);
+    color: rgb(var(--text-color-main));
+    font-size: var(--font-size-15);
+    font-weight: var(--font-weight-semi-bold);
+    cursor: pointer;
+    transition: .1s;
+}
+
+.message-back-button span {
+    font-size: var(--font-size-24);
+    line-height: 1;
+    margin-top: -3px;
+}
+
+.message-back-button:is(:hover, :focus-visible) {
+    background-color: rgba(var(--text-color-main), .2);
+}
+
+.message-back-button:active {
+    background-color: rgba(var(--text-color-main), .3);
+}
+
+/* Boutons d'ecriture : "Nouveau message" en tete de la liste, "Repondre" dans
+   le lecteur. */
+.compose-message-button,
+.reply-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 8px 16px;
+    font: inherit;
+    font-size: var(--font-size-16);
+    font-weight: var(--font-weight-semi-bold);
+    color: white;
+    background-color: rgb(var(--border-color-0));
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: filter .1s;
+}
+
+.compose-message-button {
+    width: calc(100% - 20px);
+    margin: 10px;
+}
+
+.compose-message-button:is(:hover, :focus-visible),
+.reply-button:is(:hover, :focus-visible) {
+    filter: brightness(1.15);
+}
+
+.compose-message-button span,
+.reply-button span {
+    font-size: var(--font-size-18);
+}
+
+.reply-button {
+    margin-right: auto;
+}
+
+@media (max-width: 869px) {
+    .reply-button {
+        width: 100%;
+        margin: 0 0 4px;
+    }
+
+    #message-reader .actions-container:has(.reply-button) {
+        flex-wrap: wrap;
+    }
+}
+
 .folder-tooltip {
     position: absolute;
     top: 50%;

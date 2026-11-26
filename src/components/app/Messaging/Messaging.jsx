@@ -26,9 +26,12 @@ import NewFolderIcon from "../../graphics/NewFolderIcon";
 import DraftIcon from "../../graphics/DraftIcon";
 import { capitalizeFirstLetter } from "../../../utils/utils";
 import TextInput from "../../generic/UserInputs/TextInput";
+import MessageComposer from "./MessageComposer";
+import { useCreateNotification } from "../../generic/PopUps/Notification";
+import { decodeBase64 } from "../../../utils/utils";
 
 
-export default function Messaging({ isLoggedIn, activeAccount, fetchMessages, fetchMessageContent, fetchMessageMarkAsUnread, renameFolder, deleteFolder, createFolder, archiveMessage, unarchiveMessage, moveMessage, deleteMessage }) {
+export default function Messaging({ isLoggedIn, activeAccount, fetchMessages, fetchMessageContent, fetchMessageMarkAsUnread, renameFolder, deleteFolder, createFolder, archiveMessage, unarchiveMessage, moveMessage, deleteMessage, fetchMessageContacts, sendMessage }) {
     // States
     const navigate = useNavigate();
     const location = useLocation();
@@ -37,6 +40,7 @@ export default function Messaging({ isLoggedIn, activeAccount, fetchMessages, fe
     const [selectedMessage, setSelectedMessage] = useState(null);
     const [selectedFolder, setSelectedFolder] = useState(0);
     const oldSelectedMessage = useRef(selectedMessage);
+    const lastSyncedSelection = useRef(selectedMessage);
     const messages = useUserData("sortedMessages");
     const [folders, setFolders] = useState(useUserData("messageFolders").get());
     useEffect(() => {
@@ -54,6 +58,58 @@ export default function Messaging({ isLoggedIn, activeAccount, fetchMessages, fe
     if (accountsListState[activeAccount].accountType !== "E") {
         canSendMessages = true;
     }
+
+    // Destinataires autorises par l'etablissement (module MESSAGERIE).
+    const allowedContactKinds = accountsListState[activeAccount].accountType !== "E"
+        ? ["professeurs", "personnels"]
+        : [
+            (module?.params?.destProf ?? "1") === "1" ? "professeurs" : null,
+            (module?.params?.destAdmin ?? "1") === "1" ? "personnels" : null,
+        ].filter(Boolean);
+    const canCompose = canSendMessages && allowedContactKinds.length > 0 && typeof sendMessage === "function";
+
+    // Message en cours d'ecriture : null, ou { recipients, subject, responseId, quotedHTML }.
+    const [composerDraft, setComposerDraft] = useState(null);
+    const createNotification = useCreateNotification();
+
+    const openComposer = (draft = {}) => {
+        setComposerDraft({ recipients: [], subject: "", ...draft, key: Date.now() });
+    };
+
+    const startReply = (message) => {
+        const from = message.from ?? {};
+        const recipients = from.id !== undefined && from.role
+            ? [{ id: from.id, type: from.role, nom: from.nom, prenom: from.prenom, civilite: from.civilite, particule: from.particule ?? "" }]
+            : [];
+        let quotedHTML = "";
+        if (message.content?.content) {
+            try {
+                const author = [from.civilite, from.prenom, from.nom].filter(Boolean).join(" ");
+                const date = new Date(message.date).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+                quotedHTML = `<br><br><b>Le ${date}, ${author} a écrit :</b><blockquote>${decodeBase64(message.content.content)}</blockquote>`;
+            } catch {
+                quotedHTML = "";
+            }
+        }
+        const subject = /^re\s*:/i.test(message.subject ?? "") ? message.subject : `RE : ${message.subject ?? ""}`;
+        openComposer({ recipients, subject, responseId: message.id, quotedHTML });
+    };
+
+    const handleComposerDone = ({ isDraft, guest }) => {
+        setComposerDraft(null);
+        createNotification(
+            <>
+                <h4>{isDraft ? "Brouillon enregistré" : "Message envoyé"}</h4>
+                {guest && <p>Mode démonstration : rien n'a réellement été envoyé.</p>}
+            </>,
+            { timer: 4000 }
+        );
+    };
+
+    const selectMessageFromInbox = (id) => {
+        setComposerDraft(null);
+        setSelectedMessage(id);
+    };
 
     const [isEditingFolder, setIsEditingFolder] = useState(false);
     const [newFolderName, setNewFolderName] = useState('');
@@ -83,6 +139,23 @@ export default function Messaging({ isLoggedIn, activeAccount, fetchMessages, fe
         if (["#patch-notes", "#policy", "#feedback"].includes(location.hash)) {
             return;
         }
+        // Distingue "l'utilisateur a choisi un autre message" (on met l'URL a
+        // jour) de "l'URL a change sans que la selection change" (bouton
+        // Retour du navigateur / d'Android). Avant, dans le second cas, le
+        // message etait aussitot rouvert et le bouton Retour restait piege.
+        const selectionChanged = lastSyncedSelection.current !== selectedMessage;
+        lastSyncedSelection.current = selectedMessage;
+        const hashMessage = parseInt(location.hash.slice(location.hash.lastIndexOf('-') + 1));
+        if (selectedMessage !== null && !selectionChanged && isNaN(hashMessage)) {
+            setSelectedMessage(null);
+            return;
+        }
+        if (!selectionChanged && !isNaN(hashMessage) && hashMessage !== selectedMessage) {
+            // L'URL designe un autre message (historique, lien) : c'est l'effet
+            // suivant qui adopte la selection depuis l'URL. Ne pas la reecrire.
+            return;
+        }
+
         const controller = new AbortController();
         if (selectedMessage !== null) {
             fetchMessageContent(selectedMessage, controller);
@@ -94,7 +167,9 @@ export default function Messaging({ isLoggedIn, activeAccount, fetchMessages, fe
             }
         } else {
             if (location.hash) {
-                navigate("#");
+                // replace : fermer un message ne doit pas empiler une entree
+                // d'historique de plus.
+                navigate("#", { replace: true });
             }
         }
 
@@ -136,6 +211,17 @@ export default function Messaging({ isLoggedIn, activeAccount, fetchMessages, fe
 
     useEffect(() => {
         oldSelectedMessage.current = selectedMessage;
+    }, [selectedMessage]);
+
+    // Telephone et tablette : on bascule entre la liste et le message ; on
+    // repart du haut de la page a chaque bascule.
+    useEffect(() => {
+        if (isTabletLayout) {
+            const main = document.querySelector("main.content");
+            if (main) {
+                main.scrollTo({ top: 0, behavior: "instant" });
+            }
+        }
     }, [selectedMessage]);
 
     useEffect(() => {
@@ -234,9 +320,16 @@ export default function Messaging({ isLoggedIn, activeAccount, fetchMessages, fe
         setIsEditingFolder(false);
     }, [selectedFolder]);
 
+    // Disposition empilee (telephone, tablette) : une seule vue a la fois,
+    // comme une messagerie mobile classique. La liste, ou le message ouvert
+    // avec un bouton Retour. Voir Messaging.css.
+    const stackedViewClass = isTabletLayout
+        ? ((selectedMessage !== null || composerDraft !== null) ? "stacked show-reader" : "stacked show-inbox")
+        : "";
+
     // JSX
     return (
-        <div id="messaging">
+        <div id="messaging" className={stackedViewClass}>
             <WindowsContainer name="timetable" allowWindowsManagement={!isEditingFolder}>
                 <WindowsLayout direction="row" ultimateContainer={true}>
                     <Window allowFullscreen={true} className="inbox-window">
@@ -340,15 +433,41 @@ export default function Messaging({ isLoggedIn, activeAccount, fetchMessages, fe
                             )}
                         </WindowHeader>
                         <WindowContent>
-                            <Inbox selectedMessage={selectedMessage} setSelectedMessage={setSelectedMessage} selectedFolder={selectedFolder} fetchMessageMarkAsUnread={fetchMessageMarkAsUnread} />
+                            {canCompose && !isEditingFolder && (
+                                <button type="button" className="compose-message-button" onClick={() => openComposer()}>
+                                    <span aria-hidden="true">✎</span> Nouveau message
+                                </button>
+                            )}
+                            <Inbox selectedMessage={selectedMessage} setSelectedMessage={selectMessageFromInbox} selectedFolder={selectedFolder} fetchMessageMarkAsUnread={fetchMessageMarkAsUnread} />
                         </WindowContent>
                     </Window>
                     <Window growthFactor={3} className="message-content" allowFullscreen={true}>
                         <WindowHeader className="message-reader-window-header">
-                            <h2>Message</h2>
+                            {isTabletLayout && (
+                                <button
+                                    type="button"
+                                    className="message-back-button"
+                                    onClick={() => composerDraft !== null ? setComposerDraft(null) : setSelectedMessage(null)}
+                                    aria-label={composerDraft !== null ? "Fermer sans envoyer" : "Retour à la liste des messages"}
+                                >
+                                    <span aria-hidden="true">‹</span> Retour
+                                </button>
+                            )}
+                            <h2>{composerDraft === null ? "Message" : composerDraft.responseId ? "Répondre" : "Nouveau message"}</h2>
                         </WindowHeader>
                         <WindowContent>
-                            <MessageReader selectedMessage={selectedMessage} fetchMessageMarkAsUnread={fetchMessageMarkAsUnread} setSelectedMessage={setSelectedMessage} archiveMessage={archiveMessage} unarchiveMessage={unarchiveMessage} moveMessage={moveMessage} deleteMessage={deleteMessage} />
+                            {composerDraft !== null
+                                ? <MessageComposer
+                                    key={composerDraft.key}
+                                    draft={composerDraft}
+                                    allowedKinds={allowedContactKinds}
+                                    fetchMessageContacts={fetchMessageContacts}
+                                    sendMessage={sendMessage}
+                                    onClose={() => setComposerDraft(null)}
+                                    onDone={handleComposerDone}
+                                />
+                                : <MessageReader selectedMessage={selectedMessage} fetchMessageMarkAsUnread={fetchMessageMarkAsUnread} setSelectedMessage={setSelectedMessage} archiveMessage={archiveMessage} unarchiveMessage={unarchiveMessage} moveMessage={moveMessage} deleteMessage={deleteMessage} onReply={canCompose ? startReply : null} />
+                            }
                         </WindowContent>
                     </Window>
                 </WindowsLayout>

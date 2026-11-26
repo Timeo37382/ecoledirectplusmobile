@@ -192,9 +192,12 @@ main.content {
         max-width: 100%;
     }
 
+    /* Attention : 1rem vaut 10px sur ce site (font-size: 62.5% dans App.css).
+       Les anciennes valeurs en rem (0.68rem, 0.6rem, 0.5rem) donnaient donc des
+       libelles de 6.8px, illisibles. On passe en px. */
     .header-button .header-button-title {
         display: block;
-        font-size: 0.68rem;
+        font-size: 11px;
         line-height: 1.15;
         max-width: 100%;
         /* Un libelle long passe sur deux lignes au lieu de pousser la barre. */
@@ -221,7 +224,7 @@ main.content {
         top: -2px;
         height: 16px;
         width: 16px;
-        font-size: 0.6rem;
+        font-size: 10px;
     }
 
     .header-button .notifications.new {
@@ -230,7 +233,7 @@ main.content {
         width: auto;
         min-width: 28px;
         padding-inline: 4px;
-        font-size: 0.5rem;
+        font-size: 8px;
     }
 
     /* Laisse la place a la barre de gestes Android et a l'encoche iOS.
@@ -255,7 +258,10 @@ main.content {
     }
 }
 
-@media only screen and (max-width: 869px) and (min-height: 750px) {
+/* Selecteur de compte fige en haut : seulement sur tablette. Sur telephone il
+   occupait 110px (13% de l'ecran) en permanence et recouvrait le haut des
+   fenetres pendant le defilement ; il defile desormais avec la page. */
+@media only screen and (min-width: 451px) and (max-width: 869px) and (min-height: 750px) {
     main.content .account-selection {
         display: block;
         position: sticky;
@@ -266,6 +272,16 @@ main.content {
 }
 
 @media only screen and (max-width: 450px) {
+    /* Moins d'espace perdu au-dessus du selecteur de compte, et sous lui
+       (le #windows-container ajoute deja son propre padding). */
+    main.content .account-selection {
+        padding-top: calc(14px + env(safe-area-inset-top, 0px));
+    }
+
+    main.content #windows-container {
+        padding-top: 20px;
+    }
+
     .standalone .header-menu {
         padding-bottom: max(25px, env(safe-area-inset-bottom, 0px));
     }

@@ -126,7 +126,16 @@
     height: 16px;
     transform: scale(1.35) translateY(-1px);
 }
-#inbox .message-container:is(:hover, :focus-visible, :focus-within, .selected) .mark-as-unread {
+/* Le survol ne revele le bouton qu'avec une souris. Sur ecran tactile, un
+   :hover qui fait apparaitre un element transforme le premier toucher en
+   simple survol (comportement de Safari iOS, imite par Chrome Android) : il
+   fallait toucher deux fois un message pour l'ouvrir. */
+@media (hover: hover) {
+    #inbox .message-container:is(:hover, :focus-visible, :focus-within) .mark-as-unread {
+        display: block;
+    }
+}
+#inbox .message-container.selected .mark-as-unread {
     display: block;
 }
 #inbox .message-container[data-read=false] .mark-as-unread {

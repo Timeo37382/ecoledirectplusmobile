@@ -1,0 +1,290 @@
+/* - - - Ecriture d'un message - - - */
+
+.message-composer {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 14px;
+    padding: 16px;
+    background-color: rgb(var(--background-color-2));
+    border-radius: 15px;
+    min-height: 100%;
+}
+
+.message-composer .composer-field {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 6px;
+}
+
+.message-composer .composer-label {
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-semi-bold);
+    color: rgb(var(--text-color-alt));
+}
+
+.message-composer .composer-input {
+    width: 100%;
+    padding: 10px 12px;
+    font: inherit;
+    font-size: var(--font-size-16);
+    color: rgb(var(--text-color-main));
+    background-color: rgba(var(--background-color-0), .45);
+    border: 1px solid rgba(var(--text-color-alt), .35);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color .1s;
+}
+
+.message-composer .composer-input:focus-visible,
+.message-composer .composer-input:focus {
+    border-color: rgb(var(--text-color-alt));
+}
+
+.message-composer .composer-body {
+    resize: vertical;
+    min-height: 160px;
+    line-height: 1.45;
+}
+
+/* Destinataires */
+
+.message-composer .composer-recipient-list {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.message-composer .composer-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 6px 5px 12px;
+    font-size: var(--font-size-14);
+    background-color: rgba(var(--text-color-main), .12);
+    border-radius: 999px;
+}
+
+.message-composer .composer-chip button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 50%;
+    background: none;
+    color: rgb(var(--text-color-alt));
+    cursor: pointer;
+}
+
+.message-composer .composer-chip button:is(:hover, :focus-visible) {
+    background-color: rgba(var(--text-color-main), .15);
+}
+
+.message-composer .composer-add-recipient {
+    min-height: 34px;
+    padding: 4px 14px;
+    font: inherit;
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-semi-bold);
+    color: rgb(var(--text-color-main));
+    background: none;
+    border: 1px dashed rgba(var(--text-color-alt), .7);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.message-composer .composer-add-recipient:is(:hover, :focus-visible) {
+    background-color: rgba(var(--text-color-main), .08);
+}
+
+/* Selecteur de contacts */
+
+.message-composer .composer-picker {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 8px;
+    padding: 10px;
+    background-color: rgba(var(--background-color-0), .3);
+    border-radius: 12px;
+}
+
+.message-composer .composer-picker-tabs {
+    display: flex;
+    gap: 6px;
+}
+
+.message-composer .composer-picker-tabs button {
+    flex: 1;
+    min-height: 36px;
+    font: inherit;
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-semi-bold);
+    color: rgb(var(--text-color-alt));
+    background: none;
+    border: 1px solid rgba(var(--text-color-alt), .35);
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.message-composer .composer-picker-tabs button.active {
+    color: rgb(var(--text-color-main));
+    background-color: rgba(var(--text-color-main), .14);
+    border-color: transparent;
+}
+
+.message-composer .composer-picker-results {
+    list-style: none;
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 4px;
+}
+
+.message-composer .composer-picker-info {
+    padding: 12px 6px;
+    font-size: var(--font-size-14);
+    color: rgb(var(--text-color-alt));
+}
+
+.message-composer .composer-picker-info.error {
+    color: rgb(var(--background-color-error));
+}
+
+.message-composer .composer-contact {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 48px;
+    padding: 6px 8px;
+    font: inherit;
+    text-align: left;
+    color: rgb(var(--text-color-main));
+    background: none;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.message-composer .composer-contact:is(:hover, :focus-visible) {
+    background-color: rgba(var(--text-color-main), .08);
+}
+
+.message-composer .composer-contact.selected {
+    background-color: rgba(var(--text-color-main), .14);
+}
+
+.message-composer .composer-contact-check {
+    flex: 0 0 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-semi-bold);
+    border: 2px solid rgba(var(--text-color-alt), .6);
+    border-radius: 6px;
+}
+
+.message-composer .composer-contact.selected .composer-contact-check {
+    background-color: rgb(var(--text-color-main));
+    color: rgb(var(--background-color-0));
+    border-color: transparent;
+}
+
+.message-composer .composer-contact-text {
+    display: flex;
+    flex-flow: column nowrap;
+    min-width: 0;
+}
+
+.message-composer .composer-contact-name {
+    font-size: var(--font-size-15);
+    overflow-wrap: anywhere;
+}
+
+.message-composer .composer-contact-detail {
+    font-size: var(--font-size-13);
+    color: rgb(var(--text-color-alt));
+}
+
+/* Messages d'etat et actions */
+
+.message-composer .composer-quote-note {
+    font-size: var(--font-size-13);
+    color: rgb(var(--text-color-alt));
+}
+
+.message-composer .composer-status {
+    padding: 10px 12px;
+    font-size: var(--font-size-14);
+    border-radius: 10px;
+}
+
+.message-composer .composer-status.error {
+    background-color: rgba(var(--background-color-error), .18);
+    color: rgb(var(--text-color-main));
+}
+
+.message-composer .composer-status.confirm {
+    background-color: rgba(var(--text-color-main), .1);
+}
+
+.message-composer .composer-actions {
+    display: flex;
+    flex-flow: row wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: auto;
+}
+
+.message-composer .composer-button {
+    min-height: 44px;
+    padding: 8px 16px;
+    font: inherit;
+    font-size: var(--font-size-15);
+    font-weight: var(--font-weight-semi-bold);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: .1s;
+}
+
+.message-composer .composer-button:disabled {
+    opacity: .6;
+    cursor: default;
+}
+
+.message-composer .composer-button.secondary {
+    color: rgb(var(--text-color-main));
+    background: none;
+    border: 1px solid rgba(var(--text-color-alt), .5);
+}
+
+.message-composer .composer-button.secondary:is(:hover, :focus-visible):not(:disabled) {
+    background-color: rgba(var(--text-color-main), .08);
+}
+
+.message-composer .composer-button.primary {
+    color: white;
+    background-color: rgb(var(--border-color-0));
+    border: none;
+}
+
+.message-composer .composer-button.primary.confirm {
+    background-color: rgb(var(--background-color-error));
+}
+
+/* Telephone : le bouton Envoyer prend toute la largeur, plus facile a toucher. */
+@media (max-width: 450px) {
+    .message-composer {
+        padding: 14px 12px;
+    }
+
+    .message-composer .composer-actions .composer-button {
+        flex: 1;
+    }
+
+    .message-composer .composer-actions .composer-button.primary {
+        flex-basis: 100%;
+        order: -1;
+    }
+}

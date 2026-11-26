@@ -20,7 +20,7 @@ import DeleteIcon from "../../graphics/DeleteIcon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../generic/PopUps/Tooltip";
 
 
-export default function MessageReader({ selectedMessage, fetchMessageMarkAsUnread, setSelectedMessage, archiveMessage, unarchiveMessage, moveMessage, deleteMessage }) {
+export default function MessageReader({ selectedMessage, fetchMessageMarkAsUnread, setSelectedMessage, archiveMessage, unarchiveMessage, moveMessage, deleteMessage, onReply = null }) {
 
     // States
     const location = useLocation();
@@ -126,6 +126,11 @@ export default function MessageReader({ selectedMessage, fetchMessageMarkAsUnrea
                         </ScrollShadedDiv>
 
                         <div className="actions-container">
+                            {onReply && message && parsedHashFolder != -1 && parsedHashFolder != -4 && (
+                                <button type="button" className="reply-button" onClick={() => onReply(message)}>
+                                    <span aria-hidden="true">↩</span> Répondre
+                                </button>
+                            )}
                             <Tooltip className="action-button-main"><TooltipTrigger><button className="action-button" onClick={
                                 () => {
                                     // only print the content of the rendered message
