@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import {
     WindowsContainer,
@@ -10,6 +10,7 @@ import {
     WindowContent
 } from "../../generic/Window";
 import LastGrades from "./LastGrades";
+import TodayTimetable from "./TodayTimetable";
 import Notebook from "../Homeworks/Notebook";
 import BottomSheet from "../../generic/PopUps/BottomSheet";
 import EncodedHTMLDiv from "../../generic/CustomDivs/EncodedHTMLDiv";
@@ -20,7 +21,7 @@ import "./Dashboard.css";
 import { formatDateRelative } from "../../../utils/date";
 import FileComponent from "../../generic/FileComponent";
 
-export default function Dashboard({ fetchUserGrades, grades, fetchHomeworks, activeAccount, isLoggedIn, useUserData, sortGrades, isTabletLayout }) {
+export default function Dashboard({ fetchUserGrades, grades, fetchHomeworks, activeAccount, isLoggedIn, useUserData, sortGrades, isTabletLayout, fetchTimetable, accountId }) {
     const navigate = useNavigate();
     const userData = useUserData();
     const location = useLocation()
@@ -70,53 +71,63 @@ export default function Dashboard({ fetchUserGrades, grades, fetchHomeworks, act
         }
     }, [location.hash])
 
+    const timetableWindow = (
+        <Window className="today-timetable-window">
+            <WindowHeader onClick={() => navigate("../timetable")}>
+                <h2>Emploi du temps</h2>
+            </WindowHeader>
+            <WindowContent>
+                <TodayTimetable activeAccount={activeAccount} accountId={accountId} isLoggedIn={isLoggedIn} fetchTimetable={fetchTimetable} />
+            </WindowContent>
+        </Window>
+    );
+
+    const upcomingAssignmentsWindow = (
+        <Window>
+            <WindowHeader onClick={() => navigate("../homeworks")}>
+                <h2>Prochains devoirs surveillés</h2>
+            </WindowHeader>
+            <WindowContent className="upcoming-assignments-container">
+                <UpcomingAssignments homeworks={homeworks} />
+            </WindowContent>
+        </Window>
+    );
+
+    const notebookWindow = (
+        <Window growthFactor={1.7} className="notebook-window">
+            <WindowHeader onClick={() => navigate("../homeworks")}>
+                <h2>Cahier de texte</h2>
+            </WindowHeader>
+            <WindowContent id="notebook">
+                <Notebook hideDateController={!isTabletLayout} />
+            </WindowContent>
+        </Window>
+    );
+
     // JSX DISCODO
     return (
         <div id="dashboard">
             <WindowsContainer name="dashboard">
-                <WindowsLayout direction="row" ultimateContainer={true}>
-                    <WindowsLayout direction="column" growthFactor={2.5}>
-                        <WindowsLayout direction="row">
-                            <LastGrades activeAccount={activeAccount} />
-                            {/* <Window WIP={true}>
-                                <WindowHeader onClick={() => navigate("../grades")}>
-                                    <h2>Dernière notes</h2>
-                                </WindowHeader>
-                                <WindowContent>
-                                    
-                                </WindowContent>
-                            </Window> */}
-
-                            <Window>
-                                <WindowHeader onClick={() => navigate("../homeworks")}>
-                                    <h2>Prochains devoirs surveillés</h2>
-                                </WindowHeader>
-                                <WindowContent className="upcoming-assignments-container">
-                                    <UpcomingAssignments homeworks={homeworks} />
-                                </WindowContent>
-                            </Window>
+                {isTabletLayout
+                    // Telephone / tablette : une seule colonne, du plus urgent au moins urgent.
+                    ? <WindowsLayout direction="column" ultimateContainer={true}>
+                        {timetableWindow}
+                        {upcomingAssignmentsWindow}
+                        {notebookWindow}
+                        <LastGrades activeAccount={activeAccount} />
+                    </WindowsLayout>
+                    : <WindowsLayout direction="row" ultimateContainer={true}>
+                        <WindowsLayout direction="column" growthFactor={2.5}>
+                            <WindowsLayout direction="row">
+                                <LastGrades activeAccount={activeAccount} />
+                                {upcomingAssignmentsWindow}
+                            </WindowsLayout>
+                            {notebookWindow}
                         </WindowsLayout>
-
-                        <Window growthFactor={1.7} className="notebook-window">
-                            <WindowHeader onClick={() => navigate("../homeworks")}>
-                                <h2>Cahier de texte</h2>
-                            </WindowHeader>
-                            <WindowContent id="notebook">
-                                <Notebook hideDateController={!isTabletLayout} />
-                            </WindowContent>
-                        </Window>
-                    </WindowsLayout>
-                    <WindowsLayout>
-                        <Window>
-                            <WindowHeader onClick={() => navigate("../timetable")}>
-                                <h2>Emploi du temps</h2>
-                            </WindowHeader>
-                            <WindowContent>
-                                <p className="dashboard-timetable-info">L'emploi du temps est enfin disponible, merci pour votre patience !<Link className="timetable-page-link" to={`/app/${activeAccount}/timetable`}>Accéder à l'emploi du temps</Link>L'aperçu rapide supposé apparaître ici est encore en cours de développement...<br/>Rejoignez le <a href="https://discord.gg/AKAqXfTgvE" target="_blank">serveur Discord d'EDP</a> pour en suivre l'avancée !</p>
-                            </WindowContent>
-                        </Window>
-                    </WindowsLayout>
-                </WindowsLayout>
+                        <WindowsLayout>
+                            {timetableWindow}
+                        </WindowsLayout>
+                    </WindowsLayout>}
             </WindowsContainer>
             {(hashParameters.length > 2 && hashParameters[2] === "s" && selectedTask) && <BottomSheet heading="Contenu de séance" onClose={() => { navigate(`${hashParameters[0]};${hashParameters[1]}`, { replace: true }) }}>
                 <EncodedHTMLDiv>{selectedTask.sessionContent}</EncodedHTMLDiv>

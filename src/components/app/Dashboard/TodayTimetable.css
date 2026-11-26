@@ -1,0 +1,238 @@
+/* Apercu de l'emploi du temps sur l'accueil (1rem = 10px). */
+
+.today-timetable {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 12px;
+    padding: 14px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+.today-timetable-heading {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: baseline;
+    column-gap: 10px;
+    row-gap: 2px;
+    padding-inline: 4px;
+}
+
+.today-timetable-day {
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.today-timetable-summary {
+    font-size: 1.4rem;
+    color: rgb(var(--text-color-alt));
+    flex: 1 1 auto;
+}
+
+.today-timetable-changes {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #f7c948;
+}
+
+.today-timetable-list {
+    list-style: none;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 6px;
+}
+
+.today-course {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background-color: rgba(var(--background-color-2), .45);
+    text-decoration: none;
+    overflow: hidden;
+    transition: background-color .15s;
+}
+
+.today-course:hover,
+.today-course:focus-visible {
+    background-color: rgba(var(--background-color-2), .8);
+}
+
+/* Barre de progression du cours en cours, en fond. */
+.today-course.current::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--progress) * 100%);
+    background-color: var(--course-color);
+    opacity: .16;
+    pointer-events: none;
+}
+
+.today-course.current {
+    outline: 2px solid var(--course-color);
+    outline-offset: -2px;
+}
+
+.today-course.next {
+    outline: 2px dashed rgba(var(--text-color-alt), .6);
+    outline-offset: -2px;
+}
+
+.today-course.past {
+    opacity: .5;
+}
+
+.today-course-times {
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-end;
+    min-width: 42px;
+    font-variant-numeric: tabular-nums;
+}
+
+.today-course-times > span {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.today-course-times > span:last-child {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: rgb(var(--text-color-alt));
+}
+
+.today-course-accent {
+    align-self: stretch;
+    flex: 0 0 4px;
+    border-radius: 4px;
+    background-color: var(--course-color);
+}
+
+.today-course-body {
+    display: flex;
+    flex-flow: column nowrap;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.today-course-subject {
+    font-size: 1.5rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.today-course-meta {
+    font-size: 1.25rem;
+    color: rgb(var(--text-color-alt));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.today-course.cancelled .today-course-subject,
+.today-course.cancelled .today-course-times > span {
+    text-decoration: line-through;
+    color: rgb(var(--text-color-alt));
+}
+
+.today-course-tags {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: flex-end;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.today-course-tag {
+    font-size: 1.15rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+    background-color: rgba(var(--text-color-alt), .2);
+}
+
+.today-course-tag.live {
+    background-color: var(--course-color);
+    color: #fff;
+}
+
+.today-course-tag.danger {
+    background-color: rgba(var(--background-color-soft-error), .3);
+    color: rgb(var(--text-color-soft-error-alt));
+}
+
+.today-course-tag.warning {
+    background-color: rgba(247, 201, 72, .2);
+    color: #f7c948;
+}
+
+.today-course-tag.homework {
+    background-color: rgba(var(--background-color-selection), .35);
+}
+
+.today-course-tag.homework.done {
+    background-color: rgba(var(--border-color-success), .2);
+    color: rgb(var(--border-color-success));
+}
+
+/* Chargement */
+.today-course.skeleton {
+    pointer-events: none;
+    animation: today-timetable-pulse 1.2s ease-in-out infinite alternate;
+}
+
+.today-course.skeleton span span {
+    display: block;
+    height: 10px;
+    width: 34px;
+    margin-block: 3px;
+    border-radius: 5px;
+    background-color: rgba(var(--text-color-alt), .25);
+}
+
+.today-course.skeleton .today-course-body span:first-child { width: 55%; height: 12px; }
+.today-course.skeleton .today-course-body span:last-child { width: 35%; }
+.today-course.skeleton .today-course-accent { background-color: rgba(var(--text-color-alt), .25); }
+
+@keyframes today-timetable-pulse {
+    from { opacity: .45; }
+    to { opacity: 1; }
+}
+
+.today-timetable-empty {
+    margin: auto;
+    padding: 20px;
+    text-align: center;
+    color: rgb(var(--text-color-alt));
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 14px;
+}
+
+.today-timetable-empty p {
+    color: rgb(var(--text-color-alt));
+}
+
+.today-timetable-retry {
+    appearance: none;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 50px;
+    border: 2px solid rgb(var(--text-color-alt));
+    background: none;
+    color: rgb(var(--text-color-alt));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .today-course.skeleton { animation: none; }
+}
