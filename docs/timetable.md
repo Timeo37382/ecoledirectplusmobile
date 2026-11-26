@@ -46,7 +46,7 @@ including when the authenticated account is a family account.
 - Previous/next week navigation and return to today
 - Loading, refresh, empty, error, and expired-session states
 - Cancelled, modified, exempted, homework, and session-content indicators
-- Alternating gray-and-yellow construction outlines for modified classes and homework icons at every course size
+- Warning-sign icon (yellow triangle with an exclamation mark) for modified classes, next to the homework icon, at every course size; yellow "Cours modifié" pill in the course details
 - Name-priority rendering for short classes with long subjects
 - Course details with teacher, room, group, code, date, time, and duration
 - Current-day and current-time indicators

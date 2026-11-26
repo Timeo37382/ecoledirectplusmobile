@@ -557,24 +557,44 @@
     box-shadow: 0 9px 20px rgba(0, 0, 0, 0.25);
 }
 
-.timetable-course.modified:not(.cancelled) {
-    border: 3px solid transparent;
-    background:
-        linear-gradient(
-            color-mix(in srgb, var(--course-color), rgb(var(--background-color-1)) 48%),
-            color-mix(in srgb, var(--course-color), rgb(var(--background-color-1)) 48%)
-        ) padding-box,
-        repeating-linear-gradient(
-            135deg,
-            #f7c948 0 8px,
-            #6b7280 8px 16px
-        ) border-box;
-    box-shadow: 0 5px 13px rgba(0, 0, 0, 0.18);
+/* Cours modifie : un panneau "attention" dans le coin (voir
+   .course-modified-alert) a la place de l'ancienne bordure rayee. */
+.course-modified-alert {
+    width: 18px;
+    height: 17px;
+    position: absolute;
+    top: 6px;
+    right: 5px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.35));
+    animation: tt-pop-in 0.35s var(--timing-function-spring-effect) backwards;
+    animation-delay: calc(200ms + var(--order, 0) * 35ms);
 }
 
-.timetable-course.modified:not(.cancelled):hover,
-.timetable-course.modified:not(.cancelled):focus-visible {
-    box-shadow: 0 9px 20px rgba(0, 0, 0, 0.25);
+.course-modified-alert .warning-sign {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Les deux alertes ensemble : le panneau se place a gauche du crayon. */
+.timetable-course.has-homework .course-modified-alert {
+    right: 27px;
+}
+
+.timetable-course.modified:not(.cancelled) .course-title {
+    padding-right: 24px;
+}
+
+.timetable-course.modified.has-homework:not(.cancelled) .course-title {
+    padding-right: 46px;
+}
+
+.timetable-course.compact .course-modified-alert {
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .timetable-course:focus-visible {
@@ -766,18 +786,21 @@
     background: rgba(var(--background-color-warning-0), 0.88);
 }
 
-.course-status-card.modified:not(.cancelled) {
-    border: 3px solid transparent;
-    background:
-        linear-gradient(
-            color-mix(in srgb, var(--course-color), rgb(var(--background-color-1)) 52%),
-            color-mix(in srgb, var(--course-color), rgb(var(--background-color-1)) 52%)
-        ) padding-box,
-        repeating-linear-gradient(
-            135deg,
-            #f7c948 0 9px,
-            #6b7280 9px 18px
-        ) border-box;
+/* Cours modifie : pastille jaune avec le panneau, au lieu du cadre raye. */
+.course-status-card.modified:not(.cancelled) .course-status-pill {
+    background: #f7c948;
+    color: #3b2f05;
+}
+
+.course-status-card .course-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.course-status-card .course-status-pill .warning-sign {
+    width: 16px;
+    height: 15px;
 }
 
 .course-status-card span {
@@ -1469,6 +1492,22 @@
         padding-right: 28px;
     }
 
+    .timetable-grid-frame.day .course-modified-alert {
+        width: 22px;
+        height: 21px;
+        top: 8px;
+        right: 8px;
+        transform: none;
+    }
+
+    .timetable-grid-frame.day .timetable-course.has-homework .course-modified-alert {
+        right: 36px;
+    }
+
+    .timetable-grid-frame.day .timetable-course.modified.has-homework:not(.cancelled) .course-title {
+        padding-right: 60px;
+    }
+
     .timetable-grid-frame.day .course-badge {
         font-size: var(--font-size-12);
         padding: 2px 8px;
@@ -1565,8 +1604,31 @@
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
     }
 
-    .timetable-grid-frame.compact-week .timetable-course.modified:not(.cancelled) {
-        border-width: 2px;
+    /* Semaine compacte : petit panneau dans le coin, le crayon devient une
+       pastille juste a cote. */
+    .timetable-grid-frame.compact-week .course-modified-alert {
+        width: 13px;
+        height: 12px;
+        top: 2px;
+        right: 2px;
+        transform: none;
+    }
+
+    .timetable-grid-frame.compact-week .timetable-course.modified.has-homework .course-homework-alert {
+        right: 17px;
+    }
+
+    /* Le texte contourne les icones du coin : seule la premiere ligne se
+       decale, le nom garde toute la largeur ensuite. */
+    .timetable-grid-frame.compact-week .timetable-course:is(.modified:not(.cancelled), .has-homework) .course-title::before {
+        content: "";
+        float: right;
+        width: 12px;
+        height: 11px;
+    }
+
+    .timetable-grid-frame.compact-week .timetable-course.modified.has-homework:not(.cancelled) .course-title::before {
+        width: 24px;
     }
 
     .timetable-grid-frame.compact-week .course-accent,

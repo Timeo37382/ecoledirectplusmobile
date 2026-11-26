@@ -224,6 +224,18 @@ function exportCalendar(courses, weekStart) {
     URL.revokeObjectURL(url);
 }
 
+// Panneau "attention" (triangle + point d'exclamation) des cours modifies.
+// Remplace l'ancienne bordure rayee jaune/grise.
+function WarningSign({ className = "" }) {
+    return (
+        <svg className={`warning-sign ${className}`} viewBox="0 0 24 22" aria-hidden="true" focusable="false">
+            <path d="M10.27 1.98a2 2 0 0 1 3.46 0l9.5 16.5A2 2 0 0 1 21.5 21.5h-19a2 2 0 0 1-1.73-3.02z" fill="#f7c948" stroke="#3b2f05" strokeWidth="1.4" strokeLinejoin="round" />
+            <rect x="10.75" y="7" width="2.5" height="7.5" rx="1.25" fill="#3b2f05" />
+            <circle cx="12" cy="17.6" r="1.45" fill="#3b2f05" />
+        </svg>
+    );
+}
+
 function CourseCard({ course, gridStart, gridEnd, onSelect, isStreamerModeEnabled, hourHeight = HOUR_HEIGHT, order = 0 }) {
     const startMinutes = minutesSinceMidnight(course.start);
     const endMinutes = minutesSinceMidnight(course.end);
@@ -246,6 +258,7 @@ function CourseCard({ course, gridStart, gridEnd, onSelect, isStreamerModeEnable
         >
             <span className="course-accent" aria-hidden="true" />
             {course.devoirAFaire && <span className="course-homework-alert" aria-hidden="true">✎</span>}
+            {course.isModified && !course.isCancelled && <span className="course-modified-alert" title="Cours modifié"><WarningSign /></span>}
             <span className="course-title">{course.subject}</span>
             <span className="course-time">{format(course.start, "HH:mm")}–{format(course.end, "HH:mm")}</span>
             {!compact && <span className="course-meta">{course.room} · {isStreamerModeEnabled ? anonymizeTeacher(course.teacher) : course.teacher}</span>}
@@ -865,7 +878,10 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                 <BottomSheet heading={selectedCourse.subject} onClose={closeCourse} firstResizingBreakpoint={1}>
                     <article className="course-details">
                         <div className={`course-status-card${selectedCourse.isCancelled ? " cancelled" : ""}${selectedCourse.isModified ? " modified" : ""}`} style={{ "--course-color": selectedCourse.color }}>
-                            <span>{selectedCourse.status}</span>
+                            <span className="course-status-pill">
+                                {selectedCourse.isModified && !selectedCourse.isCancelled && <WarningSign />}
+                                {selectedCourse.status}
+                            </span>
                             <strong>{format(selectedCourse.start, "EEEE d MMMM", { locale: fr })}</strong>
                             <p>{format(selectedCourse.start, "HH:mm")} – {format(selectedCourse.end, "HH:mm")} · {formatDuration(Math.round((selectedCourse.end - selectedCourse.start) / 60_000))}</p>
                         </div>
