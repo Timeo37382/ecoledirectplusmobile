@@ -11,6 +11,7 @@ import {
 } from "../../generic/Window";
 import LastGrades from "./LastGrades";
 import TodayTimetable from "./TodayTimetable";
+import UpdatesBanner from "./UpdatesBanner";
 import Notebook from "../Homeworks/Notebook";
 import BottomSheet from "../../generic/PopUps/BottomSheet";
 import EncodedHTMLDiv from "../../generic/CustomDivs/EncodedHTMLDiv";
@@ -107,6 +108,7 @@ export default function Dashboard({ fetchUserGrades, grades, fetchHomeworks, act
     // JSX DISCODO
     return (
         <div id="dashboard">
+            <UpdatesBanner />
             <WindowsContainer name="dashboard">
                 {isTabletLayout
                     // Telephone / tablette : une seule colonne, du plus urgent au moins urgent.

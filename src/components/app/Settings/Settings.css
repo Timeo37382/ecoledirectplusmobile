@@ -358,3 +358,86 @@ body:has(#settings) {
         flex: 1;
     }
 }
+
+/* Notifications */
+#notification-settings {
+    background-color: rgba(var(--border-color-0), 0.2);
+    border: 1px solid rgb(var(--border-color-0));
+    border-radius: 10px;
+    padding: 15px;
+    padding-bottom: 0;
+    margin-bottom: 30px;
+}
+
+#notification-settings .heading {
+    font-size: var(--font-size-20);
+    margin-bottom: 20px;
+}
+
+#notification-settings #notification-permission {
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+#notification-settings #check-updates-now {
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#notification-settings #notification-permission,
+#notification-settings #check-updates-now,
+#notification-settings #test-notification {
+    flex-wrap: nowrap;
+}
+
+#notification-settings #test-notification {
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#notification-settings #test-notification .setting-label {
+    flex: 1 1 auto;
+}
+
+#notification-settings #notification-permission .setting-label,
+#notification-settings #check-updates-now .setting-label {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+#notification-settings #check-updates-now .setting-label {
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+#notification-settings .button {
+    flex: 0 0 auto;
+}
+
+#notification-settings .notification-permission-state,
+#notification-settings .notification-check-state {
+    font-size: 1.3rem;
+    color: rgb(var(--text-color-alt));
+}
+
+#notification-settings .notification-permission-state {
+    margin-bottom: 24px;
+}
+
+#notification-settings .notification-permission-state.granted {
+    color: rgb(var(--border-color-success));
+}
+
+#notification-settings .notification-permission-state.denied {
+    color: rgb(var(--text-color-soft-error-alt));
+}
+
+
+
+#notification-settings .notification-push-state {
+    font-size: 1.3rem;
+    color: rgb(var(--text-color-alt));
+    margin: -18px 0 24px;
+}

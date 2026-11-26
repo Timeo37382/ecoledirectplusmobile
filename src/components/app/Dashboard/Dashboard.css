@@ -18,3 +18,16 @@
         overflow: visible;
     }
 }
+
+/* Ordinateur : le bandeau "Nouveautes" prend sa place, les fenetres le reste. */
+@media only screen and (min-width: 870px) {
+    #dashboard {
+        display: flex;
+        flex-flow: column nowrap;
+    }
+
+    #dashboard > #windows-container {
+        flex: 1 1 0;
+        min-height: 0;
+    }
+}

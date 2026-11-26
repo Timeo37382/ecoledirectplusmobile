@@ -1,0 +1,21 @@
+name: Vérification des notifications push
+
+# Toutes les 15 minutes, demande au serveur (api/push.js sur Vercel) de
+# vérifier les nouveautés de chaque abonné et d'envoyer les notifications.
+# GitHub peut décaler les exécutions planifiées de quelques minutes.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Appeler le serveur
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 90 \
+            "https://ecoledirectplusmobile.vercel.app/edp-push?action=check"

@@ -15,6 +15,7 @@ import { currentPeriodEvent } from "../../generic/events/setPeriodEvent";
 import { AppContext } from "../../../App";
 import { applyZoom, getZoomedBoudingClientRect } from "../../../utils/zoom";
 import DropDownMenu from "../../generic/UserInputs/DropDownMenu";
+import NotificationSettings from "./NotificationSettings";
 
 import "./Settings.css";
 
@@ -252,6 +253,8 @@ export default function Settings({ usersSettings, accountsList, getCurrentSchool
 
 
                 {/* advanced settings */}
+                <NotificationSettings />
+
                 <div id="advanced-settings">
                     <h2 className="heading">Paramètres avancés</h2>
                     {/* prevent switching to dev channel only if installed as standalone app and on safari due to redirecting issues */}

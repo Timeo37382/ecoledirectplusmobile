@@ -1,0 +1,222 @@
+/* Ile des nouveautes (1rem = 10px). Pilule noire facon Dynamic Island,
+   halo et reflet facon succes Xbox. */
+
+.updates-island-anchor {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 10000;
+}
+
+.updates-island {
+    --island-accent: 89, 101, 216;
+    --island-size: 52px;
+    --island-open-width: min(92vw, 420px);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: var(--island-size);
+    height: var(--island-size);
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background-color: #050608;
+    box-shadow:
+        0 0 0 1.5px rgba(var(--island-accent), .55),
+        0 8px 28px rgba(0, 0, 0, .55);
+    overflow: hidden;
+    cursor: pointer;
+    pointer-events: auto;
+    appearance: none;
+    font: inherit;
+    text-align: left;
+    transition:
+        width .6s cubic-bezier(.2, 1.25, .35, 1),
+        height .6s cubic-bezier(.2, 1.25, .35, 1),
+        box-shadow .4s;
+}
+
+.updates-island.type-grade { --island-accent: 98, 207, 122; }
+.updates-island.type-homework { --island-accent: 79, 124, 255; }
+.updates-island.type-message { --island-accent: 181, 101, 217; }
+.updates-island.type-course { --island-accent: 247, 201, 72; }
+
+/* Apparition du rond : petit rebond. */
+.updates-island.dot {
+    animation: island-pop .55s cubic-bezier(.2, 1.4, .4, 1) both;
+}
+
+.updates-island.open {
+    width: var(--island-open-width);
+    height: 64px;
+    box-shadow:
+        0 0 0 1.5px rgba(var(--island-accent), .8),
+        0 0 26px rgba(var(--island-accent), .45),
+        0 10px 30px rgba(0, 0, 0, .6);
+}
+
+.updates-island.closing {
+    width: var(--island-size);
+    height: var(--island-size);
+    transition-timing-function: cubic-bezier(.5, 0, .3, 1);
+    transition-duration: .45s;
+}
+
+.updates-island.leaving {
+    animation: island-out .35s ease-in both;
+}
+
+@keyframes island-pop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes island-out {
+    to { transform: scale(0) translateY(-10px); opacity: 0; }
+}
+
+/* Halo qui tourne autour du logo, puis reflet qui balaie la pilule. */
+.updates-island-glow {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+.updates-island.dot .updates-island-glow {
+    background: radial-gradient(circle at 50% 50%, rgba(var(--island-accent), .55), transparent 70%);
+    animation: island-pulse .55s ease-out both;
+}
+
+.updates-island.open .updates-island-glow {
+    background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .16) 45%, rgba(var(--island-accent), .25) 50%, transparent 65%);
+    background-size: 250% 100%;
+    animation: island-sheen 1.4s .45s ease-in-out both;
+}
+
+@keyframes island-pulse {
+    from { opacity: 0; transform: scale(.4); }
+    50% { opacity: 1; }
+    to { opacity: .35; transform: scale(1.1); }
+}
+
+@keyframes island-sheen {
+    from { background-position: 120% 0; }
+    to { background-position: -120% 0; }
+}
+
+.updates-island-logo {
+    flex: 0 0 var(--island-size);
+    height: var(--island-size);
+    display: grid;
+    place-items: center;
+}
+
+.updates-island.open .updates-island-logo {
+    flex-basis: 64px;
+    height: 64px;
+}
+
+.updates-island-logo .edp-logo {
+    width: 24px;
+    height: 24px;
+    transition: transform .5s cubic-bezier(.2, 1.3, .4, 1);
+}
+
+.updates-island.open .updates-island-logo .edp-logo {
+    transform: scale(1.15);
+}
+
+.updates-island-content {
+    display: flex;
+    flex-flow: column nowrap;
+    min-width: 0;
+    flex: 1 1 auto;
+    padding-right: 34px;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity .25s, transform .25s;
+}
+
+.updates-island.open .updates-island-content {
+    opacity: 1;
+    transform: none;
+    transition-delay: .3s;
+}
+
+.updates-island.open .updates-island-content.swapping {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition-delay: 0s;
+}
+
+.updates-island-content > span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #fff;
+}
+
+.updates-island-caption {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+.updates-island .updates-island-caption {
+    color: rgb(var(--island-accent));
+}
+
+.updates-island .updates-island-counter {
+    font-weight: 600;
+    color: rgba(255, 255, 255, .5);
+}
+
+.updates-island-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+}
+
+.updates-island .updates-island-body {
+    font-size: 1.2rem;
+    color: rgba(255, 255, 255, .7);
+}
+
+.updates-island-close {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 1.8rem;
+    line-height: 1;
+    background-color: rgba(255, 255, 255, .1);
+    color: rgba(255, 255, 255, .8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .updates-island,
+    .updates-island-content,
+    .updates-island-logo .edp-logo {
+        transition-duration: .01s !important;
+    }
+    .updates-island.dot,
+    .updates-island.leaving,
+    .updates-island-glow {
+        animation: none !important;
+    }
+}

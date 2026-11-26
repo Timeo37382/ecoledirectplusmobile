@@ -10,6 +10,9 @@
         },
         "api/prefs.js": {
             "maxDuration": 15
+        },
+        "api/push.js": {
+            "maxDuration": 60
         }
     },
     "rewrites": [
@@ -22,7 +25,11 @@
             "destination": "/api/prefs"
         },
         {
-            "source": "/((?!api/|edp-api/|edp-prefs).*)",
+            "source": "/edp-push",
+            "destination": "/api/push"
+        },
+        {
+            "source": "/((?!api/|edp-api/|edp-prefs|edp-push).*)",
             "destination": "/index.html"
         }
     ],

@@ -20,6 +20,7 @@ import { useCreateNotification } from "./components/generic/PopUps/Notification"
 import { getGradeValue, calcAverage, findCategory, calcCategoryAverage, calcGeneralAverage, formatSkills, safeParseFloat, calcClassGeneralAverage, calcClassAverage } from "./utils/gradesTools";
 import { areOccurenciesEqual, createUserLists, encrypt, decrypt, getBrowser } from "./utils/utils";
 import { getCurrentSchoolYear } from "./utils/date";
+import { NOTIFICATION_TYPES, buildSnapshot, diffSnapshots, readSnapshot, writeSnapshot, readFeed, writeFeed, notifyEvents } from "./utils/notifications";
 import { apiRoot, bodyContentType, isProxyTransport, setTransport, TRANSPORT } from "./utils/api";
 import EdpuLogo from "./components/graphics/EdpuLogo";
 import { tr } from "date-fns/locale";
@@ -116,7 +117,11 @@ const defaultSettings = {
     negativeBadges: false,
     allowAnonymousReports: true,
     isDevChannel: false,
-    selectedChart: 0
+    selectedChart: 0,
+    notifyGrades: true,
+    notifyTimetable: true,
+    notifyMessages: true,
+    notifyHomeworks: true,
 }
 
 const browserExtensionDownloadLink = {
@@ -283,7 +288,19 @@ function initSettings(accountList) {
             },
             allowAnonymousReports: {
                 value: getSetting("allowAnonymousReports", i),
-            }
+            },
+            notifyGrades: {
+                value: getSetting("notifyGrades", i),
+            },
+            notifyTimetable: {
+                value: getSetting("notifyTimetable", i),
+            },
+            notifyMessages: {
+                value: getSetting("notifyMessages", i),
+            },
+            notifyHomeworks: {
+                value: getSetting("notifyHomeworks", i),
+            },
         })
     }
     return userSettings;
@@ -3337,6 +3354,163 @@ export default function App({ edpFetch }) {
         },
     ]);
 
+    /* ---------- Nouveautes (notifications sans serveur) ---------- */
+
+    const UPDATES_CHECK_INTERVAL_MS = 10 * 60_000;
+    const UPDATES_MIN_DELAY_MS = 5 * 60_000;
+    const [updatesFeed, setUpdatesFeed] = useState([]);
+    const updatesCheckRunning = useRef(false);
+    const lastUpdatesCheck = useRef(0);
+
+    // Donnees brutes utiles a la detection. Une requete qui echoue renvoie
+    // undefined pour sa partie : la comparaison l'ignore simplement.
+    async function fetchUpdatesData(controller) {
+        const account = accountsListState[activeAccount];
+        const today = new Date();
+        const weekLater = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 7);
+
+        if (account?.firstName === "Guest") {
+            const [grades, homeworks, messages] = await Promise.all([
+                import("./data/grades.json"),
+                import("./data/homeworks.json"),
+                import("./data/messages.json"),
+            ]);
+            return {
+                grades: grades.data.notes,
+                homeworks: homeworks.data,
+                messages: messages.data.messages.received,
+                courses: buildGuestTimetable(today, weekLater),
+            };
+        }
+
+        let token = tokenState;
+        const post = async (url, body) => {
+            try {
+                const response = await edpFetch(url, {
+                    method: "POST",
+                    headers: {
+                        "X-Token": token,
+                        "2FA-Token": token2faState,
+                        "Content-Type": bodyContentType(),
+                    },
+                    body,
+                    signal: controller.signal,
+                    referrerPolicy: "no-referrer",
+                }, "json");
+                if (response?.token) token = response.token;
+                return response?.code === 200 ? response.data : undefined;
+            } catch (error) {
+                if (error?.name === "AbortError") throw error;
+                return undefined;
+            }
+        };
+
+        const messagesPath = account.accountType === "E" ? `eleves/${account.id}` : `familles/${account.familyId}`;
+        const grades = await post(`${apiRoot()}/v3/eleves/${account.id}/notes.awp?verbe=get&v=${apiVersion}`, `data=${JSON.stringify({ anneeScolaire: "" })}`);
+        const homeworks = await post(`${apiRoot()}/v3/Eleves/${account.id}/cahierdetexte.awp?verbe=get&v=${apiVersion}`, "data={}");
+        const messages = await post(
+            `${apiRoot()}/v3/${messagesPath}/messages.awp?force=false&typeRecuperation=received&idClasseur=0&orderBy=date&order=desc&query=&onlyRead=&getAll=1&verbe=get&v=${apiVersion}`,
+            `data=${JSON.stringify({ anneeMessages: getCurrentSchoolYear().join("-") })}`,
+        );
+        const courses = await post(
+            `${apiRoot()}/v3/E/${account.id}/emploidutemps.awp?verbe=get&v=${apiVersion}`,
+            `data=${JSON.stringify({ dateDebut: getLocalISODate(today), dateFin: getLocalISODate(weekLater), avecTrous: false })}`,
+        );
+        setTokenState((old) => token || old);
+
+        return {
+            grades: grades?.notes,
+            homeworks: homeworks && typeof homeworks === "object" ? homeworks : undefined,
+            messages: messages?.messages?.received,
+            courses: Array.isArray(courses) ? courses : undefined,
+        };
+    }
+
+    async function checkForUpdates({ force = false } = {}) {
+        const account = accountsListState[activeAccount];
+        if (!isLoggedIn || !account || updatesCheckRunning.current) return;
+        if (!force && Date.now() - lastUpdatesCheck.current < UPDATES_MIN_DELAY_MS) return;
+
+        updatesCheckRunning.current = true;
+        lastUpdatesCheck.current = Date.now();
+        const controller = new AbortController();
+        abortControllers.current.push(controller);
+        try {
+            const raw = await fetchUpdatesData(controller);
+            const previous = readSnapshot(account.id);
+            const next = buildSnapshot(raw, previous);
+            const enabledTypes = NOTIFICATION_TYPES
+                .filter(({ setting }) => getUserSettingValue(setting) !== false)
+                .map(({ type }) => type);
+            const events = diffSnapshots(previous, next, raw).filter((event) => enabledTypes.includes(event.type));
+            writeSnapshot(account.id, next);
+
+            if (events.length > 0) {
+                const oldFeed = readFeed(account.id);
+                const known = new Set(oldFeed.map((event) => event.id));
+                const fresh = events.filter((event) => !known.has(event.id));
+                writeFeed(account.id, [...fresh, ...oldFeed]);
+                setUpdatesFeed(readFeed(account.id));
+                notifyEvents(fresh, activeAccount);
+            }
+        } catch (error) {
+            if (error?.name !== "AbortError") {
+                console.warn("Vérification des nouveautés impossible.", error);
+            }
+        } finally {
+            updatesCheckRunning.current = false;
+            const index = abortControllers.current.indexOf(controller);
+            if (index !== -1) abortControllers.current.splice(index, 1);
+        }
+    }
+
+    // L'ile des nouveautes (UpdatesIsland) ne rejoue pas ce qu'elle a deja montre.
+    function markUpdatesShown(ids) {
+        const account = accountsListState[activeAccount];
+        if (!account || ids.length === 0) return;
+        const feed = readFeed(account.id).map((event) => (ids.includes(event.id) ? { ...event, shownInIsland: true } : event));
+        writeFeed(account.id, feed);
+        setUpdatesFeed(feed);
+    }
+
+    // Pour l'abonnement push (utils/push.js) : identifiants de la session et
+    // jetons de double authentification. Jamais stockes par cette fonction.
+    function getPushCredentials() {
+        return { username: userIds?.username, password: userIds?.password, cn: A2FInfo?.cn, cv: A2FInfo?.cv };
+    }
+
+    function dismissUpdates() {
+        const account = accountsListState[activeAccount];
+        if (account) writeFeed(account.id, []);
+        setUpdatesFeed([]);
+    }
+
+    const checkForUpdatesRef = useRef(checkForUpdates);
+    checkForUpdatesRef.current = checkForUpdates;
+
+    useEffect(() => {
+        const account = accountsListState[activeAccount];
+        setUpdatesFeed(account ? readFeed(account.id) : []);
+        if (!isLoggedIn) return undefined;
+
+        lastUpdatesCheck.current = 0;
+        // Petit delai : laisse passer d'abord les requetes de la page affichee.
+        const firstCheck = setTimeout(() => checkForUpdatesRef.current(), 4000);
+        const interval = setInterval(() => {
+            if (document.visibilityState === "visible") checkForUpdatesRef.current();
+        }, UPDATES_CHECK_INTERVAL_MS);
+        const onVisible = () => {
+            if (document.visibilityState === "visible") checkForUpdatesRef.current();
+        };
+        document.addEventListener("visibilitychange", onVisible);
+
+        return () => {
+            clearTimeout(firstCheck);
+            clearInterval(interval);
+            document.removeEventListener("visibilitychange", onVisible);
+        };
+    }, [isLoggedIn, activeAccount]);
+
     const appContextValue = useMemo(() => ({
         useUserData,
         useUserSettings,
@@ -3357,6 +3531,11 @@ export default function App({ edpFetch }) {
         globalSettings,
         actualDisplayTheme,
         currentEDPVersion,
+        updatesFeed,
+        dismissUpdates,
+        checkForUpdates,
+        markUpdatesShown,
+        getPushCredentials,
     }), [
         useUserData,
         useUserSettings,
@@ -3376,7 +3555,12 @@ export default function App({ edpFetch }) {
         isDevChannel,
         globalSettings,
         actualDisplayTheme,
-        currentEDPVersion
+        currentEDPVersion,
+        updatesFeed,
+        tokenState,
+        userSettings,
+        userIds,
+        A2FInfo,
     ]);
 
     return (

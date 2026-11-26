@@ -1,0 +1,115 @@
+/* Bandeau "Nouveautes" en haut de l'accueil (1rem = 10px). */
+
+.updates-banner {
+    margin: clamp(15px, 3vw, 30px) clamp(15px, 3.5vw, 30px) 0;
+    padding: 12px 14px;
+    border-radius: 15px;
+    background-color: rgb(var(--background-color-1));
+    border: 2px solid rgba(var(--background-color-selection), .7);
+    box-shadow: var(--box-shadow-element);
+}
+
+.updates-banner-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.updates-banner-header h2 {
+    font-size: 1.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.updates-banner-count {
+    font-size: 1.2rem;
+    font-weight: 700;
+    min-width: 22px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    text-align: center;
+    background-color: rgb(var(--background-color-selection));
+    color: #fff;
+}
+
+.updates-banner-dismiss,
+.updates-banner-more {
+    appearance: none;
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.3rem;
+    font-weight: 600;
+    background: none;
+    border: 2px solid rgba(var(--text-color-alt), .6);
+    border-radius: 50px;
+    padding: 5px 12px;
+    color: rgb(var(--text-color-alt));
+}
+
+.updates-banner-more {
+    display: block;
+    margin: 8px auto 2px;
+    border: none;
+}
+
+.updates-banner-list {
+    list-style: none;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 4px;
+}
+
+.updates-banner-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 8px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: background-color .15s;
+}
+
+.updates-banner-item:hover,
+.updates-banner-item:focus-visible {
+    background-color: rgba(var(--background-color-2), .7);
+}
+
+.updates-banner-icon {
+    flex: 0 0 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    background-color: rgba(var(--text-color-alt), .18);
+}
+
+.updates-banner-item.grade .updates-banner-icon { background-color: rgba(98, 207, 122, .25); color: rgb(98, 207, 122); }
+.updates-banner-item.homework .updates-banner-icon { background-color: rgba(var(--background-color-selection), .35); }
+.updates-banner-item.message .updates-banner-icon { background-color: rgba(181, 101, 217, .3); }
+.updates-banner-item.course .updates-banner-icon { background-color: rgba(247, 201, 72, .22); color: #f7c948; }
+
+.updates-banner-text {
+    display: flex;
+    flex-flow: column nowrap;
+    min-width: 0;
+}
+
+.updates-banner-title {
+    font-size: 1.45rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.updates-banner-body {
+    font-size: 1.25rem;
+    color: rgb(var(--text-color-alt));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

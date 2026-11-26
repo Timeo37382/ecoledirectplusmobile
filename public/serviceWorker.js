@@ -1,4 +1,4 @@
-const serviceWorkerVersion = "V1.2";
+const serviceWorkerVersion = "V1.3";
 const CACHED_FILES = [
     "/cache/NetworkError.html",
     "/cache/SplashScreen.html"
@@ -76,4 +76,38 @@ self.addEventListener("fetch", (event) => {
             })()
         )
     }
+});
+// Toucher une notification de nouveautes : ramene l'appli au premier plan
+// sur la bonne page (notes, devoirs, messagerie, emploi du temps).
+self.addEventListener("notificationclick", (event) => {
+    event.notification.close();
+    const targetUrl = new URL(event.notification.data?.url ?? "/", self.location.origin).href;
+    event.waitUntil((async () => {
+        const windows = await clients.matchAll({ type: "window", includeUncontrolled: true });
+        const appWindow = windows.find((client) => new URL(client.url).origin === self.location.origin);
+        if (appWindow) {
+            await appWindow.focus();
+            if ("navigate" in appWindow) {
+                return appWindow.navigate(targetUrl).catch(() => {});
+            }
+            return undefined;
+        }
+        return clients.openWindow(targetUrl);
+    })());
+});
+
+// Notification envoyee par le serveur (api/push.js), appli fermee ou non.
+self.addEventListener("push", (event) => {
+    let payload = {};
+    try {
+        payload = event.data ? event.data.json() : {};
+    } catch {
+        payload = { title: "Ecole Directe Plus", body: event.data ? event.data.text() : "" };
+    }
+    event.waitUntil(self.registration.showNotification(payload.title || "Ecole Directe Plus", {
+        body: payload.body || "",
+        tag: payload.tag,
+        icon: "/images/EDP-logo-192.png",
+        data: { url: payload.url || "/" },
+    }));
 });
