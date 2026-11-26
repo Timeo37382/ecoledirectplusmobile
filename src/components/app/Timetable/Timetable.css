@@ -1487,6 +1487,123 @@
     }
 }
 
+/* - - - Semaine compacte (telephone) - - -
+ * Toute la semaine tient sur un ecran, sans defilement horizontal : colonnes
+ * etroites, axe horaire fin, en-tetes courts ("lun. 23") et cours reduits a
+ * leur matiere, comme sur les applis d'agenda mobiles. Le detail complet
+ * reste a un toucher (BottomSheet). */
+@media only screen and (max-width: 650px) {
+    .timetable-grid-frame.compact-week .timetable-grid-canvas {
+        min-width: 0;
+    }
+
+    .timetable-grid-frame.compact-week .timetable-days-header,
+    .timetable-grid-frame.compact-week .timetable-grid-body {
+        grid-template-columns: 26px minmax(0, 1fr);
+    }
+
+    .timetable-grid-frame.compact-week .timetable-days-header {
+        grid-template-columns: 26px repeat(var(--visible-days), minmax(0, 1fr));
+    }
+
+    .timetable-grid-frame.compact-week .time-header {
+        font-size: 0;
+    }
+
+    .timetable-grid-frame.compact-week .day-heading {
+        min-height: 38px;
+        gap: 0;
+        padding: 2px 0;
+    }
+
+    .timetable-grid-frame.compact-week .day-heading span {
+        font-size: var(--font-size-12);
+    }
+
+    .timetable-grid-frame.compact-week .day-heading strong {
+        font-size: var(--font-size-15);
+        line-height: 1.1;
+    }
+
+    .timetable-grid-frame.compact-week .day-heading.today strong {
+        width: 24px;
+        height: 24px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: rgb(var(--border-color-0));
+        color: white;
+    }
+
+    .timetable-grid-frame.compact-week .time-axis > span {
+        right: 3px;
+        font-size: var(--font-size-12);
+        font-weight: var(--font-weight-semi-bold);
+    }
+
+    /* Cours : un bloc de couleur avec le nom de la matiere, coupe sur
+       plusieurs lignes plutot que tronque. */
+    .timetable-grid-frame.compact-week .timetable-course {
+        left: 2px;
+        width: calc(100% - 4px);
+        min-height: 18px;
+        padding: 3px 3px;
+        justify-content: flex-start;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    }
+
+    .timetable-grid-frame.compact-week .timetable-course.modified:not(.cancelled) {
+        border-width: 2px;
+    }
+
+    .timetable-grid-frame.compact-week .course-accent,
+    .timetable-grid-frame.compact-week .course-time,
+    .timetable-grid-frame.compact-week .course-meta,
+    .timetable-grid-frame.compact-week .course-badges {
+        display: none !important;
+    }
+
+    .timetable-grid-frame.compact-week .timetable-course :is(.course-title) {
+        display: block;
+        height: 100%;
+        padding: 0 !important;
+        overflow: hidden;
+        font-size: var(--font-size-12);
+        font-weight: var(--font-weight-extra-bold);
+        line-height: 1.15;
+        white-space: normal;
+        word-break: break-all;
+        text-overflow: clip;
+        -webkit-line-clamp: unset;
+    }
+
+    /* Devoir a faire : une pastille dans le coin, sans voler la place du nom. */
+    .timetable-grid-frame.compact-week .course-homework-alert {
+        width: 8px;
+        height: 8px;
+        top: 3px;
+        right: 3px;
+        transform: none;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: white;
+        font-size: 0;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25);
+    }
+
+    .timetable-grid-frame.compact-week .timetable-course:hover,
+    .timetable-grid-frame.compact-week .timetable-course:focus-visible {
+        transform: none;
+    }
+
+    .timetable-grid-frame.compact-week .current-time-line i {
+        width: 8px;
+        height: 8px;
+    }
+}
+
 @media print {
     .header-container,
     #timetable-page .window-header,

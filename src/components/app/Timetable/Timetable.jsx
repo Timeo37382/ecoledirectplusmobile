@@ -42,6 +42,8 @@ const HOUR_HEIGHT = 56; // TODO: taille dynamique dépendante de la hauteur de l
 // Vue Jour : une seule colonne pleine largeur, on peut se permettre des cours
 // plus hauts pour afficher salle et professeur meme sur un cours d'une heure.
 const DAY_VIEW_HOUR_HEIGHT = 80;
+// Semaine sur telephone : la journee entiere doit tenir sur un ecran.
+const COMPACT_WEEK_HOUR_HEIGHT = 44;
 
 const VIEW_MODES = [
     { id: "day", label: "Jour", length: SINGLE_DAY_WINDOW },
@@ -372,6 +374,9 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
     // Sens de la derniere navigation, pour l'animation de glissement.
     const [slideDirection, setSlideDirection] = useState(0);
+    // Ecran de telephone (<= 650px) : la vue Semaine y passe en mode compact,
+    // toute la semaine tient sans defilement horizontal.
+    const [isCompactScreen, setIsCompactScreen] = useState(() => window.matchMedia("(max-width: 650px)").matches);
     const moreMenuRef = useRef(null);
     const touchStart = useRef(null);
     const cache = useRef(new Map());
@@ -384,7 +389,8 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
     const settings = useUserSettings();
 
     const periodLength = VIEW_MODES.find((mode) => mode.id === viewMode)?.length ?? WEEK_DAYS;
-    const hourHeight = viewMode === "day" ? DAY_VIEW_HOUR_HEIGHT : HOUR_HEIGHT;
+    const isCompactWeek = viewMode === "week" && isCompactScreen;
+    const hourHeight = viewMode === "day" ? DAY_VIEW_HOUR_HEIGHT : isCompactWeek ? COMPACT_WEEK_HOUR_HEIGHT : HOUR_HEIGHT;
     const periodEnd = useMemo(() => addDays(periodStart, periodLength - 1), [periodLength, periodStart]);
     const selectorWeekStart = useMemo(() => startOfWeek(periodStart, { weekStartsOn: 1 }), [periodStart]);
     const selectorDays = useMemo(
@@ -419,12 +425,13 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
         return false;
     };
 
-    // Vues Jour et 3 jours : les week-ends vides ne prennent pas de colonne.
+    // Vues Jour et 3 jours, et Semaine sur telephone : les week-ends vides ne
+    // prennent pas de colonne.
     const visibleDays = useMemo(() => {
-        if (viewMode === "week" || loading) return periodDays;
+        if ((viewMode === "week" && !isCompactScreen) || loading) return periodDays;
         const days = periodDays.filter((day) => !isKnownEmptyWeekend(day));
         return days.length > 0 ? days : periodDays;
-    }, [periodDays, viewMode, loading, courses]);
+    }, [periodDays, viewMode, loading, courses, isCompactScreen]);
     const periodCourses = useMemo(
         () => courses.filter((course) => visibleDays.some((day) => isSameDay(course.start, day))),
         [courses, visibleDays],
@@ -470,6 +477,13 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
     useEffect(() => {
         localStorage.setItem("edp-timetable-view", viewMode);
     }, [viewMode]);
+
+    useEffect(() => {
+        const query = window.matchMedia("(max-width: 650px)");
+        const update = () => setIsCompactScreen(query.matches);
+        query.addEventListener("change", update);
+        return () => query.removeEventListener("change", update);
+    }, []);
 
     useEffect(() => {
         // if (!isLoggedIn || typeof fetchTimetableRef.current !== "function") {
@@ -553,9 +567,9 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
     };
 
     // Glisser a gauche / a droite sur la grille change de jour (ou de periode).
-    // La vue Semaine defile horizontalement sur telephone : pas de glissement.
+    // Semaine large (tablette) : elle defile horizontalement, pas de glissement.
     const handleTouchStart = (event) => {
-        if (viewMode === "week" || event.touches.length !== 1) return;
+        if ((viewMode === "week" && !isCompactScreen) || event.touches.length !== 1) return;
         touchStart.current = { x: event.touches[0].clientX, y: event.touches[0].clientY };
     };
 
@@ -605,7 +619,7 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
         : viewMode === "three-day" ? "3 jours" : `Semaine ${format(periodStart, "w")}`;
     const periodTitle = viewMode === "day"
         ? format(periodStart, isSameDay(periodStart, today) || periodStart.getFullYear() === today.getFullYear() ? "EEEE d MMM" : "d MMM yyyy", { locale: fr })
-        : formatPeriodRange(periodStart, periodLength, viewMode === "week" || periodStart.getFullYear() !== today.getFullYear());
+        : formatPeriodRange(periodStart, periodLength, (viewMode === "week" && !isCompactScreen) || periodStart.getFullYear() !== today.getFullYear());
     const previousLabel = viewMode === "day" ? "Jour précédent" : viewMode === "three-day" ? "3 jours précédents" : "Semaine précédente";
     const nextLabel = viewMode === "day" ? "Jour suivant" : viewMode === "three-day" ? "3 jours suivants" : "Semaine suivante";
 
@@ -790,7 +804,7 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                     )}
 
                                     {!loading && !error && (
-                                        <div className={`timetable-grid-frame ${viewMode}`} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+                                        <div className={`timetable-grid-frame ${viewMode}${isCompactWeek ? " compact-week" : ""}`} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
                                             <div
                                                 className={`timetable-grid-canvas${slideDirection > 0 ? " slide-from-right" : slideDirection < 0 ? " slide-from-left" : ""}`}
                                                 style={{ "--visible-days": visibleDays.length }}
@@ -800,15 +814,15 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                                     <div className="time-header" aria-hidden="true">Heure</div>
                                                     {visibleDays.map((day) => (
                                                         <div className={`day-heading${isSameDay(day, today) ? " today" : ""}`} key={dateKey(day)}>
-                                                            <span>{format(day, "EEEE", { locale: fr })}</span>
-                                                            <strong>{format(day, "d MMM", { locale: fr })}</strong>
+                                                            <span>{format(day, isCompactWeek ? "EEE" : "EEEE", { locale: fr })}</span>
+                                                            <strong>{format(day, isCompactWeek ? "d" : "d MMM", { locale: fr })}</strong>
                                                         </div>
                                                     ))}
                                                 </div>
                                                 <div className="timetable-grid-body">
                                                     <div className="time-axis" style={{ height: gridHeight }}>
                                                         {timeMarkers.filter((minutes) => minutes > gridRange.start && minutes < gridRange.end && minutes % 60 === 0).map((minutes) => (
-                                                            <span style={{ top: ((minutes - gridRange.start) / 60) * hourHeight }} key={minutes}>{formatMinutes(minutes)}</span>
+                                                            <span style={{ top: ((minutes - gridRange.start) / 60) * hourHeight }} key={minutes}>{isCompactWeek ? String(Math.floor(minutes / 60)).padStart(2, "0") : formatMinutes(minutes)}</span>
                                                         ))}
                                                     </div>
                                                     <div className="days-columns" style={{ height: gridHeight }}>
