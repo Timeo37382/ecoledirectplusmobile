@@ -744,7 +744,7 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                             <label className="cancelled-toggle">
                                                 <input type="checkbox" checked={showCancelled} onChange={(event) => setShowCancelled(event.target.checked)} aria-label="Afficher les cours annulés" />
                                                 <span aria-hidden="true" />
-                                                <span className="cancelled-toggle-label">Annulés</span>
+                                                <span className="cancelled-toggle-label">Annulés{cancelledCount > 0 ? ` (${cancelledCount})` : ""}</span>
                                             </label>
                                             <div className="timetable-output-actions">
                                                 <button type="button" onClick={() => exportCalendar(displayedCourses, periodStart)}>Exporter .ics</button>
@@ -758,7 +758,10 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                                     <div className="timetable-more-menu" role="menu">
                                                         <button type="button" role="menuitemcheckbox" aria-checked={showCancelled} className="timetable-more-check" onClick={() => setShowCancelled((old) => !old)}>
                                                             <span className="timetable-more-check-box" aria-hidden="true">{showCancelled && "✓"}</span>
-                                                            Afficher les cours annulés
+                                                            <span className="timetable-more-check-text">
+                                                                Afficher les cours annulés
+                                                                <small>{cancelledCount === 0 ? "Aucun sur cette période" : `${cancelledCount} sur cette période`}</small>
+                                                            </span>
                                                         </button>
                                                         <button type="button" role="menuitem" onClick={() => { setIsMoreMenuOpen(false); refresh(); }} disabled={refreshing}>{refreshing ? "Actualisation…" : "Actualiser"}</button>
                                                         <button type="button" role="menuitem" onClick={() => { setIsMoreMenuOpen(false); exportCalendar(displayedCourses, periodStart); }}>Exporter (.ics)</button>

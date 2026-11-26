@@ -1800,8 +1800,9 @@ export default function App({ edpFetch }) {
                     prof,
                     salle,
                     classe: "Pcpt",
-                    isAnnule: seed % 11 === 0,
-                    isModifie: seed % 13 === 0,
+                    // Chaque semaine : un cours annule (mercredi) et un modifie (jeudi).
+                    isAnnule: day.getDay() === 3 && index === 1,
+                    isModifie: (day.getDay() === 4 && index === 0) || seed % 13 === 0,
                     dispense: 0,
                     devoirAFaire: codeMatiere === "MATHS" || seed % 5 === 0,
                     contenuDeSeance: seed % 4 === 0,

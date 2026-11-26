@@ -1234,6 +1234,18 @@
     gap: 10px;
 }
 
+.timetable-more-check-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.timetable-more-check-text small {
+    font-size: var(--font-size-12);
+    font-weight: var(--font-weight-regular, 400);
+    color: rgb(var(--text-color-alt));
+}
+
 .timetable-more-check-box {
     flex: 0 0 20px;
     height: 20px;
