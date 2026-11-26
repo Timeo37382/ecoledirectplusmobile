@@ -1604,6 +1604,193 @@
     }
 }
 
+/* - - - Animations de l'emploi du temps - - -
+ * Meme langage que le reste de l'app : cascade (jump-in), apparition
+ * elastique (go-in / pop-in) et courbe "ressort". Les keyframes utilisent les
+ * proprietes `translate` et `scale` (et non `transform`) avec un remplissage
+ * `backwards` : une fois terminees elles ne bloquent pas l'effet de survol
+ * des cours, qui passe par `transform`.
+ * Les modes equilibre / performance d'App.css mettent deja les durees a 0. */
+
+/* Cours : cascade jour par jour, rejouee a chaque changement de periode
+   (la grille est re-montee via sa `key`). */
+.timetable-course {
+    animation: tt-course-in 0.45s var(--timing-function-spring-effect) backwards;
+    animation-delay: calc(60ms + var(--order, 0) * 35ms);
+}
+
+/* En-tetes de jours et barre des jours : petite cascade. */
+.day-heading {
+    animation: tt-drop-in 0.4s var(--timing-function-spring-effect) backwards;
+    animation-delay: calc(var(--order, 0) * 40ms);
+}
+
+.day-selector button {
+    animation: tt-pop-in 0.35s var(--timing-function-spring-effect) backwards;
+    animation-delay: calc(var(--order, 0) * 30ms);
+}
+
+/* Jour choisi : il "rebondit" quand il devient actif. */
+.day-selector button.selected {
+    animation: tt-select 0.35s var(--timing-function-spring-effect);
+}
+
+/* Bouton de vue actif (Jour / 3 jours / Semaine). */
+.view-switch button.selected {
+    animation: tt-select 0.35s var(--timing-function-spring-effect);
+}
+
+/* Etats chargement / erreur. */
+.timetable-state {
+    animation: tt-go-in 0.45s var(--timing-function-spring-effect) backwards;
+}
+
+/* Ligne de l'heure actuelle : elle se deploie depuis l'axe des heures. */
+.current-time-line {
+    transform-origin: left center;
+    animation: tt-grow-x 0.6s var(--timing-function-spring-effect) backwards;
+    animation-delay: 0.3s;
+}
+
+.current-time-line i {
+    animation: tt-pulse 2.4s ease-in-out 1s infinite;
+}
+
+/* Fiche d'un cours (BottomSheet) : blocs en cascade. */
+.course-details > * {
+    animation: tt-drop-in 0.45s var(--timing-function-spring-effect) backwards;
+}
+
+.course-details > :nth-child(1) { animation-delay: 0.12s; }
+.course-details > :nth-child(2) { animation-delay: 0.18s; }
+.course-details > :nth-child(3) { animation-delay: 0.24s; }
+.course-details > :nth-child(4) { animation-delay: 0.30s; }
+
+.course-details dl > div {
+    animation: tt-drop-in 0.4s var(--timing-function-spring-effect) backwards;
+}
+
+.course-details dl > div:nth-child(1) { animation-delay: 0.20s; }
+.course-details dl > div:nth-child(2) { animation-delay: 0.25s; }
+.course-details dl > div:nth-child(3) { animation-delay: 0.30s; }
+.course-details dl > div:nth-child(4) { animation-delay: 0.35s; }
+
+/* Cahier de texte dans la fiche : chaque devoir arrive a son tour. */
+.coursework-item {
+    animation: tt-drop-in 0.45s var(--timing-function-spring-effect) backwards;
+}
+
+.coursework-item:nth-child(2) { animation-delay: 0.06s; }
+.coursework-item:nth-child(3) { animation-delay: 0.12s; }
+.coursework-item:nth-child(n + 4) { animation-delay: 0.18s; }
+
+.coursework-panel {
+    animation: tt-go-in 0.4s var(--timing-function-spring-effect) backwards;
+}
+
+.coursework-badges span {
+    animation: tt-pop-in 0.35s var(--timing-function-spring-effect) backwards;
+    animation-delay: 0.25s;
+}
+
+/* Infobulle "Resume de la periode". */
+.timetable-info-panel {
+    animation: tt-pop-in 0.3s var(--timing-function-spring-effect) backwards;
+}
+
+@keyframes tt-course-in {
+    from {
+        opacity: 0;
+        translate: 0 -12px;
+        scale: 0.94;
+    }
+    to {
+        opacity: 1;
+        translate: 0 0;
+        scale: 1;
+    }
+}
+
+@keyframes tt-drop-in {
+    from {
+        opacity: 0;
+        translate: 0 -12px;
+    }
+    to {
+        opacity: 1;
+        translate: 0 0;
+    }
+}
+
+@keyframes tt-pop-in {
+    from {
+        opacity: 0;
+        scale: 0.6;
+    }
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+@keyframes tt-go-in {
+    from {
+        opacity: 0;
+        scale: 0.85;
+    }
+    to {
+        opacity: 1;
+        scale: 1;
+    }
+}
+
+@keyframes tt-select {
+    0% {
+        scale: 0.9;
+    }
+    100% {
+        scale: 1;
+    }
+}
+
+@keyframes tt-grow-x {
+    from {
+        opacity: 0;
+        scale: 0 1;
+    }
+    to {
+        opacity: 1;
+        scale: 1 1;
+    }
+}
+
+@keyframes tt-pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 77, 109, 0.55);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(255, 77, 109, 0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .timetable-course,
+    .day-heading,
+    .day-selector button,
+    .view-switch button,
+    .timetable-state,
+    .current-time-line,
+    .current-time-line i,
+    .course-details > *,
+    .course-details dl > div,
+    .coursework-item,
+    .coursework-panel,
+    .coursework-badges span,
+    .timetable-info-panel {
+        animation: none !important;
+    }
+}
+
 @media print {
     .header-container,
     #timetable-page .window-header,

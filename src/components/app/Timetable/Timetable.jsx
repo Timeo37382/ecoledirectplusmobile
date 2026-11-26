@@ -224,7 +224,7 @@ function exportCalendar(courses, weekStart) {
     URL.revokeObjectURL(url);
 }
 
-function CourseCard({ course, gridStart, gridEnd, onSelect, isStreamerModeEnabled, hourHeight = HOUR_HEIGHT }) {
+function CourseCard({ course, gridStart, gridEnd, onSelect, isStreamerModeEnabled, hourHeight = HOUR_HEIGHT, order = 0 }) {
     const startMinutes = minutesSinceMidnight(course.start);
     const endMinutes = minutesSinceMidnight(course.end);
     const visibleStart = Math.max(startMinutes, gridStart);
@@ -240,7 +240,7 @@ function CourseCard({ course, gridStart, gridEnd, onSelect, isStreamerModeEnable
         <button
             type="button"
             className={`timetable-course${course.isCancelled ? " cancelled" : ""}${course.isModified ? " modified" : ""}${compact ? " compact" : ""}${prioritizeTitle ? " title-priority" : ""}${course.devoirAFaire ? " has-homework" : ""}`}
-            style={{ top, height, "--course-color": course.color }}
+            style={{ top, height, "--course-color": course.color, "--order": Math.min(order, 14) }}
             onClick={() => onSelect(course)}
             aria-label={`${course.subject}, de ${format(course.start, "HH:mm")} à ${format(course.end, "HH:mm")}, ${course.status}${course.devoirAFaire ? ", devoir à faire" : ""}`}
         >
@@ -771,8 +771,9 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
 
                                     {viewMode !== "week" && (
                                         <div className="day-selector" role="tablist" aria-label={viewMode === "day" ? "Jour affiché" : "Premier jour de la période affichée"} style={{ "--selector-days": shownSelectorDays.length }}>
-                                            {shownSelectorDays.map((day) => (
+                                            {shownSelectorDays.map((day, dayIndex) => (
                                                 <button
+                                                    style={{ "--order": dayIndex }}
                                                     type="button"
                                                     role="tab"
                                                     aria-selected={isSameDay(day, periodStart)}
@@ -812,8 +813,8 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                             >
                                                 <div className="timetable-days-header">
                                                     <div className="time-header" aria-hidden="true">Heure</div>
-                                                    {visibleDays.map((day) => (
-                                                        <div className={`day-heading${isSameDay(day, today) ? " today" : ""}`} key={dateKey(day)}>
+                                                    {visibleDays.map((day, dayIndex) => (
+                                                        <div className={`day-heading${isSameDay(day, today) ? " today" : ""}`} key={dateKey(day)} style={{ "--order": dayIndex }}>
                                                             <span>{format(day, isCompactWeek ? "EEE" : "EEEE", { locale: fr })}</span>
                                                             <strong>{format(day, isCompactWeek ? "d" : "d MMM", { locale: fr })}</strong>
                                                         </div>
@@ -829,13 +830,13 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                                         {timeMarkers.map((minutes) => (
                                                             <span className={`time-grid-line${minutes % 60 === 0 ? " hour" : ""}`} style={{ top: ((minutes - gridRange.start) / 60) * hourHeight }} key={minutes} aria-hidden="true" />
                                                         ))}
-                                                        {visibleDays.map((day) => {
+                                                        {visibleDays.map((day, dayIndex) => {
                                                             const dayCourses = displayedCourses.filter((course) => isSameDay(course.start, day));
                                                             const nowMinutes = minutesSinceMidnight(now);
                                                             const showNow = isSameDay(day, now) && nowMinutes >= gridRange.start && nowMinutes <= gridRange.end;
                                                             return (
                                                                 <div className={`day-column${isSameDay(day, today) ? " today" : ""}`} key={dateKey(day)}>
-                                                                    {dayCourses.map((course) => <CourseCard course={course} gridStart={gridRange.start} gridEnd={gridRange.end} onSelect={openCourse} key={course.id} isStreamerModeEnabled={settings.get("isStreamerModeEnabled")} hourHeight={hourHeight} />)}
+                                                                    {dayCourses.map((course, courseIndex) => <CourseCard order={dayIndex + courseIndex} course={course} gridStart={gridRange.start} gridEnd={gridRange.end} onSelect={openCourse} key={course.id} isStreamerModeEnabled={settings.get("isStreamerModeEnabled")} hourHeight={hourHeight} />)}
                                                                     {showNow && (
                                                                         <span className="current-time-line" style={{ top: ((nowMinutes - gridRange.start) / 60) * hourHeight }} aria-label={`Heure actuelle : ${format(now, "HH:mm")}`}>
                                                                             <i aria-hidden="true" />
