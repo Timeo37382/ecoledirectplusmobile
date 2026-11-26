@@ -10,7 +10,6 @@ import EDPLogo from "../graphics/EDPLogo";
 import EDPLogoFullWidth from "../graphics/EDPLogoFullWidth";
 
 import "./Login.css";
-import ExtensionIcon from "../graphics/ExtensionIcon";
 
 if (sessionStorage.getItem('april') === "true") {
     import("./april.css").then((something) => {
@@ -32,23 +31,17 @@ export default function Login({ keepLoggedIn, setKeepLoggedIn, A2FInfo, setRequi
     // JSX
     return (
         <div id="login">
-            <Link to="/">
+            <Link to="/" className="login-logo-link">
                 <EDPLogoFullWidth className="login-logo" id="outside-container" alt="Logo Ecole Directe Plus" />
+                <span className="login-logo-mobile-outside">Mobile</span>
             </Link>
-            {!isEDPUnblockInstalledActuallyInstalled
-                ? <Link to="/edp-unblock" id="edp-unblock-ad">
-                    <ExtensionIcon className="extension-icon" />
-                    <span>Installez l'extension EDP Unblock pour accéder en continu à Ecole Directe Plus ! <span className="edpu-explanation">Ecole Directe Plus a besoin de son extension pour accéder au contenu fourni par l’API d’EcoleDirecte.</span></span>
-                    <span to="/edp-unblock#about">En savoir plus</span>
-                </Link>
-                : null
-            }
             <span className="login-social">
                 <DiscordLink />
                 <GithubLink />
             </span>
             <div className="login-box">
                 <EDPLogo className="login-logo" id="inside-container" alt="Logo Ecole Directe Plus" />
+                <span className="login-logo-mobile">Mobile</span>
                 <InfoButton>Pour vous connecter, utilisez vos identifiants EcoleDirecte</InfoButton>
                 <h1>Connexion</h1>
                 <LoginForm keepLoggedIn={keepLoggedIn} setKeepLoggedIn={setKeepLoggedIn} A2FInfo={A2FInfo} setRequireA2F={setRequireA2F} bufferUserIds={bufferUserIds} fetchLogin={fetchLogin} logout={logout} loginFromOldAuthInfo={loginFromOldAuthInfo} />

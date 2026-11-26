@@ -247,6 +247,19 @@ html:has(.landing-page) {
     height: 100%;
 }
 
+/* "Mobile" tag dans le logo navbar */
+.landing-page .nav-logo-mobile {
+    font: inherit;
+    color: rgb(var(--text-color-alt));
+    opacity: 0;
+    animation: navMobileFadeIn 1.2s 2s ease forwards;
+}
+
+@keyframes navMobileFadeIn {
+    from { opacity: 0; transform: translateX(-6px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
 /* -------------------------------------------------------------------------- */
 /*                                HERO BANNER                                 */
 /* -------------------------------------------------------------------------- */
@@ -264,42 +277,17 @@ html:has(.landing-page) {
     z-index: -1;
     width: 100%;
 
-    height: calc(min(100vh, 1100px) + 2px);
+    height: 100%;
+    min-height: 100vh;
     position: absolute;
     top: 0;
 
-    border-bottom: 2px solid rgba(var(--text-color-alt), 0.5);
     background: radial-gradient(
         circle at bottom left,
         rgba(var(--text-color-alt), 0.3) 0,
         rgba(var(--text-color-alt), 0.1) 50%,
         transparent 100%
     );
-}
-
-/* AFFILIATION DISCLAIMER */
-
-.landing-page .affiliation-disclaimer {
-    font-size: var(--font-size-13);
-    background: rgb(var(--text-color-alt), 0.1);
-    color: rgb(var(--text-color-alt));
-    border: 1px solid rgb(var(--text-color-alt), 0.2);
-    border-radius: 15px;
-    width: max-content;
-    padding: 5px 10px;
-    margin: 0 auto;
-    margin-bottom: 30px;
-    display: flex;
-    align-items: center;
-    flex-flow: row nowrap;
-    gap: 8px;
-}
-.landing-page .affiliation-disclaimer svg {
-    height: 12px;
-    transform: scale(1.6);
-}
-.landing-page .affiliation-disclaimer svg path {
-    stroke: rgb(var(--text-color-alt));
 }
 
 /* HERO CONTENT */
@@ -317,7 +305,8 @@ html:has(.landing-page) {
 }
 
 .landing-page h1 {
-    font-size: var(--font-size-36);
+    font-size: clamp(2.4rem, 6vw, 3.8rem);
+    animation: fadeSlideUp 0.8s ease both;
 }
 .landing-page .heading-emphasis {
     color: rgb(var(--text-color-alt));
@@ -339,6 +328,7 @@ html:has(.landing-page) {
     transition: 0.2s;
     outline: none;
     overflow: hidden;
+    animation: fadeSlideUp 0.8s 0.45s ease both;
 }
 .landing-page .login-call-to-action::after {
     content: "-->";
@@ -367,40 +357,170 @@ html:has(.landing-page) {
     opacity: 0.6;
 }
 
-.landing-page .fade-out-image {
-    margin: 0 auto;
-    margin-top: 100px;
-    width: min(1200px, calc(100% - 40px));
+/* HERO DESCRIPTION */
+
+.landing-page .hero-subtitle {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    max-width: 540px;
+    animation: fadeSlideUp 0.8s 0.15s ease both;
+}
+
+.landing-page .hero-description {
+    font-size: clamp(0.88rem, 1.8vw, 1rem);
+    max-width: 500px;
+    margin-top: 16px !important;
+    line-height: 1.7;
+    opacity: 0.72;
+    animation: fadeSlideUp 0.8s 0.3s ease both;
+}
+
+/* ANIMATIONS D'ENTRÉE */
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.landing-page .hero-description a,
+.landing-page .hero-subtitle a {
+    color: rgb(var(--text-color-alt));
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: opacity 0.15s;
+}
+
+.landing-page .hero-description a:hover,
+.landing-page .hero-subtitle a:hover {
+    opacity: 0.75;
+}
+
+/* PHONE MOCKUP */
+
+.phone-mockup-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin-top: 70px;
+    margin-bottom: 60px;
+    animation: fadeSlideUp 0.9s 0.55s ease both;
+}
+
+.phone-mockup {
+    position: relative;
+    z-index: 1;
+}
+
+.phone-frame {
+    position: relative;
+    width: 280px;
+    background: linear-gradient(
+        145deg,
+        rgb(var(--text-color-alt), 0.18) 0%,
+        rgb(var(--text-color-alt), 0.06) 50%,
+        rgb(var(--text-color-alt), 0.14) 100%
+    );
+    border: 2px solid rgb(var(--text-color-alt), 0.35);
+    border-radius: 44px;
+    padding: 14px 10px;
+    box-shadow:
+        0 0 0 1px rgb(var(--text-color-alt), 0.08),
+        inset 0 0 0 1px rgb(var(--text-color-alt), 0.05),
+        0 30px 80px -20px rgb(var(--text-color-alt), 0.25),
+        0 8px 24px -8px rgb(var(--text-color-alt), 0.15);
+    backdrop-filter: blur(2px);
+}
+
+/* Boutons volume (gauche) */
+.phone-buttons .btn-vol {
+    position: absolute;
+    left: -4px;
+    width: 3px;
+    height: 38px;
+    background: rgb(var(--text-color-alt), 0.3);
+    border-radius: 3px 0 0 3px;
+    border: 1px solid rgb(var(--text-color-alt), 0.2);
+}
+.phone-buttons .btn-vol:first-child {
+    top: 90px;
+}
+.phone-buttons .btn-vol:last-child {
+    top: 140px;
+}
+
+/* Écran */
+.phone-screen {
+    background: rgb(var(--background-color-0));
+    border-radius: 34px;
     overflow: hidden;
     position: relative;
-    transition: transform 0.3s ease;
+    aspect-ratio: 9 / 19.5;
 }
-.landing-page .fade-out-image:has(.mobile) {
-    width: min(350px, calc(100% - 40px));
-}
-.landing-page .fade-out-image:has(.tablet) {
-    width: min(450px, calc(100% - 40px));
-}
-.landing-page .fade-out-image img {
-    width: 100%;
-    display: block;
-    border: 1px solid rgba(var(--text-color-alt), 0.2);
-    border-radius: 10px;
-}
-.landing-page .fade-out-image::after {
-    content: "";
-    background: linear-gradient(
-        180deg,
-        transparent,
-        rgb(var(--background-color-0)) 90%,
-        rgb(var(--background-color-0))
-    );
-    height: 90%;
-    bottom: -1px;
-    left: -1px;
-    width: calc(100% + 2px);
+
+/* Encoche dynamique */
+.phone-notch {
     position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: 90px;
+    height: 26px;
+    background: rgb(var(--background-color-0));
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1.5px solid rgb(var(--text-color-alt), 0.12);
 }
+
+.notch-camera {
+    width: 10px;
+    height: 10px;
+    background: radial-gradient(circle, rgb(var(--text-color-alt), 0.5) 30%, rgb(var(--text-color-alt), 0.15) 100%);
+    border-radius: 50%;
+    border: 1.5px solid rgb(var(--text-color-alt), 0.2);
+}
+
+/* Screenshot dans l'écran */
+.phone-screenshot {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+}
+
+/* Halo lumineux derrière le téléphone */
+.phone-glow {
+    position: absolute;
+    bottom: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 80px;
+    background: radial-gradient(ellipse, rgb(var(--text-color-alt), 0.25) 0%, transparent 70%);
+    filter: blur(20px);
+    z-index: 0;
+    pointer-events: none;
+}
+
+@media (max-width: 480px) {
+    .phone-frame {
+        width: 230px;
+        border-radius: 36px;
+    }
+    .phone-screen {
+        border-radius: 28px;
+    }
+}
+
 
 .landing-page .section-title {
     font-size: var(--font-size-32);

@@ -102,6 +102,32 @@
     display: none;
 }
 
+.login-logo-mobile {
+    display: none;
+    text-align: center;
+    color: rgb(var(--text-color-alt));
+    font-size: var(--font-size-16);
+    font-weight: var(--font-weight-semi-bold);
+    opacity: 0;
+    animation: loginMobileFadeIn 1.2s 2s ease forwards;
+}
+
+.login-logo-mobile-outside {
+    position: absolute;
+    left: 20px;
+    top: 74px;
+    color: rgb(var(--text-color-alt));
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-semi-bold);
+    opacity: 0;
+    animation: loginMobileFadeIn 1.2s 2s ease forwards;
+}
+
+@keyframes loginMobileFadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 .login-social {
     position: fixed;
     top: 0;
@@ -229,19 +255,25 @@ p.policy {
     }
 
     /* Solution de gros golem exécutée par des professionnels à ne pas reproduire à la maison*/
-    .login-logo#outside-container {
+    .login-logo#outside-container,
+    .login-logo-mobile-outside {
         display: none;
     }
-    
+
     .login-logo#inside-container {
         display: block !important;
         position: static;
         top: auto;
         left: auto;
         transform: none;
-        margin: 5dvh auto; /*dvh = dynamic vh -> prend en compte la barre de recherche sur mobile */
+        margin: 5dvh auto 1rem auto; /*dvh = dynamic vh -> prend en compte la barre de recherche sur mobile */
         width: 90px;
         height: auto;
+    }
+
+    .login-logo-mobile {
+        display: block;
+        margin-bottom: 2dvh;
     }
 
     .login-box {

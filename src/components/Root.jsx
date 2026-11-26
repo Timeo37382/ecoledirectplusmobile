@@ -432,7 +432,7 @@ export default function Root({ currentEDPVersion, token, accountsList, fakeLogin
 
     return (
         <>
-            <div id="admin-controls" style={{ position: "fixed", zIndex: "999", top: "0", left: "0" }}>
+            <div id="admin-controls" style={{ display: "none" }}>
                 {isAdmin && <input type="button" onClick={redirectToLogin} value="LOGIN" />}
                 {isAdmin && <input type="button" onClick={redirectToLandingPage} value="LANDING PAGE" />}
                 {isAdmin && <input type="button" onClick={redirectToFeedback} value="FEEDBACK" />}

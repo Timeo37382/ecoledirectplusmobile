@@ -95,7 +95,7 @@ export default function ErrorPage({ sardineInsolente }) {
                     </div> */}
                     
                     {/* <p>IMPORTANT : Ces retours peuvent contenir des informations personnelles, c'est pourquoi nous avons besoin de votre consentement pour les effectuer, mais ils nous permettrons de mieux identifier le bug qui vous a touché.</p> */}
-                    <p>Un erreur inattendue est survenue. Essayez de rafraîchir la page, effacez toutes les données liées au site depuis les paramètres de votre navigateur, et vérifiez la bonne installation et version de l'extension EDP-Unblock. Si l'erreur persiste, rejoignez le <Link to="https://discord.gg/AKAqXfTgvE" target="_blank">serveur discord communautaire</Link> pour obtenir de l'aide.</p>
+                    <p>Un erreur inattendue est survenue. Essayez de rafraîchir la page, et effacez toutes les données liées au site depuis les paramètres de votre navigateur. Si l'erreur persiste, rejoignez le <Link to="https://discord.gg/AKAqXfTgvE" target="_blank">serveur discord communautaire</Link> pour obtenir de l'aide.</p>
                 </div>
             </div>
         );
