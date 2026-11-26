@@ -7,6 +7,9 @@
     "functions": {
         "api/proxy.js": {
             "maxDuration": 30
+        },
+        "api/prefs.js": {
+            "maxDuration": 15
         }
     },
     "rewrites": [
@@ -15,13 +18,23 @@
             "destination": "/api/proxy?edpPath=$1"
         },
         {
-            "source": "/((?!api/|edp-api/).*)",
+            "source": "/edp-prefs",
+            "destination": "/api/prefs"
+        },
+        {
+            "source": "/((?!api/|edp-api/|edp-prefs).*)",
             "destination": "/index.html"
         }
     ],
     "headers": [
         {
             "source": "/edp-api/(.*)",
+            "headers": [
+                { "key": "Cache-Control", "value": "no-store" }
+            ]
+        },
+        {
+            "source": "/edp-prefs",
             "headers": [
                 { "key": "Cache-Control", "value": "no-store" }
             ]

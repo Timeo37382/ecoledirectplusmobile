@@ -1773,6 +1773,63 @@ export default function App({ edpFetch }) {
             })
     }
 
+    /*
+     * Couleurs personnalisees des matieres, synchronisees entre appareils via
+     * /edp-prefs (api/prefs.js sur Vercel). Compte invite ou serveur non
+     * configure (dev local) : { available: false }, les couleurs restent sur
+     * l'appareil.
+     */
+    async function fetchSubjectColors() {
+        const account = accountsListState[activeAccount];
+        if (!account || account.firstName === "Guest") {
+            return { available: false };
+        }
+        try {
+            const response = await fetch(`/edp-prefs?account=${encodeURIComponent(account.id)}`, { cache: "no-store" });
+            if (!response.ok) {
+                return { available: false };
+            }
+            const payload = await response.json();
+            return { available: true, colors: payload.data?.colors ?? {}, updatedAt: payload.data?.updatedAt ?? 0 };
+        } catch {
+            return { available: false };
+        }
+    }
+
+    async function saveSubjectColors(colors) {
+        const account = accountsListState[activeAccount];
+        if (!account || account.firstName === "Guest") {
+            return { ok: true, localOnly: true };
+        }
+        try {
+            const response = await fetch(`/edp-prefs?account=${encodeURIComponent(account.id)}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-Token": tokenState,
+                    "2FA-Token": token2faState,
+                },
+                body: JSON.stringify({ colors }),
+            });
+            const payload = await response.json().catch(() => ({}));
+            // Le serveur a utilise la session pour verifier le compte : on
+            // reprend le jeton renouvele par EcoleDirecte.
+            const newToken = payload.token || response.headers.get("x-token");
+            if (newToken) {
+                setTokenState(newToken);
+            }
+            if (response.status === 503 || response.status === 404) {
+                return { ok: true, localOnly: true };
+            }
+            if (!response.ok) {
+                return { ok: false, message: payload.message || "La synchronisation a échoué." };
+            }
+            return { ok: true, updatedAt: payload.data?.updatedAt };
+        } catch {
+            return { ok: false, message: "Pas de connexion : couleurs enregistrées sur cet appareil." };
+        }
+    }
+
     // Emploi du temps fictif du compte invite : meme semaine type repetee sur
     // la periode demandee, avec un cours annule, un modifie et des devoirs.
     function buildGuestTimetable(startDate, endDate) {
@@ -3251,7 +3308,7 @@ export default function App({ edpFetch }) {
                             path: "timetable"
                         },
                         {
-                            element: <Timetable isLoggedIn={isLoggedIn} activeAccount={activeAccount} fetchTimetable={fetchTimetable} fetchCoursework={fetchTimetableCoursework} />,
+                            element: <Timetable isLoggedIn={isLoggedIn} activeAccount={activeAccount} fetchTimetable={fetchTimetable} fetchCoursework={fetchTimetableCoursework} fetchSubjectColors={fetchSubjectColors} saveSubjectColors={saveSubjectColors} accountId={accountsListState[activeAccount]?.id} />,
                             path: ":userId/timetable"
                         },
                         {

@@ -1251,6 +1251,31 @@
     background: rgba(var(--text-color-main), 0.1);
 }
 
+.timetable-more-menu .timetable-more-colors {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Trois pastilles de couleur devant "Couleurs des matieres". */
+.timetable-more-colors-dots {
+    flex: 0 0 20px;
+    height: 20px;
+    position: relative;
+}
+
+.timetable-more-colors-dots i {
+    width: 11px;
+    height: 11px;
+    position: absolute;
+    border-radius: 50%;
+    box-shadow: 0 0 0 1.5px rgb(var(--background-color-1));
+}
+
+.timetable-more-colors-dots i:nth-child(1) { top: 0; left: 4px; background: #ef476f; }
+.timetable-more-colors-dots i:nth-child(2) { bottom: 1px; left: 0; background: #4f7cff; }
+.timetable-more-colors-dots i:nth-child(3) { bottom: 1px; right: 0; background: #f7c948; }
+
 .timetable-more-menu .timetable-more-check {
     display: flex;
     align-items: center;

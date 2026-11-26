@@ -106,6 +106,29 @@ Puis router `/edp-api/` vers ce port depuis nginx/Caddy, sur le même domaine.
 > de logger.** Préviens les gens à qui tu donnes l'accès : c'est leur compte
 > scolaire qui transite par ta machine.
 
+## 2 bis. Synchronisation des préférences (couleurs des matières)
+
+Les couleurs choisies dans l'emploi du temps (menu « ⋯ » → *Couleurs des
+matières*) sont synchronisées entre appareils par `api/prefs.js`, servi sous
+`/edp-prefs`. Il lui faut une petite base Redis :
+
+1. Vercel → ton projet → onglet **Storage** → **Create Database** →
+   **Upstash for Redis** (offre gratuite) → région **Paris / eu-west** si
+   proposée → **Connect** au projet.
+2. Vercel ajoute seul les variables `UPSTASH_REDIS_REST_URL` et
+   `UPSTASH_REDIS_REST_TOKEN` (ou `KV_REST_API_URL` / `KV_REST_API_TOKEN`,
+   les deux sont acceptées).
+3. Redéploie. Optionnel : une variable `PREFS_SALT` (texte aléatoire) pour
+   le hachage des clés.
+
+Sans base, l'app fonctionne quand même : les couleurs restent sur l'appareil
+(« Enregistré sur cet appareil » dans le panneau).
+
+Ce qui est stocké : uniquement `{ couleurs, date }`, sous une clé qui est un
+hachage de l'identifiant du compte. Une écriture n'est acceptée qu'après une
+vérification auprès d'EcoleDirecte (lecture de la timeline avec le jeton de
+session de l'utilisateur). Aucun log.
+
 ## 3. L'APK Android (optionnel mais recommandé)
 
 Évite l'IP partagée pour ceux qui l'installent. Se construit depuis Windows,

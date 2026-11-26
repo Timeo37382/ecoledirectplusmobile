@@ -1,0 +1,228 @@
+/* - - - Couleurs des matieres (BottomSheet de l'emploi du temps) - - - */
+
+.subject-colors {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+.subject-colors-sync {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-14);
+    color: rgb(var(--text-color-alt));
+}
+
+.subject-colors-sync button {
+    margin-left: auto;
+    padding: 4px 10px;
+    border: 1px solid rgba(var(--text-color-alt), .5);
+    border-radius: 8px;
+    background: none;
+    color: rgb(var(--text-color-main));
+    font: inherit;
+    font-size: var(--font-size-13);
+    cursor: pointer;
+}
+
+.subject-colors-sync-dot {
+    flex: 0 0 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: rgb(var(--text-color-alt));
+}
+
+.subject-colors-sync.synced .subject-colors-sync-dot { background: #3ecf8e; }
+.subject-colors-sync.pending .subject-colors-sync-dot { background: #f7c948; }
+.subject-colors-sync.saving .subject-colors-sync-dot,
+.subject-colors-sync.loading .subject-colors-sync-dot {
+    background: #4f7cff;
+    animation: subject-colors-blink 1s ease-in-out infinite;
+}
+
+.subject-colors-sync-detail,
+.subject-colors-info {
+    font-size: var(--font-size-13);
+    color: rgb(var(--text-color-alt));
+}
+
+.subject-colors-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.subject-color-row {
+    border-radius: 14px;
+    background: rgba(var(--background-color-1), .7);
+    overflow: hidden;
+    animation: subject-colors-drop-in 0.45s var(--timing-function-spring-effect) backwards;
+    animation-delay: calc(var(--order, 0) * 35ms);
+}
+
+.subject-color-main {
+    width: 100%;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    color: rgb(var(--text-color-main));
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color .15s;
+}
+
+.subject-color-main:is(:hover, :focus-visible) {
+    background: rgba(var(--text-color-main), .06);
+}
+
+.subject-color-swatch {
+    flex: 0 0 30px;
+    height: 30px;
+    border-radius: 9px;
+    background: var(--subject-color);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25), 0 2px 6px rgba(0, 0, 0, .25);
+    transition: background-color .25s;
+}
+
+.subject-color-name {
+    flex: 1;
+    min-width: 0;
+    font-size: var(--font-size-15);
+    font-weight: var(--font-weight-semi-bold);
+    overflow-wrap: anywhere;
+}
+
+.subject-color-badge {
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: rgba(var(--text-color-main), .12);
+    font-size: var(--font-size-12);
+    font-weight: var(--font-weight-semi-bold);
+}
+
+.subject-color-chevron {
+    font-size: var(--font-size-24);
+    line-height: 1;
+    color: rgb(var(--text-color-alt));
+    transition: rotate .25s var(--timing-function-spring-effect);
+}
+
+.subject-color-row.open .subject-color-chevron {
+    rotate: 90deg;
+}
+
+.subject-color-error {
+    margin: 0 12px 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(var(--background-color-error), .18);
+    font-size: var(--font-size-13);
+    animation: subject-colors-drop-in 0.35s var(--timing-function-spring-effect) backwards;
+}
+
+.subject-color-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 12px 12px;
+    animation: subject-colors-drop-in 0.35s var(--timing-function-spring-effect) backwards;
+}
+
+.subject-color-palette {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(34px, 1fr));
+    gap: 8px;
+}
+
+.subject-color-choice {
+    aspect-ratio: 1;
+    min-height: 34px;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    background: var(--choice);
+    cursor: pointer;
+    transition: scale .1s, border-color .15s;
+    animation: subject-colors-pop-in 0.3s var(--timing-function-spring-effect) backwards;
+}
+
+.subject-color-choice:is(:hover, :focus-visible):not(:disabled) {
+    scale: 1.1;
+}
+
+.subject-color-choice.selected {
+    border-color: rgb(var(--text-color-main));
+    box-shadow: 0 0 0 2px rgba(var(--background-color-0), .8) inset;
+}
+
+/* Couleur deja prise par une autre matiere : barree, non cliquable. */
+.subject-color-choice.taken {
+    opacity: .35;
+    cursor: not-allowed;
+    background:
+        linear-gradient(to top right, transparent 46%, rgba(255, 255, 255, .9) 47% 53%, transparent 54%),
+        var(--choice);
+}
+
+.subject-color-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.subject-color-custom,
+.subject-color-reset {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border: 1px solid rgba(var(--text-color-alt), .45);
+    border-radius: 10px;
+    background: none;
+    color: rgb(var(--text-color-main));
+    font: inherit;
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-semi-bold);
+    cursor: pointer;
+}
+
+.subject-color-custom input[type="color"] {
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    cursor: pointer;
+}
+
+.subject-color-custom input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.subject-color-custom input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+
+@keyframes subject-colors-drop-in {
+    from { opacity: 0; translate: 0 -10px; }
+    to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes subject-colors-pop-in {
+    from { opacity: 0; scale: 0.5; }
+    to { opacity: 1; scale: 1; }
+}
+
+@keyframes subject-colors-blink {
+    50% { opacity: .35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .subject-colors * {
+        animation: none !important;
+    }
+}

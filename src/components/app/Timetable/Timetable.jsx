@@ -25,6 +25,8 @@ import FileComponent from "../../generic/FileComponent";
 import InfoButton from "../../generic/Informative/InfoButton";
 
 import "./Timetable.css";
+import SubjectColorsPanel from "./SubjectColorsPanel";
+import { subjectKey, useSubjectColors } from "../../../utils/subjectColors";
 import { anonymizeTeacher, textToHSL } from "../../../utils/utils";
 import WalkingCanardman from "../../graphics/WalkingCanardman";
 import { AppContext } from "../../../App";
@@ -361,7 +363,7 @@ function CourseworkPanel({ activeAccount, course, coursework, onRetry, isStreame
     );
 }
 
-export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, fetchCoursework }) {
+export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, fetchCoursework, fetchSubjectColors, saveSubjectColors, accountId }) {
     const today = useMemo(() => new Date(), []);
     const currentDayStart = useMemo(() => startOfDay(today), [today]);
     const currentWeekStart = useMemo(() => startOfWeek(today, { weekStartsOn: 1 }), [today]);
@@ -385,6 +387,16 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
     const [refreshRequest, setRefreshRequest] = useState(0);
     const [now, setNow] = useState(new Date());
     const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+    // Couleurs des matieres : panneau, matieres trouvees sur plusieurs semaines.
+    const [isColorsOpen, setIsColorsOpen] = useState(false);
+    const [subjectSourceCourses, setSubjectSourceCourses] = useState([]);
+    const [loadingSubjects, setLoadingSubjects] = useState(false);
+    const subjectColorState = useSubjectColors({
+        accountId: accountId ?? activeAccount,
+        fetchRemote: fetchSubjectColors,
+        saveRemote: saveSubjectColors,
+    });
+    const subjectColors = subjectColorState.colors;
     // Sens de la derniere navigation, pour l'animation de glissement.
     const [slideDirection, setSlideDirection] = useState(0);
     // Ecran de telephone (<= 650px) : la vue Semaine y passe en mode compact,
@@ -450,8 +462,14 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
         [courses, visibleDays],
     );
     const displayedCourses = useMemo(
-        () => periodCourses.filter((course) => showCancelled || !course.isCancelled),
-        [periodCourses, showCancelled],
+        () => periodCourses
+            .filter((course) => showCancelled || !course.isCancelled)
+            // Couleur personnalisee de la matiere, si l'eleve en a choisi une.
+            .map((course) => {
+                const customColor = subjectColors[subjectKey(course)];
+                return customColor ? { ...course, color: customColor } : course;
+            }),
+        [periodCourses, showCancelled, subjectColors],
     );
     const gridRange = useMemo(() => getGridRange(displayedCourses), [displayedCourses]);
     const gridHeight = ((gridRange.end - gridRange.start) / 60) * hourHeight;
@@ -627,6 +645,39 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
 
     const shownSelectorDays = selectorDays.filter((day) => !isKnownEmptyWeekend(day));
 
+    // Matieres de l'eleve uniquement : celles presentes dans son emploi du
+    // temps (semaines deja chargees + une lecture large a l'ouverture du
+    // panneau, pour ne pas rater une matiere en semaine A/B).
+    const subjects = useMemo(() => {
+        if (!isColorsOpen) return [];
+        const byKey = new Map();
+        const allCourses = [...subjectSourceCourses, ...courses];
+        for (const value of cache.current.values()) {
+            allCourses.push(...value.courses);
+        }
+        for (const course of allCourses) {
+            const key = subjectKey(course);
+            if (!key || byKey.has(key) || !String(course.matiere ?? "").trim()) continue;
+            byKey.set(key, { key, name: course.subject, defaultColor: course.color });
+        }
+        return [...byKey.values()].sort((a, b) => a.name.localeCompare(b.name, "fr"));
+    }, [isColorsOpen, subjectSourceCourses, courses]);
+
+    const openSubjectColors = () => {
+        setIsMoreMenuOpen(false);
+        setIsColorsOpen(true);
+        if (subjectSourceCourses.length > 0 || typeof fetchTimetableRef.current !== "function") return;
+        setLoadingSubjects(true);
+        fetchTimetableRef.current({
+            startDate: startOfWeek(addWeeks(today, -2), { weekStartsOn: 1 }),
+            endDate: addDays(startOfWeek(addWeeks(today, 4), { weekStartsOn: 1 }), WEEK_DAYS - 1),
+            controller: new AbortController(),
+        })
+            .then((rawCourses) => setSubjectSourceCourses((rawCourses ?? []).map(normalizeCourse).filter(Boolean)))
+            .catch(() => { /* on garde les matieres des semaines deja chargees */ })
+            .finally(() => setLoadingSubjects(false));
+    };
+
     const periodLabel = viewMode === "day"
         ? (isSameDay(periodStart, today) ? "Aujourd'hui" : isSameDay(periodStart, addDays(today, 1)) ? "Demain" : isSameDay(periodStart, addDays(today, -1)) ? "Hier" : "Jour")
         : viewMode === "three-day" ? "3 jours" : `Semaine ${format(periodStart, "w")}`;
@@ -760,6 +811,7 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                                 <span className="cancelled-toggle-label">Annulés{cancelledCount > 0 ? ` (${cancelledCount})` : ""}</span>
                                             </label>
                                             <div className="timetable-output-actions">
+                                                <button type="button" onClick={openSubjectColors}>Couleurs</button>
                                                 <button type="button" onClick={() => exportCalendar(displayedCourses, periodStart)}>Exporter .ics</button>
                                                 <button type="button" onClick={() => window.print()}>Imprimer</button>
                                                 <button type="button" className="timetable-action-button" onClick={refresh} disabled={refreshing}>{refreshing ? "Actualisation…" : "Actualiser"}</button>
@@ -775,6 +827,10 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                                                 Afficher les cours annulés
                                                                 <small>{cancelledCount === 0 ? "Aucun sur cette période" : `${cancelledCount} sur cette période`}</small>
                                                             </span>
+                                                        </button>
+                                                        <button type="button" role="menuitem" className="timetable-more-colors" onClick={openSubjectColors}>
+                                                            <span className="timetable-more-colors-dots" aria-hidden="true"><i /><i /><i /></span>
+                                                            Couleurs des matières
                                                         </button>
                                                         <button type="button" role="menuitem" onClick={() => { setIsMoreMenuOpen(false); refresh(); }} disabled={refreshing}>{refreshing ? "Actualisation…" : "Actualiser"}</button>
                                                         <button type="button" role="menuitem" onClick={() => { setIsMoreMenuOpen(false); exportCalendar(displayedCourses, periodStart); }}>Exporter (.ics)</button>
@@ -873,6 +929,20 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                     </WindowsLayout>
                 </WindowsContainer>
             </div>
+
+            {isColorsOpen && (
+                <BottomSheet heading="Couleurs des matières" onClose={() => setIsColorsOpen(false)} firstResizingBreakpoint={2} className="subject-colors-sheet">
+                    <SubjectColorsPanel
+                        subjects={subjects}
+                        loadingSubjects={loadingSubjects}
+                        colors={subjectColors}
+                        setColors={subjectColorState.setColors}
+                        syncState={subjectColorState.syncState}
+                        syncMessage={subjectColorState.syncMessage}
+                        onRetry={subjectColorState.retry}
+                    />
+                </BottomSheet>
+            )}
 
             {selectedCourse && (
                 <BottomSheet heading={selectedCourse.subject} onClose={closeCourse} firstResizingBreakpoint={1}>
