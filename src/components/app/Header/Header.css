@@ -272,14 +272,13 @@ main.content {
     }
 
     .standalone .header-menu {
-        padding-bottom: max(25px, env(safe-area-inset-bottom, 0px));
+        padding-bottom: env(safe-area-inset-bottom, 0px);
     }
 
     /* Hauteur de la barre : de quoi loger une icone de 28px et un libelle sur
-       deux lignes, plus la zone de gestes du systeme. L'ancienne valeur (75px
-       fixe) rognait le libelle et ignorait cette zone. */
-    .header-container:not(.standalone) {
-        max-height: calc(78px + env(safe-area-inset-bottom, 0px));
+       deux lignes, plus la zone de gestes du systeme. */
+    .header-container {
+        max-height: calc(72px + env(safe-area-inset-bottom, 0px));
     }
 }
 
