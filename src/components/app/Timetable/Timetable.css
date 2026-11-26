@@ -306,7 +306,9 @@
 
 .day-selector {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    /* Autant de colonnes que de jours affiches (5 quand le week-end vide est
+       masque) : la barre reste pleine largeur et centree. */
+    grid-template-columns: repeat(var(--selector-days, 7), minmax(0, 1fr));
     gap: 5px;
     margin-bottom: 8px;
 }

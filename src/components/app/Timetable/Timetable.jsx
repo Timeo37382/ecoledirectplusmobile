@@ -598,6 +598,8 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
         });
     };
 
+    const shownSelectorDays = selectorDays.filter((day) => !isKnownEmptyWeekend(day));
+
     const periodLabel = viewMode === "day"
         ? (isSameDay(periodStart, today) ? "Aujourd'hui" : isSameDay(periodStart, addDays(today, 1)) ? "Demain" : isSameDay(periodStart, addDays(today, -1)) ? "Hier" : "Jour")
         : viewMode === "three-day" ? "3 jours" : `Semaine ${format(periodStart, "w")}`;
@@ -754,8 +756,8 @@ export default function Timetable({ isLoggedIn, activeAccount, fetchTimetable, f
                                     </div>
 
                                     {viewMode !== "week" && (
-                                        <div className="day-selector" role="tablist" aria-label={viewMode === "day" ? "Jour affiché" : "Premier jour de la période affichée"}>
-                                            {selectorDays.filter((day) => !isKnownEmptyWeekend(day)).map((day) => (
+                                        <div className="day-selector" role="tablist" aria-label={viewMode === "day" ? "Jour affiché" : "Premier jour de la période affichée"} style={{ "--selector-days": shownSelectorDays.length }}>
+                                            {shownSelectorDays.map((day) => (
                                                 <button
                                                     type="button"
                                                     role="tab"
