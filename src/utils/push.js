@@ -99,3 +99,10 @@ export async function updatePushTypes(types) {
     if (!subscription) return;
     await post("update", { endpoint: subscription.endpoint, types });
 }
+
+/** Demande au serveur une notification de test pour cet appareil uniquement. */
+export async function sendServerTestPush() {
+    const subscription = await getPushSubscription();
+    if (!subscription) throw new Error("Active d'abord « Même quand l'appli est fermée ».");
+    await post("test-self", { endpoint: subscription.endpoint });
+}

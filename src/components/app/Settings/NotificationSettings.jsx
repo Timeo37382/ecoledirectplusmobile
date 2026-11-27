@@ -136,6 +136,14 @@ export default function NotificationSettings() {
                 <p className="notification-push-state">{pushState === "working" ? "Un instant…" : pushMessage}</p>
             )}
 
+            <div className="setting" id="notification-guide">
+                <div className="setting-label">
+                    <span>Tu ne reçois rien appli fermée ?</span>
+                    <InfoButton className="setting-tooltip">Certains téléphones (Xiaomi, Samsung, Huawei...) ferment le navigateur en arrière-plan et bloquent les notifications. Le guide montre les réglages à faire selon ton téléphone.</InfoButton>
+                </div>
+                <Button onClick={() => window.dispatchEvent(new Event("edp-open-notification-guide"))}>Guide</Button>
+            </div>
+
             <div className="setting" id="test-notification">
                 <div className="setting-label">
                     <span>Notification de test</span>

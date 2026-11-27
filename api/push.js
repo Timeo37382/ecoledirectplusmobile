@@ -8,6 +8,7 @@
  *   POST /edp-push?action=update        { endpoint, types }
  *   POST /edp-push?action=unsubscribe   { endpoint }
  *   GET  /edp-push?action=check         verification de tous les abonnes (appelee par GitHub Actions)
+ *   POST /edp-push?action=test-self     { endpoint }  notification de test a cet appareil seulement
  *   POST /edp-push?action=broadcast-test   notification de test a tous les abonnes
  *        (reserve a l'administrateur : en-tete x-edp-admin = PUSH_ENCRYPTION_KEY)
  *
@@ -468,6 +469,36 @@ export default async function handler(req, res) {
             const redisKey = subscriberKey(subscription.endpoint);
             await writeRecord(config, key, redisKey, record);
             await redis(config, ["SADD", SUBSCRIBERS_SET, redisKey]);
+            return res.status(200).json({ code: 200 });
+        }
+
+        if (action === "test-self") {
+            // L'adresse d'abonnement est secrete : la connaitre suffit a
+            // prouver qu'on est l'appareil abonne. Une demande / 20 s.
+            const endpoint = String(body?.endpoint ?? "");
+            if (!/^https:\/\//.test(endpoint) || endpoint.length >= 1000) {
+                return res.status(400).json({ code: 400, message: "Demande incomplète." });
+            }
+            const redisKey = subscriberKey(endpoint);
+            const record = await readRecord(config, key, redisKey);
+            if (!record) {
+                return res.status(404).json({ code: 404, message: "Cet appareil n'est pas abonné : active « Même quand l'appli est fermée »." });
+            }
+            const allowed = await redis(config, ["SET", `${redisKey}:test`, "1", "NX", "EX", "20"]);
+            if (allowed !== "OK") {
+                return res.status(429).json({ code: 429, message: "Attends quelques secondes avant de réessayer." });
+            }
+            const alive = await push(record.subscription, {
+                title: "Notification de test",
+                body: "Ça marche : tu recevras les nouveautés même appli fermée.",
+                tag: "edp-self-test",
+                url: `/app/${record.accountIndex ?? 0}/dashboard`,
+            });
+            if (!alive) {
+                await redis(config, ["DEL", redisKey]);
+                await redis(config, ["SREM", SUBSCRIBERS_SET, redisKey]);
+                return res.status(410).json({ code: 410, message: "L'abonnement de cet appareil a expiré : réactive « Même quand l'appli est fermée »." });
+            }
             return res.status(200).json({ code: 200 });
         }
 

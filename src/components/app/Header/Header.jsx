@@ -25,6 +25,7 @@ import "../../generic/events/christmas/garland.css";
 
 import "./Header.css";
 import UpdatesIsland from "./UpdatesIsland";
+import NotificationGuide from "../NotificationGuide/NotificationGuide";
 
 
 export default function Header({ currentEDPVersion, accountsList, setActiveAccount, activeAccount, carpeConviviale, isLoggedIn, fetchUserTimeline, timeline, isFullScreen, isTabletLayout, logout }) {
@@ -253,6 +254,7 @@ export default function Header({ currentEDPVersion, accountsList, setActiveAccou
                 </Suspense>
             </main>
             <UpdatesIsland />
+            <NotificationGuide />
             {location.hash === "#feedback" && <BottomSheet className="feedback-bottom-sheet" heading="Faire un retour" onClose={handleCloseAnchorLinks} close={closeFeedbackBottomSheet} ><FeedbackForm activeUser={accountsList[activeAccount]} onSubmit={() => setCloseFeedbackBottomSheet(true)} carpeConviviale={carpeConviviale} /></BottomSheet>}
             {location.hash === "#patch-notes" && <PatchNotes currentEDPVersion={currentEDPVersion} onClose={() => { handleCloseAnchorLinks(); localStorage.setItem("EDPVersion", currentEDPVersion) }} />}
             {location.hash === "#policy" && <Policy onCloseNavigateURL="#" />}
