@@ -8,6 +8,8 @@
  *   POST /edp-push?action=update        { endpoint, types }
  *   POST /edp-push?action=unsubscribe   { endpoint }
  *   GET  /edp-push?action=check         verification de tous les abonnes (appelee par GitHub Actions)
+ *   POST /edp-push?action=broadcast-test   notification de test a tous les abonnes
+ *        (reserve a l'administrateur : en-tete x-edp-admin = PUSH_ENCRYPTION_KEY)
  *
  * Fonctionnement : pour chaque abonne, le serveur se connecte a EcoleDirecte
  * (jeton reutilise tant qu'il est valide), recupere notes, cahier de texte,
@@ -27,7 +29,7 @@
  * utilisee par /edp-prefs.
  */
 
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, randomBytes, timingSafeEqual } from "node:crypto";
 import webpush from "web-push";
 
 import { buildSnapshot, diffSnapshots } from "../src/utils/notifications.js";
@@ -378,6 +380,38 @@ export default async function handler(req, res) {
             res.setHeader("Allow", "POST");
             return res.status(405).json({ code: 405, message: "Méthode non autorisée." });
         }
+        if (action === "broadcast-test") {
+            // Compare des hachages de meme longueur, en temps constant.
+            const given = createHash("sha256").update(String(req.headers["x-edp-admin"] ?? "")).digest();
+            const expected = createHash("sha256").update(process.env.PUSH_ENCRYPTION_KEY ?? "").digest();
+            if (!req.headers["x-edp-admin"] || !timingSafeEqual(given, expected)) {
+                return res.status(403).json({ code: 403, message: "Accès refusé." });
+            }
+            const keys = (await redis(config, ["SMEMBERS", SUBSCRIBERS_SET])) ?? [];
+            const results = {};
+            for (const redisKey of keys) {
+                let outcome;
+                try {
+                    const record = await readRecord(config, key, redisKey);
+                    if (!record) {
+                        outcome = "missing";
+                    } else {
+                        const alive = await push(record.subscription, {
+                            title: "Notification de test",
+                            body: "Les notifications EDP marchent, même appli fermée.",
+                            tag: "edp-broadcast-test",
+                            url: `/app/${record.accountIndex ?? 0}/dashboard`,
+                        });
+                        outcome = alive ? "sent" : "gone";
+                    }
+                } catch (error) {
+                    outcome = `error-${error?.message ?? "unknown"}`;
+                }
+                results[outcome] = (results[outcome] ?? 0) + 1;
+            }
+            return res.status(200).json({ code: 200, subscribers: keys.length, results });
+        }
+
         const body = await readBody(req);
 
         if (action === "subscribe") {
