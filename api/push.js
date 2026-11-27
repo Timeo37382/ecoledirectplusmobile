@@ -388,6 +388,8 @@ export default async function handler(req, res) {
             if (!req.headers["x-edp-admin"] || !timingSafeEqual(given, expected)) {
                 return res.status(403).json({ code: 403, message: "Accès refusé." });
             }
+            // ?provider=fcm.googleapis.com : n'envoyer qu'aux abonnements de ce service.
+            const onlyProvider = String(req.query?.provider ?? "");
             const keys = (await redis(config, ["SMEMBERS", SUBSCRIBERS_SET])) ?? [];
             const results = {};
             // Aucune donnee personnelle : fournisseur du push et dates seulement.
@@ -398,6 +400,8 @@ export default async function handler(req, res) {
                     const record = await readRecord(config, key, redisKey);
                     if (!record) {
                         outcome = "missing";
+                    } else if (onlyProvider && new URL(record.subscription.endpoint).host !== onlyProvider) {
+                        outcome = "skipped";
                     } else {
                         devices.push({
                             provider: new URL(record.subscription.endpoint).host,
