@@ -489,6 +489,28 @@ body:has(#settings) {
     margin-top: 8px;
 }
 
+#connection-settings #mobile-identity-test {
+    margin-top: 12px;
+}
+
+#connection-settings .connection-mobile-results {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 4px;
+    margin-top: 6px;
+    padding-left: 16px;
+}
+
+#connection-settings .connection-mobile-results li {
+    font-size: 1.2rem;
+    color: rgb(var(--text-color-alt));
+    word-break: break-word;
+}
+
+#connection-settings .connection-mobile-results strong {
+    color: rgb(var(--text-color-main));
+}
+
 #connection-settings .connection-test-result.error {
     color: rgb(var(--text-color-soft-error-alt));
 }

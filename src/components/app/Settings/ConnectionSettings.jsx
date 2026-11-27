@@ -24,7 +24,16 @@ function describeDiagnostic(diag) {
 // Etat de la connexion permanente, et test de la reconnexion par jeton
 // (utile sur telephone, ou il n'y a pas d'outils de developpement).
 export default function ConnectionSettings() {
-    const { testTokenRelogin } = useContext(AppContext);
+    const { testTokenRelogin, testMobileIdentity } = useContext(AppContext);
+    const [mobileResults, setMobileResults] = useState(null);
+    const [mobileTesting, setMobileTesting] = useState(false);
+
+    const runMobileTest = async () => {
+        setMobileTesting(true);
+        setMobileResults(null);
+        setMobileResults(await testMobileIdentity());
+        setMobileTesting(false);
+    };
     const [hasToken, setHasToken] = useState(() => !!readReloginToken());
     const [result, setResult] = useState(null);
     const [diagnostic] = useState(readDiagnostic);
@@ -56,6 +65,18 @@ export default function ConnectionSettings() {
                     : "Inactive pour l'instant : l'appli utilise le mot de passe enregistré. Ferme puis rouvre l'appli pour qu'elle demande un jeton."}
             </p>
             <p className="connection-diagnostic">{describeDiagnostic(diagnostic)}</p>
+            <div className="setting" id="mobile-identity-test">
+                <div className="setting-label">
+                    <span>Diagnostic du jeton</span>
+                    <InfoButton className="setting-tooltip">Fait une connexion de test en se présentant comme l'appli mobile officielle, et affiche la réponse d'EcoleDirecte. Ne change rien à ta connexion actuelle.</InfoButton>
+                </div>
+                <Button onClick={runMobileTest} disabled={mobileTesting}>{mobileTesting ? "Test…" : "Lancer"}</Button>
+            </div>
+            {mobileResults && (
+                <ul className="connection-mobile-results">
+                    {mobileResults.map((item) => <li key={item.identity}><strong>{item.identity}</strong> : {item.summary}</li>)}
+                </ul>
+            )}
             {result && (
                 <p className={`connection-test-result ${result.ok ? "ok" : "error"}`}>
                     {result.ok ? "✓ " : "✗ "}

@@ -3627,6 +3627,55 @@ export default function App({ edpFetch }) {
         }
     }
 
+    // Test (Parametres > Connexion) : une connexion avec le mot de passe
+    // enregistre, en se presentant comme l'appli mobile officielle, pour voir
+    // si EcoleDirecte donne alors un jeton. Ne touche pas a la session en cours
+    // et n'enregistre rien. Renvoie un resume sans aucun secret.
+    async function testMobileIdentity() {
+        if (!userIds?.username || !userIds?.password) {
+            return [{ identity: "-", summary: "Aucun mot de passe enregistré sur ce téléphone." }];
+        }
+        if (!isProxyTransport()) {
+            return [{ identity: "-", summary: "Test possible seulement via le serveur de l'appli." }];
+        }
+        const results = [];
+        for (const identity of ["mobile", "mobile-bare"]) {
+            const payload = {
+                identifiant: encodeURIComponent(userIds.username),
+                motdepasse: encodeURIComponent(userIds.password),
+                isReLogin: false,
+                sesouvenirdemoi: true,
+                uuid: getDeviceUuid(),
+                ...A2FInfo,
+                fa: Object.keys(A2FInfo).length > 0 ? [A2FInfo] : [],
+            };
+            try {
+                const response = await fetch(`${apiRoot()}/v3/login.awp?v=${apiVersion}`, {
+                    body: "data=" + JSON.stringify(payload),
+                    method: "POST",
+                    referrerPolicy: "no-referrer",
+                    headers: { "Content-Type": bodyContentType(), "x-edp-identity": identity },
+                });
+                const text = await response.text();
+                let data = null;
+                try { data = JSON.parse(text); } catch { /* reponse non JSON */ }
+                if (!data) {
+                    results.push({ identity, summary: `HTTP ${response.status}, réponse illisible (${text.length} caractères).` });
+                    continue;
+                }
+                const account = data.data?.accounts?.find((item) => item.typeCompte !== "P") ?? data.data?.accounts?.[0];
+                const field = account && Object.keys(account).find((key) => /^access_?token$/i.test(key));
+                const tokenInfo = data.code === 200
+                    ? (field ? `jeton ${String(account[field] ?? "").length ? `reçu (${String(account[field]).length} caractères)` : "vide"}` : "pas de jeton")
+                    : "";
+                results.push({ identity, summary: `HTTP ${response.status}, code ${data.code}${data.message ? ` « ${data.message} »` : ""}${tokenInfo ? `, ${tokenInfo}` : ""}.` });
+            } catch {
+                results.push({ identity, summary: "Pas de réponse (réseau)." });
+            }
+        }
+        return results;
+    }
+
     function getPushCredentials() {
         return { username: userIds?.username, password: userIds?.password, cn: A2FInfo?.cn, cv: A2FInfo?.cv };
     }
@@ -3689,6 +3738,7 @@ export default function App({ edpFetch }) {
         markUpdatesShown,
         getPushCredentials,
         testTokenRelogin,
+        testMobileIdentity,
     }), [
         useUserData,
         useUserSettings,

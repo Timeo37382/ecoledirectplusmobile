@@ -22,6 +22,22 @@ const SPOOFED_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
 };
 
+// Test (Parametres > Connexion) : se presenter comme l'appli mobile officielle,
+// la seule a qui EcoleDirecte donne le jeton de reconnexion. Uniquement sur
+// demande explicite du client (en-tete x-edp-identity), jamais par defaut.
+const MOBILE_USER_AGENT = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 EDMOBILE v8.0.0";
+
+function identityHeaders(req) {
+    const identity = req.headers["x-edp-identity"];
+    if (identity === "mobile") {
+        return { ...SPOOFED_HEADERS, "User-Agent": MOBILE_USER_AGENT };
+    }
+    if (identity === "mobile-bare") {
+        return { "User-Agent": MOBILE_USER_AGENT };
+    }
+    return { ...SPOOFED_HEADERS };
+}
+
 const FORWARDED_REQUEST_HEADERS = ["x-token", "2fa-token"];
 
 // Le front annonce text/plain en mode proxy pour que le corps ne soit ni parse
@@ -65,7 +81,7 @@ async function readRawBody(req) {
 }
 
 function buildUpstreamHeaders(req, extra = {}) {
-    const headers = { ...SPOOFED_HEADERS };
+    const headers = identityHeaders(req);
     for (const name of FORWARDED_REQUEST_HEADERS) {
         if (req.headers[name]) {
             headers[name] = req.headers[name];
@@ -87,10 +103,10 @@ async function sendUpstreamResponse(upstream, res) {
     res.send(Buffer.from(await upstream.arrayBuffer()));
 }
 
-async function fetchGtk(apiVersion) {
+async function fetchGtk(apiVersion, baseHeaders = SPOOFED_HEADERS) {
     const response = await fetch(
         `${ED_ORIGIN}/v3/login.awp?gtk=1&v=${encodeURIComponent(apiVersion)}`,
-        { method: "GET", headers: SPOOFED_HEADERS },
+        { method: "GET", headers: baseHeaders },
     );
 
     const cookies = typeof response.headers.getSetCookie === "function"
@@ -128,7 +144,7 @@ export default async function handler(req, res) {
 
         if (isLoginRoute && req.method === "POST") {
             const body = await readRawBody(req);
-            const credentials = await fetchGtk(query.get("v") ?? "");
+            const credentials = await fetchGtk(query.get("v") ?? "", identityHeaders(req));
 
             if (!credentials) {
                 return res.status(502).json({
