@@ -78,6 +78,74 @@ export function apiRoot() {
 }
 
 /**
+ * Identite sous laquelle le proxy se presente a EcoleDirecte pour la session.
+ *
+ *   - WEB    : comme le site www.ecoledirecte.com (Origin + GTK). Pas de jeton
+ *              de reconnexion.
+ *   - MOBILE : comme l'appli mobile officielle, la seule a qui EcoleDirecte
+ *              donne le jeton de reconnexion. Les jetons (session et
+ *              reconnexion) sont lies a cette identite : toutes les requetes de
+ *              la session doivent donc la garder.
+ *
+ * Le client l'annonce au proxy par un en-tete, ajoute automatiquement a toutes
+ * les requetes /edp-api (voir installIdentityHeader).
+ */
+export const SESSION_IDENTITY = {
+    WEB: "web",
+    MOBILE: "mobile",
+};
+export const SESSION_IDENTITY_HEADER = "x-edp-identity";
+export const MOBILE_API_VERSION = "8.0.0";
+const SESSION_IDENTITY_KEY = "edp-session-identity";
+
+let sessionIdentity = (typeof localStorage !== "undefined" && localStorage.getItem(SESSION_IDENTITY_KEY)) || SESSION_IDENTITY.WEB;
+
+export function getSessionIdentity() {
+    return sessionIdentity;
+}
+
+export function setSessionIdentity(identity) {
+    sessionIdentity = identity === SESSION_IDENTITY.MOBILE ? SESSION_IDENTITY.MOBILE : SESSION_IDENTITY.WEB;
+    try {
+        localStorage.setItem(SESSION_IDENTITY_KEY, sessionIdentity);
+    } catch {
+        // stockage indisponible : l'identite reste en memoire
+    }
+}
+
+function isProxyUrl(input) {
+    const url = typeof input === "string" ? input : input instanceof URL ? input.href : input?.url;
+    if (!url) return false;
+    if (url.startsWith(PROXY_BASE + "/")) return true;
+    try {
+        const parsed = new URL(url, window.location.href);
+        return parsed.origin === window.location.origin && parsed.pathname.startsWith(PROXY_BASE + "/");
+    } catch {
+        return false;
+    }
+}
+
+// Ajoute l'identite de session a chaque requete vers le proxy, sauf si la
+// requete en precise deja une (connexion).
+function installIdentityHeader() {
+    if (typeof window === "undefined" || window.__edpIdentityFetch) return;
+    const originalFetch = window.fetch.bind(window);
+    window.fetch = (input, init = {}) => {
+        if (!isProxyUrl(input)) {
+            return originalFetch(input, init);
+        }
+        const headers = new Headers(init.headers ?? (input instanceof Request ? input.headers : undefined));
+        if (!headers.has(SESSION_IDENTITY_HEADER)) {
+            headers.set(SESSION_IDENTITY_HEADER, sessionIdentity);
+        }
+        return originalFetch(input, { ...init, headers });
+    };
+    window.__edpIdentityFetch = true;
+}
+
+installIdentityHeader();
+
+/**
  * Content-Type a annoncer pour les corps `data=<json>` envoyes a EcoleDirecte.
  *
  * ED attend du `application/x-www-form-urlencoded` dont les valeurs sont

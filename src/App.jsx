@@ -21,7 +21,7 @@ import { getGradeValue, calcAverage, findCategory, calcCategoryAverage, calcGene
 import { areOccurenciesEqual, createUserLists, encrypt, decrypt, getBrowser } from "./utils/utils";
 import { getCurrentSchoolYear } from "./utils/date";
 import { NOTIFICATION_TYPES, buildSnapshot, diffSnapshots, readSnapshot, writeSnapshot, readFeed, writeFeed, notifyEvents } from "./utils/notifications";
-import { apiRoot, bodyContentType, isProxyTransport, setTransport, TRANSPORT } from "./utils/api";
+import { apiRoot, bodyContentType, isProxyTransport, setTransport, TRANSPORT, SESSION_IDENTITY, SESSION_IDENTITY_HEADER, MOBILE_API_VERSION, setSessionIdentity } from "./utils/api";
 import EdpuLogo from "./components/graphics/EdpuLogo";
 import { tr } from "date-fns/locale";
 
@@ -1688,7 +1688,30 @@ export default function App({ edpFetch }) {
 
         const deviceUuid = reloginToken?.uuid || getDeviceUuid();
         const fa = Object.keys(A2FInfo).length > 0 ? [A2FInfo] : [];
-        const payload = reloginToken
+        // Identite "appli mobile" (seule a recevoir le jeton de reconnexion) :
+        // mot de passe en clair dans un JSON encode en formulaire, version
+        // 8.0.0, sans GTK. Identite "site web" : l'ancienne methode, en secours.
+        const useMobile = isProxyTransport();
+        const mobilePayload = reloginToken
+            ? {
+                identifiant: reloginToken.identifiant,
+                motdepasse: "???",
+                uuid: deviceUuid,
+                isReLogin: true,
+                typeCompte: reloginToken.typeCompte || "E",
+                accesstoken: reloginToken.accessToken,
+                fa,
+            }
+            : {
+                identifiant: username,
+                motdepasse: password,
+                isReLogin: false,
+                sesouvenirdemoi: true,
+                uuid: deviceUuid,
+                ...A2FInfo,
+                fa,
+            };
+        const webPayload = reloginToken
             ? {
                 identifiant: encodeURIComponent(reloginToken.identifiant),
                 motdepasse: "???",
@@ -1706,22 +1729,40 @@ export default function App({ edpFetch }) {
                 uuid: deviceUuid,
                 ...A2FInfo,
                 fa,
+            };
+
+        const postLogin = (identity) => fetch(`${apiRoot()}/v3/login.awp?v=${identity === SESSION_IDENTITY.MOBILE ? MOBILE_API_VERSION : apiVersion}`, {
+            body: identity === SESSION_IDENTITY.MOBILE
+                ? "data=" + encodeURIComponent(JSON.stringify(mobilePayload))
+                : "data=" + JSON.stringify(webPayload),
+            method: "POST",
+            signal: controller.signal,
+            referrerPolicy: "no-referrer",
+            headers: {
+              "X-Token": tokenState,
+              "2FA-Token": token2faState,
+              "Content-Type": bodyContentType(),
+              [SESSION_IDENTITY_HEADER]: identity,
             }
+        });
 
         try {
-            const nresponse = await fetch(`${apiRoot()}/v3/login.awp?v=${apiVersion}`, {
-                body: "data=" + JSON.stringify(payload),
-                method: "POST",
-                signal: controller.signal,
-                referrerPolicy: "no-referrer",
-                headers: {
-                  "X-Token": tokenState,
-                  "2FA-Token": token2faState,
-                  "Content-Type": bodyContentType()
-                }
-            });
+            let identity = useMobile ? SESSION_IDENTITY.MOBILE : SESSION_IDENTITY.WEB;
+            let nresponse = await postLogin(identity);
+            let text = await nresponse.text();
 
-            const text = await nresponse.text();
+            // Methode mobile refusee ou illisible : on retente avec l'ancienne
+            // (sauf en mode jeton, le jeton etant lie a l'identite mobile).
+            if (useMobile && !reloginToken) {
+                let mobileCode = null;
+                try { mobileCode = JSON.parse(text)?.code ?? null; } catch { /* non JSON */ }
+                if (mobileCode === null || mobileCode === 505 || mobileCode === 522 || mobileCode === 517) {
+                    identity = SESSION_IDENTITY.WEB;
+                    nresponse = await postLogin(identity);
+                    text = await nresponse.text();
+                }
+            }
+
             if (!text) {
                 // En mode direct, une reponse vide signale quasi toujours une
                 // extension absente ou inactive. En mode proxy, c'est une vraie
@@ -1737,6 +1778,11 @@ export default function App({ edpFetch }) {
                 return;
             }
             const response = JSON.parse(text);
+            // Toute la session (double authentification comprise) doit garder
+            // l'identite qui a obtenu le jeton de session.
+            if (response.code === 200 || response.code === 250) {
+                setSessionIdentity(identity);
+            }
 
             const token = nresponse.headers.get("x-token")
             const token2fa = nresponse.headers.get("2fa-token")
@@ -3599,7 +3645,7 @@ export default function App({ edpFetch }) {
         }
         try {
             const payload = {
-                identifiant: encodeURIComponent(reloginToken.identifiant),
+                identifiant: reloginToken.identifiant,
                 motdepasse: "???",
                 uuid: reloginToken.uuid || getDeviceUuid(),
                 isReLogin: true,
@@ -3607,14 +3653,15 @@ export default function App({ edpFetch }) {
                 accesstoken: reloginToken.accessToken,
                 fa: Object.keys(A2FInfo).length > 0 ? [A2FInfo] : [],
             };
-            const response = await fetch(`${apiRoot()}/v3/login.awp?v=${apiVersion}`, {
-                body: "data=" + JSON.stringify(payload),
+            const response = await fetch(`${apiRoot()}/v3/login.awp?v=${MOBILE_API_VERSION}`, {
+                body: "data=" + encodeURIComponent(JSON.stringify(payload)),
                 method: "POST",
                 referrerPolicy: "no-referrer",
-                headers: { "Content-Type": bodyContentType() },
+                headers: { "Content-Type": bodyContentType(), [SESSION_IDENTITY_HEADER]: SESSION_IDENTITY.MOBILE },
             });
             const data = JSON.parse((await response.text()) || "{}");
             if (data.code === 200) {
+                setSessionIdentity(SESSION_IDENTITY.MOBILE);
                 const newToken = response.headers.get("x-token") || data.token;
                 if (newToken) setTokenState(newToken);
                 const newAccessToken = findAccessToken(data);
@@ -3625,65 +3672,6 @@ export default function App({ edpFetch }) {
         } catch (error) {
             return { ok: false, code: null, message: "Pas de réponse : vérifie ta connexion internet." };
         }
-    }
-
-    // Test (Parametres > Connexion) : une connexion avec le mot de passe
-    // enregistre, en se presentant comme l'appli mobile officielle, pour voir
-    // si EcoleDirecte donne alors un jeton. Ne touche pas a la session en cours
-    // et n'enregistre rien. Renvoie un resume sans aucun secret.
-    async function testMobileIdentity() {
-        if (!userIds?.username || !userIds?.password) {
-            return [{ identity: "-", summary: "Aucun mot de passe enregistré sur ce téléphone." }];
-        }
-        if (!isProxyTransport()) {
-            return [{ identity: "-", summary: "Test possible seulement via le serveur de l'appli." }];
-        }
-        // Comme la bibliotheque mobile qui obtient le jeton : mot de passe en
-        // clair dans le JSON, le tout encode en formulaire. On s'arrete des
-        // qu'EcoleDirecte ne dit plus "mot de passe invalide" (505), pour ne
-        // pas multiplier les tentatives refusees.
-        const variants = [
-            { identity: "mobile-bare", label: "mobile", version: apiVersion },
-            { identity: "mobile-nogtk", label: "mobile sans GTK", version: "8.0.0" },
-        ];
-        const results = [];
-        for (const { identity, label, version } of variants) {
-            const payload = {
-                identifiant: userIds.username,
-                motdepasse: userIds.password,
-                isReLogin: false,
-                sesouvenirdemoi: true,
-                uuid: getDeviceUuid(),
-                ...A2FInfo,
-                fa: Object.keys(A2FInfo).length > 0 ? [A2FInfo] : [],
-            };
-            try {
-                const response = await fetch(`${apiRoot()}/v3/login.awp?v=${version}`, {
-                    body: "data=" + encodeURIComponent(JSON.stringify(payload)),
-                    method: "POST",
-                    referrerPolicy: "no-referrer",
-                    headers: { "Content-Type": bodyContentType(), "x-edp-identity": identity },
-                });
-                const text = await response.text();
-                let data = null;
-                try { data = JSON.parse(text); } catch { /* reponse non JSON */ }
-                if (!data) {
-                    results.push({ identity: label, summary: `HTTP ${response.status}, réponse illisible (${text.length} caractères).` });
-                    break;
-                }
-                const account = data.data?.accounts?.find((item) => item.typeCompte !== "P") ?? data.data?.accounts?.[0];
-                const field = account && Object.keys(account).find((key) => /^access_?token$/i.test(key));
-                const tokenInfo = data.code === 200
-                    ? (field ? `jeton ${String(account[field] ?? "").length ? `reçu (${String(account[field]).length} caractères)` : "vide"}` : "pas de jeton")
-                    : "";
-                results.push({ identity: label, summary: `HTTP ${response.status}, code ${data.code}${data.message ? ` « ${data.message} »` : ""}${tokenInfo ? `, ${tokenInfo}` : ""}.` });
-                if (data.code !== 505) break;
-            } catch {
-                results.push({ identity: label, summary: "Pas de réponse (réseau)." });
-                break;
-            }
-        }
-        return results;
     }
 
     function getPushCredentials() {
@@ -3748,7 +3736,6 @@ export default function App({ edpFetch }) {
         markUpdatesShown,
         getPushCredentials,
         testTokenRelogin,
-        testMobileIdentity,
     }), [
         useUserData,
         useUserSettings,

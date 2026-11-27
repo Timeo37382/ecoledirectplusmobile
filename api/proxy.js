@@ -22,17 +22,19 @@ const SPOOFED_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
 };
 
-// Test (Parametres > Connexion) : se presenter comme l'appli mobile officielle,
-// la seule a qui EcoleDirecte donne le jeton de reconnexion. Uniquement sur
-// demande explicite du client (en-tete x-edp-identity), jamais par defaut.
+// Identite "mobile" : comme l'appli mobile officielle, la seule a qui
+// EcoleDirecte donne le jeton de reconnexion. Pas d'Origin ni de GTK (avec le
+// GTK, EcoleDirecte refuse le mot de passe). Le client la demande par
+// l'en-tete x-edp-identity, sur toutes les requetes de la session, car les
+// jetons sont lies a l'identite qui les a obtenus. Par defaut : site web.
 const MOBILE_USER_AGENT = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 EDMOBILE v8.0.0";
 
+function isMobileIdentity(req) {
+    return req.headers["x-edp-identity"] === "mobile";
+}
+
 function identityHeaders(req) {
-    const identity = req.headers["x-edp-identity"];
-    if (identity === "mobile") {
-        return { ...SPOOFED_HEADERS, "User-Agent": MOBILE_USER_AGENT };
-    }
-    if (identity === "mobile-bare" || identity === "mobile-nogtk") {
+    if (isMobileIdentity(req)) {
         return { "User-Agent": MOBILE_USER_AGENT };
     }
     return { ...SPOOFED_HEADERS };
@@ -145,9 +147,8 @@ export default async function handler(req, res) {
         if (isLoginRoute && req.method === "POST") {
             const body = await readRawBody(req);
 
-            // Test : comme la bibliotheque mobile qui obtient le jeton, sans
-            // l'aller-retour GTK du site web.
-            if (req.headers["x-edp-identity"] === "mobile-nogtk") {
+            // Identite mobile : pas d'aller-retour GTK.
+            if (isMobileIdentity(req)) {
                 const upstream = await fetch(upstreamUrl, {
                     method: "POST",
                     headers: buildUpstreamHeaders(req, { "Content-Type": UPSTREAM_CONTENT_TYPE }),
