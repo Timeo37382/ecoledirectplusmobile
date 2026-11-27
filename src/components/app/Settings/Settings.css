@@ -468,6 +468,7 @@ body:has(#settings) {
 }
 
 #connection-settings .connection-state,
+#connection-settings .connection-diagnostic,
 #connection-settings .connection-test-result {
     font-size: 1.3rem;
     color: rgb(var(--text-color-alt));
@@ -476,6 +477,12 @@ body:has(#settings) {
 #connection-settings .connection-state.active,
 #connection-settings .connection-test-result.ok {
     color: rgb(var(--border-color-success));
+}
+
+#connection-settings .connection-diagnostic {
+    margin-top: 6px;
+    font-size: 1.2rem;
+    opacity: .8;
 }
 
 #connection-settings .connection-test-result {

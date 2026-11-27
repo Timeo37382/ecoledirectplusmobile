@@ -118,6 +118,26 @@ function writeReloginToken(value) {
     }
 }
 
+// Diagnostic sans secret : ce qu'EcoleDirecte a renvoye a la derniere
+// connexion reussie (champ accessToken present ? vide ? longueur).
+export const RELOGIN_DIAG_KEY = "edp-relogin-diag";
+
+function writeReloginDiagnostic(response, foundToken, viaToken) {
+    try {
+        const account = response?.data?.accounts?.find((item) => item.typeCompte !== "P") ?? response?.data?.accounts?.[0];
+        const field = account && Object.keys(account).find((key) => /^access_?token$/i.test(key));
+        localStorage.setItem(RELOGIN_DIAG_KEY, JSON.stringify({
+            at: new Date().toISOString(),
+            viaToken,
+            field: field ?? null,
+            fieldLength: field ? String(account[field] ?? "").length : 0,
+            found: !!foundToken,
+        }));
+    } catch {
+        // diagnostic facultatif
+    }
+}
+
 // Le jeton n'a pas d'emplacement documente avec certitude : on le cherche
 // (accessToken / access_token / accesstoken) dans toute la reponse.
 function findAccessToken(value, depth = 0) {
@@ -1671,6 +1691,7 @@ export default function App({ edpFetch }) {
         const payload = reloginToken
             ? {
                 identifiant: encodeURIComponent(reloginToken.identifiant),
+                motdepasse: "???",
                 uuid: deviceUuid,
                 isReLogin: true,
                 typeCompte: reloginToken.typeCompte || "E",
@@ -1732,6 +1753,7 @@ export default function App({ edpFetch }) {
                     }
                 }
                 const newAccessToken = findAccessToken(response);
+                writeReloginDiagnostic(response, newAccessToken, !!reloginToken);
                 if (keepLoggedIn && (newAccessToken || reloginToken)) {
                     writeReloginToken({
                         identifiant: reloginToken?.identifiant ?? username,
@@ -3578,6 +3600,7 @@ export default function App({ edpFetch }) {
         try {
             const payload = {
                 identifiant: encodeURIComponent(reloginToken.identifiant),
+                motdepasse: "???",
                 uuid: reloginToken.uuid || getDeviceUuid(),
                 isReLogin: true,
                 typeCompte: reloginToken.typeCompte || "E",

@@ -2,7 +2,24 @@ import { useContext, useState } from "react";
 
 import Button from "../../generic/UserInputs/Button";
 import InfoButton from "../../generic/Informative/InfoButton";
-import { AppContext, readReloginToken } from "../../../App";
+import { AppContext, readReloginToken, RELOGIN_DIAG_KEY } from "../../../App";
+
+function readDiagnostic() {
+    try {
+        return JSON.parse(localStorage.getItem(RELOGIN_DIAG_KEY) || "null");
+    } catch {
+        return null;
+    }
+}
+
+// Explique en clair ce qu'EcoleDirecte a renvoye a la derniere connexion.
+function describeDiagnostic(diag) {
+    if (!diag) return "Pas encore de connexion analysée : ferme puis rouvre l'appli.";
+    const when = new Date(diag.at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" });
+    if (diag.found) return `Dernière connexion (${when}) : jeton reçu.`;
+    if (diag.field) return `Dernière connexion (${when}) : EcoleDirecte a envoyé un jeton vide.`;
+    return `Dernière connexion (${when}) : EcoleDirecte n'a pas envoyé de jeton.`;
+}
 
 // Etat de la connexion permanente, et test de la reconnexion par jeton
 // (utile sur telephone, ou il n'y a pas d'outils de developpement).
@@ -10,6 +27,7 @@ export default function ConnectionSettings() {
     const { testTokenRelogin } = useContext(AppContext);
     const [hasToken, setHasToken] = useState(() => !!readReloginToken());
     const [result, setResult] = useState(null);
+    const [diagnostic] = useState(readDiagnostic);
     const [testing, setTesting] = useState(false);
 
     const runTest = async () => {
@@ -35,8 +53,9 @@ export default function ConnectionSettings() {
             <p className={`connection-state ${hasToken ? "active" : "inactive"}`}>
                 {hasToken
                     ? "Active : un jeton est enregistré sur ce téléphone."
-                    : "Inactive : EcoleDirecte n'a pas fourni de jeton à la dernière connexion. L'appli utilise le mot de passe enregistré."}
+                    : "Inactive pour l'instant : l'appli utilise le mot de passe enregistré. Ferme puis rouvre l'appli pour qu'elle demande un jeton."}
             </p>
+            <p className="connection-diagnostic">{describeDiagnostic(diagnostic)}</p>
             {result && (
                 <p className={`connection-test-result ${result.ok ? "ok" : "error"}`}>
                     {result.ok ? "✓ " : "✗ "}

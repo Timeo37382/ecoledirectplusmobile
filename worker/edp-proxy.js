@@ -25,7 +25,10 @@ const PROXY_PREFIX = "/edp-api";
 const SPOOFED_HEADERS = {
     "Origin": "https://www.ecoledirecte.com",
     "Referer": "https://www.ecoledirecte.com/",
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+    // Identite de l'appli mobile officielle : EcoleDirecte ne fournit le jeton
+    // de reconnexion (accessToken) qu'a elle. Le jeton est lie a cet en-tete,
+    // il doit donc rester identique sur toutes les requetes.
+    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 EDMOBILE v8.0.0",
 };
 
 /** En-tetes du client qu'on relaie tels quels vers EcoleDirecte. */
