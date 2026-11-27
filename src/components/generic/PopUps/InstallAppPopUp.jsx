@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { shouldShowLoginDisclaimer } from "../../Login/LoginDisclaimer";
 
 import "./InstallAppPopUp.css";
 
@@ -97,6 +98,14 @@ export default function InstallAppPopUp({ blocked = false }) {
     const [installEvent, setInstallEvent] = useState(() => window.__edpInstallPrompt ?? null);
     const [isVisible, setIsVisible] = useState(false);
     const [isClosing, setIsClosing] = useState(false);
+    // Sur la page de connexion, l'avertissement du premier lancement passe d'abord.
+    const [disclaimerPending, setDisclaimerPending] = useState(shouldShowLoginDisclaimer);
+
+    useEffect(() => {
+        const onDisclaimerClosed = () => setDisclaimerPending(false);
+        window.addEventListener("edp-login-disclaimer-closed", onDisclaimerClosed);
+        return () => window.removeEventListener("edp-login-disclaimer-closed", onDisclaimerClosed);
+    }, []);
 
     useEffect(() => {
         const query = window.matchMedia("(max-width: 869px) and (pointer: coarse)");
@@ -113,7 +122,8 @@ export default function InstallAppPopUp({ blocked = false }) {
         };
     }, []);
 
-    const shouldShow = isPhone && !blocked && platform !== "other" && !isAlreadyInstalled() && !isSnoozed();
+    const waitingForDisclaimer = disclaimerPending && window.location.pathname === "/login";
+    const shouldShow = isPhone && !blocked && !waitingForDisclaimer && platform !== "other" && !isAlreadyInstalled() && !isSnoozed();
 
     useEffect(() => {
         if (!shouldShow) return undefined;

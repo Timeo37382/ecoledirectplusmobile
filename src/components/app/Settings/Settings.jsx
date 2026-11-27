@@ -16,6 +16,7 @@ import { AppContext } from "../../../App";
 import { applyZoom, getZoomedBoudingClientRect } from "../../../utils/zoom";
 import DropDownMenu from "../../generic/UserInputs/DropDownMenu";
 import NotificationSettings from "./NotificationSettings";
+import ConnectionSettings from "./ConnectionSettings";
 
 import "./Settings.css";
 
@@ -112,10 +113,6 @@ export default function Settings({ usersSettings, accountsList, getCurrentSchool
         <div id="settings">
             <div id="settings-box">
                 <h1>Paramètres</h1>
-                <div className="setting" id="keep-logged-in">
-                    <CheckBox id="keep-logged-in-cb" checked={globalSettings.keepLoggedIn.value} onChange={(event) => globalSettings.keepLoggedIn.set(event.target.checked)} label={<span>Rester connecté</span>} />
-                    <InfoButton className="setting-tooltip">Avertissement : cette fonctionnalité peut présenter des risques, notamment si vous êtes infecté par un logiciel malveillant (peut nécessiter une reconnexion)</InfoButton>
-                </div>
 
                 <div className="setting" id="display-theme">
                     <span>Thème d'affichage</span> <DisplayThemeController id="display-theme-sc" selected={settings.get("displayTheme")} onChange={(value) => { settings.set("displayTheme", value) }} fieldsetName="display-theme" />
@@ -253,6 +250,8 @@ export default function Settings({ usersSettings, accountsList, getCurrentSchool
 
 
                 {/* advanced settings */}
+                <ConnectionSettings />
+
                 <NotificationSettings />
 
                 <div id="advanced-settings">

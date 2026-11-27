@@ -132,7 +132,7 @@ export default async function handler(req, res) {
 
             if (!credentials) {
                 return res.status(502).json({
-                    code: 522,
+                    code: 74000,
                     message: "Le proxy n'a pas pu obtenir le jeton GTK aupres d'EcoleDirecte.",
                 });
             }

@@ -1,0 +1,39 @@
+/* Avertissement du premier lancement (1rem = 10px). */
+
+.login-disclaimer #pop-up-background {
+    max-width: min(92vw, 480px);
+    padding: 24px 22px 20px;
+}
+
+.login-disclaimer-title {
+    font-size: 2.2rem;
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.login-disclaimer-list {
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 12px;
+    padding-left: 18px;
+    margin-bottom: 20px;
+}
+
+.login-disclaimer-list li {
+    font-size: 1.45rem;
+    line-height: 1.45;
+    color: rgb(var(--text-color-alt));
+}
+
+.login-disclaimer-list li::marker {
+    color: rgb(var(--text-color-alt));
+}
+
+.login-disclaimer-list strong {
+    color: rgb(var(--text-color-main));
+}
+
+.login-disclaimer .login-disclaimer-button {
+    display: block;
+    margin: 0 auto;
+}

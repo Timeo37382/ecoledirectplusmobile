@@ -2,6 +2,8 @@ import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import EDPVersion from "../generic/buttons/EDPVersion";
 import Policy from "../generic/Policy";
 import LoginForm from "./LoginForm";
+import LoginDisclaimer, { shouldShowLoginDisclaimer } from "./LoginDisclaimer";
+import { useState } from "react";
 import InfoButton from "../generic/Informative/InfoButton";
 import DiscordLink from "../generic/buttons/DiscordLink";
 import GithubLink from "../generic/buttons/GithubLink";
@@ -19,6 +21,7 @@ if (sessionStorage.getItem('april') === "true") {
 
 export default function Login({ keepLoggedIn, setKeepLoggedIn, A2FInfo, setRequireA2F, bufferUserIds, fetchLogin, logout, loginFromOldAuthInfo, isEDPUnblockInstalledActuallyInstalled, currentEDPVersion }) {
     const location = useLocation();
+    const [showDisclaimer, setShowDisclaimer] = useState(shouldShowLoginDisclaimer);
 
     if (localStorage.userSettings) {
         if (((JSON.parse(localStorage.userSettings)[0].displayTheme) !== "dark") && (localStorage.getItem('april') === "true")) {
@@ -54,6 +57,7 @@ export default function Login({ keepLoggedIn, setKeepLoggedIn, A2FInfo, setRequi
             </p>
             {location.hash === "#policy" && <Policy onCloseNavigateURL={""} />}
             <EDPVersion currentEDPVersion={currentEDPVersion} />
+            {showDisclaimer && <LoginDisclaimer onClose={() => setShowDisclaimer(false)} />}
             <Outlet />
         </div>
     );

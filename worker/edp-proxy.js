@@ -127,7 +127,7 @@ async function handleLogin(request, url) {
     if (!credentials) {
         return new Response(
             JSON.stringify({
-                code: 522,
+                code: 74000,
                 message: "Le proxy n'a pas pu obtenir le jeton GTK aupres d'EcoleDirecte.",
             }),
             { status: 502, headers: { "content-type": "application/json", "Cache-Control": "no-store" } },

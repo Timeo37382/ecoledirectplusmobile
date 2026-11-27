@@ -1,11 +1,12 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import TextInput from "../generic/UserInputs/TextInput";
 import CheckBox from "../generic/UserInputs/CheckBox";
 import Button from "../generic/UserInputs/Button";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../generic/PopUps/Tooltip";
 import { decrypt, encrypt } from "../../utils/utils"
+import { readReloginToken } from "../../App"
 
 import AccountIcon from "../graphics/AccountIcon"
 import KeyIcon from "../graphics/KeyIcon"
@@ -14,6 +15,10 @@ import "./LoginForm.css";
 
 // const lsIdName = encrypt("userIds")
 const lsIdName = "encryptedUserIds"
+
+// Reconnexion automatique : delais entre les essais quand le reseau ou le
+// serveur ne repond pas (le telephone qui sort de veille, par exemple).
+const AUTO_LOGIN_RETRY_DELAYS_MS = [3000, 10000, 30000, 60000];
 
 const submitButtonAvailableStates = {
     "Connexion...": "submitting",
@@ -41,15 +46,63 @@ export default function LoginForm({ keepLoggedIn, setKeepLoggedIn, A2FInfo, setR
     const updateKeepLoggedIn = (event) => setKeepLoggedIn(event.target.checked);
 
 
+    const retryCount = useRef(0);
+    const retryTimer = useRef(null);
+    useEffect(() => () => clearTimeout(retryTimer.current), []);
+
+    // Connexion automatique (rester connecte, ou apres la double authentification).
+    // On ne deconnecte que si EcoleDirecte refuse vraiment le mot de passe :
+    // un souci de reseau ou de serveur garde les identifiants et reessaie.
+    // Reconnexion par jeton (sans mot de passe) ; si EcoleDirecte refuse le
+    // jeton, on repasse par le mot de passe enregistre.
+    function loginWithToken(reloginToken, fallbackIds) {
+        clearTimeout(retryTimer.current);
+        setSubmitButtonText("Connexion...");
+        setErrorMessage("");
+        fetchLogin(null, null, true, (messages) => {
+            if (submitButtonAvailableStates[messages.submitButtonText] !== "invalid") {
+                setSubmitButtonText(messages.submitButtonText || "");
+                retryCount.current = 0;
+                return;
+            }
+            if (messages.reason === "token") {
+                console.log("RELOGIN TOKEN REFUSED : FALLBACK TO PASSWORD");
+                if (fallbackIds?.username && fallbackIds?.password) {
+                    login(fallbackIds.username, fallbackIds.password, true);
+                } else {
+                    setSubmitButtonText(submitButtonTextValue);
+                    setErrorMessage("Ta session a expiré, reconnecte-toi.");
+                }
+            } else if (retryCount.current < AUTO_LOGIN_RETRY_DELAYS_MS.length) {
+                const delay = AUTO_LOGIN_RETRY_DELAYS_MS[retryCount.current];
+                retryCount.current += 1;
+                setSubmitButtonText(messages.submitButtonText || "");
+                setErrorMessage(`${messages.submitErrorMessage || "Connexion impossible."} Nouvel essai dans ${Math.round(delay / 1000)} s…`);
+                retryTimer.current = setTimeout(() => loginWithToken(reloginToken, fallbackIds), delay);
+            }
+        }, undefined, { reloginToken });
+        console.log("LOGGED IN FROM RELOGIN TOKEN");
+    }
+
     function login(username, password, keepLoggedIn=false) {
+        clearTimeout(retryTimer.current);
         setSubmitButtonText("Connexion...");
         setErrorMessage("");
         fetchLogin(username, password, keepLoggedIn, (messages) => {
             setSubmitButtonText(messages.submitButtonText || "");
             setErrorMessage(messages.submitErrorMessage || "");
-            if (submitButtonAvailableStates[messages.submitButtonText] === "invalid" && messages.submitErrorMessage !== "Error: Failed to fetch") {
+            if (submitButtonAvailableStates[messages.submitButtonText] !== "invalid") {
+                retryCount.current = 0;
+                return;
+            }
+            if (messages.reason === "credentials") {
                 console.log("INVALID AUTH INFO : LOGGED OUT");
                 logout();
+            } else if ((messages.reason === "network" || messages.reason === "server") && retryCount.current < AUTO_LOGIN_RETRY_DELAYS_MS.length) {
+                const delay = AUTO_LOGIN_RETRY_DELAYS_MS[retryCount.current];
+                retryCount.current += 1;
+                setErrorMessage(`${messages.submitErrorMessage || "Connexion impossible."} Nouvel essai dans ${Math.round(delay / 1000)} s…`);
+                retryTimer.current = setTimeout(() => login(username, password, keepLoggedIn), delay);
             }
         });
         console.log("LOGGED IN FROM USERNAME & PASSWORD");
@@ -72,9 +125,12 @@ export default function LoginForm({ keepLoggedIn, setKeepLoggedIn, A2FInfo, setR
         if (keepLoggedIn) {
             if (submitButtonText !== "Connexion...") {
                 // keep logged in using credentials
-                const userIdsFromLS = JSON.parse(decrypt(localStorage.getItem(lsIdName)) ?? "{}");
+                const userIdsFromLS = JSON.parse(decrypt(localStorage.getItem(lsIdName)) || "{}");
+                const reloginToken = readReloginToken();
 
-                if ( userIdsFromLS.username && userIdsFromLS.password ) {
+                if (reloginToken) {
+                    loginWithToken(reloginToken, userIdsFromLS);
+                } else if ( userIdsFromLS.username && userIdsFromLS.password ) {
                     login(userIdsFromLS.username, userIdsFromLS.password, true);
                 }
             }
@@ -135,14 +191,6 @@ export default function LoginForm({ keepLoggedIn, setKeepLoggedIn, A2FInfo, setR
             <TextInput className="login-input" textType="password" placeholder={passwordPlaceholder} autoComplete="current-password" value={password} icon={<KeyIcon />} onChange={updatePassword} isRequired={true} warningMessage="Veuillez entrer votre mot de passe" onWarning={() => setSubmitButtonText("Invalide")} />
             {errorMessage && errorMessage === "accountCreationError" ? <p className="error-message">Vous n'avez pas encore créé votre compte EcoleDirecte ?!<br/>Rendez-vous sur le <a href="https://ecoledirecte.com/">site officiel</a> pour le configurer, nous vous attendons avec impatience !</p> : <p className="error-message">{errorMessage}</p>}
             <div className="login-option">
-                <Tooltip delay={400}>
-                    <TooltipTrigger>
-                        <CheckBox disabled={disabledKeepLoggedInCheckBox} id="keep-logged-in" label="Rester connecté" checked={keepLoggedIn} onChange={updateKeepLoggedIn} />                        
-                    </TooltipTrigger>
-                    <TooltipContent className="disclaimer">
-                        Avertissement : cette fonctionnalité peut présenter des risques, notamment si vous êtes infecté par un logiciel malveillant
-                    </TooltipContent>
-                </Tooltip>
                 <a id="password-forgotten-link" href="https://api.ecoledirecte.com/mot-de-passe-oublie.awp" target="blank">Mot de passe oublié ?</a>
             </div>
             <Button id="submit-login" state={submitButtonText && submitButtonAvailableStates[submitButtonText]} buttonType="submit" value={submitButtonText} />

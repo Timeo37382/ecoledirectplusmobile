@@ -4,6 +4,7 @@ import { useState } from "react";
 import BottomSheet from "../generic/PopUps/BottomSheet";
 import LoginForm from "./LoginForm";
 import { decrypt, encrypt } from "../../utils/utils";
+import { readReloginToken } from "../../App";
 import "./LoginBottomSheet.css";
 import Button from "../generic/UserInputs/Button";
 
@@ -14,8 +15,9 @@ export default function LoginBottomSheet({ keepLoggedIn, setKeepLoggedIn, A2FInf
     const [firstFrameKeepLoggedIn, setFirstFrameKeepLoggedIn] = useState(keepLoggedIn);
 
     const handleClose = () => {
-        const userIdsFromLS = JSON.parse(decrypt(localStorage.getItem(lsIdName)) ?? "{}");
-        if (!userIdsFromLS.username || !userIdsFromLS.password) {
+        const userIdsFromLS = JSON.parse(decrypt(localStorage.getItem(lsIdName)) || "{}");
+        // Un jeton de reconnexion suffit aussi pour rester connecte.
+        if ((!userIdsFromLS.username || !userIdsFromLS.password) && !readReloginToken()) {
             console.log("LOGIN BS KEEP LOGGED IN FALSE");
             setKeepLoggedIn(false);
         }
@@ -29,9 +31,7 @@ export default function LoginBottomSheet({ keepLoggedIn, setKeepLoggedIn, A2FInf
     } else {
         return (
             <BottomSheet heading="Reconnexion" className="login-bottom-sheet" resizingBreakpointsProps={[0, 50, 75, 95]} firstResizingBreakpoint={2} onClose={handleClose} {...props} >
-                {firstFrameKeepLoggedIn
-                ? <p className="explanation">Veuillez vous reconnecter pour activer "rester connecté"</p>
-                : <p className="explanation">Votre session a expiré</p>}
+                <p className="explanation">Ta session a expiré, reconnecte-toi.</p>
                 <LoginForm keepLoggedIn={keepLoggedIn} setKeepLoggedIn={setKeepLoggedIn} A2FInfo={A2FInfo} setRequireA2F={setRequireA2F} bufferUserIds={bufferUserIds} fetchLogin={fetchLogin} logout={logout} loginFromOldAuthInfo={loginFromOldAuthInfo} disabledKeepLoggedInCheckBox={firstFrameKeepLoggedIn} />
                 <div id="login-bs-logout" onClick={logout} role="button" tabIndex={0}>Se déconnecter</div>
             </BottomSheet>

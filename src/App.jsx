@@ -82,6 +82,57 @@ const thonFrustre = "THON_FRUSTRE_WEBHOOK_URL";
 
 // const lsIdName = encrypt("userIds")
 const lsIdName = "encryptedUserIds"
+
+/*
+ * Reconnexion par jeton (comme les applis mobiles EcoleDirecte) : a la
+ * connexion on envoie un identifiant d'appareil fixe et "sesouvenirdemoi" ;
+ * EcoleDirecte renvoie un jeton longue duree qui permet ensuite de se
+ * reconnecter sans mot de passe ni double authentification.
+ */
+const DEVICE_UUID_KEY = "edp-device-uuid";
+const RELOGIN_TOKEN_KEY = "edp-relogin-token";
+
+function getDeviceUuid() {
+    let uuid = localStorage.getItem(DEVICE_UUID_KEY);
+    if (!uuid) {
+        uuid = crypto.randomUUID();
+        localStorage.setItem(DEVICE_UUID_KEY, uuid);
+    }
+    return uuid;
+}
+
+export function readReloginToken() {
+    try {
+        const stored = JSON.parse(decrypt(localStorage.getItem(RELOGIN_TOKEN_KEY)) || "null");
+        return stored?.identifiant && stored?.accessToken ? stored : null;
+    } catch {
+        return null;
+    }
+}
+
+function writeReloginToken(value) {
+    if (value) {
+        localStorage.setItem(RELOGIN_TOKEN_KEY, encrypt(JSON.stringify(value)));
+    } else {
+        localStorage.removeItem(RELOGIN_TOKEN_KEY);
+    }
+}
+
+// Le jeton n'a pas d'emplacement documente avec certitude : on le cherche
+// (accessToken / access_token / accesstoken) dans toute la reponse.
+function findAccessToken(value, depth = 0) {
+    if (!value || typeof value !== "object" || depth > 5) return null;
+    for (const [key, child] of Object.entries(value)) {
+        if (/^access_?token$/i.test(key) && typeof child === "string" && child.length > 8) {
+            return child;
+        }
+    }
+    for (const child of Object.values(value)) {
+        const found = findAccessToken(child, depth + 1);
+        if (found) return found;
+    }
+    return null;
+}
 const WINDOW_WIDTH_BREAKPOINT_MOBILE_LAYOUT = 450; // px
 const WINDOW_WIDTH_BREAKPOINT_TABLET_LAYOUT = 869; // px
 
@@ -95,7 +146,7 @@ const referencedErrors = {
 
 //default settings
 const defaultSettings = {
-    keepLoggedIn: false,
+    keepLoggedIn: true,
     displayTheme: "auto",
     displayMode: "quality",
     isSepiaEnabled: false,
@@ -197,7 +248,8 @@ const token2faFromLs = localStorage.getItem("token2fa") ?? "";
 const accountListFromLs = JSON.parse(localStorage.getItem("accountsList") ?? "[]");
 const oldActiveAccountFromLs = parseInt(localStorage.getItem("oldActiveAccount") ?? 0);
 let userSettingsFromLs = JSON.parse((localStorage.getItem("userSettings") ?? "[{}]"));
-const keepLoggedInFromLs = getSetting("keepLoggedIn", 0, true);
+// Connexion permanente : "rester connecte" est toujours actif dans cette version.
+const keepLoggedInFromLs = true;
 const A2FInfoFromLS = JSON.parse((localStorage.getItem("A2FInfo") ?? "{}"));
 let userIdsFromLs;
 if (keepLoggedInFromLs) {
@@ -349,7 +401,10 @@ export default function App({ edpFetch }) {
     const [requireA2F, setRequireA2F] = useState(false); // trigger or not the A2F pop-up
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [activeAccount, setActiveAccount] = useState(oldActiveAccountFromLs); // compte actuellement sélectionné (utile pour les comptes parents)
-    const [keepLoggedIn, setKeepLoggedIn] = useState(getSetting("keepLoggedIn", activeAccount, true)); // fonctionnalité "rester connecté"
+    // Connexion permanente : toujours actif, et rien ne peut le desactiver
+    // (les anciens appels a setKeepLoggedIn n'ont plus d'effet).
+    const keepLoggedIn = true;
+    const setKeepLoggedIn = () => { };
 
     // user settings
     const [userSettings, setUserSettings] = useState(initSettings(accountListFromLs)); // paramètres propre à chaque profil du compte
@@ -684,13 +739,6 @@ export default function App({ edpFetch }) {
         }
     }
 
-    // sécurité qui empêche la reconnexion automatique s'il manque au moins un identifiant
-    useEffect(() => {
-        if (!userIds.username || !userIds.password) {
-            console.log("USERIDS EMPTY -> DISABLING KEEP LOGGED IN")
-            setKeepLoggedIn(false);
-        }
-    }, [userIds]);
 
     useEffect(() => {
         // gestion synchronisatin du localStorage s'il est modifié dans un autre onglet
@@ -1583,7 +1631,7 @@ export default function App({ edpFetch }) {
         });
     }
 
-    async function fetchLogin(username, password, keepLoggedIn, callback, controller = (new AbortController())) {
+    async function fetchLogin(username, password, keepLoggedIn, callback, controller = (new AbortController()), { reloginToken = null } = {}) {
         if (isLoggedIn) {
             return
         }
@@ -1606,6 +1654,7 @@ export default function App({ edpFetch }) {
             console.log(Object.entries(error));
             console.error(error);
             messages.submitButtonText = "Échec de la connexion";
+            messages.reason = "network";
             if (error.message === "NoEDPUResponse") {
                 messages.submitErrorMessage = "Nous n'avons pas réussi à communiquer avec l'extension EDP Unblock, vérifiez qu'elle soit à jour et/ou qu'elle ait les permissions nécessaires.";
             } else if (error.message === "EDPUNoCookie") {
@@ -1617,13 +1666,26 @@ export default function App({ edpFetch }) {
             throw error;
         }
 
-        const payload = {
-            identifiant: encodeURIComponent(username),
-            motdepasse: encodeURIComponent(password),
-            isReLogin: false,
-            ...A2FInfo,
-            fa: Object.keys(A2FInfo).length > 0 ? [A2FInfo] : []
-        }
+        const deviceUuid = reloginToken?.uuid || getDeviceUuid();
+        const fa = Object.keys(A2FInfo).length > 0 ? [A2FInfo] : [];
+        const payload = reloginToken
+            ? {
+                identifiant: encodeURIComponent(reloginToken.identifiant),
+                uuid: deviceUuid,
+                isReLogin: true,
+                typeCompte: reloginToken.typeCompte || "E",
+                accesstoken: reloginToken.accessToken,
+                fa,
+            }
+            : {
+                identifiant: encodeURIComponent(username),
+                motdepasse: encodeURIComponent(password),
+                isReLogin: false,
+                sesouvenirdemoi: true,
+                uuid: deviceUuid,
+                ...A2FInfo,
+                fa,
+            }
 
         try {
             const nresponse = await fetch(`${apiRoot()}/v3/login.awp?v=${apiVersion}`, {
@@ -1646,6 +1708,7 @@ export default function App({ edpFetch }) {
                 if (isProxyTransport()) {
                     messages.submitButtonText = "Echec de la connexion";
                     messages.submitErrorMessage = "Le serveur n'a renvoye aucune reponse. Reessayez dans un instant.";
+                    messages.reason = "network";
                     callback(messages);
                     return;
                 }
@@ -1661,9 +1724,23 @@ export default function App({ edpFetch }) {
             let statusCode = response.code;
             if (statusCode === 200) {
                 messages.submitButtonText = "Connecté";
-                setUserIds({ username: username, password: password })
-                if (keepLoggedIn) {
-                    localStorage.setItem(lsIdName, encrypt(JSON.stringify({ username: username, password: password })))
+                // En mode jeton, le mot de passe enregistre (secours) reste tel quel.
+                if (!reloginToken) {
+                    setUserIds({ username: username, password: password })
+                    if (keepLoggedIn) {
+                        localStorage.setItem(lsIdName, encrypt(JSON.stringify({ username: username, password: password })))
+                    }
+                }
+                const newAccessToken = findAccessToken(response);
+                if (keepLoggedIn && (newAccessToken || reloginToken)) {
+                    writeReloginToken({
+                        identifiant: reloginToken?.identifiant ?? username,
+                        accessToken: newAccessToken ?? reloginToken.accessToken,
+                        typeCompte: (response.data.accounts.find((account) => account.typeCompte !== "P") ?? response.data.accounts[0])?.typeCompte ?? "E",
+                        uuid: deviceUuid,
+                    });
+                } else if (!keepLoggedIn) {
+                    writeReloginToken(null);
                 }
                 let accountsList = [];
                 let accounts = response.data.accounts.find((account) => account.typeCompte !== "P") ?? response.data.accounts[0];
@@ -1718,6 +1795,21 @@ export default function App({ edpFetch }) {
             } else {
                 // si ED renvoie une erreur
                 messages.submitButtonText = "Invalide";
+                // Seuls 505 / 522 veulent dire "mot de passe refuse" : le reste
+                // (serveur, double authentification...) ne doit pas deconnecter.
+                messages.reason = statusCode === 505 || statusCode === 522
+                    ? "credentials"
+                    : statusCode === 250 ? "a2f" : "server";
+                if (reloginToken && statusCode !== 74000) {
+                    // Jeton refuse : la reconnexion automatique repasse par le
+                    // mot de passe enregistre. On ne l'oublie que si EcoleDirecte
+                    // le refuse vraiment (pas sur une simple erreur serveur).
+                    messages.reason = "token";
+                    if ([250, 505, 517, 522].includes(statusCode)) {
+                        writeReloginToken(null);
+                    }
+                    return; // le finally appelle callback(messages)
+                }
                 if (referencedErrors.hasOwnProperty(statusCode)) {
                     messages.submitErrorMessage = referencedErrors[statusCode];
                     if (statusCode === 250) {
@@ -1745,6 +1837,7 @@ export default function App({ edpFetch }) {
                 console.error(error);
                 messages.submitButtonText = "Échec de la connexion";
                 messages.submitErrorMessage = "Error: " + error.message;
+                messages.reason = "network";
             }
         }
         finally {
@@ -3105,11 +3198,11 @@ export default function App({ edpFetch }) {
         // suppression des paramètres locaux et globaux
         localStorage.removeItem("userSettings");
         localStorage.removeItem("keepLoggedIn");
+        writeReloginToken(null);
         // réinitialisation des States
         setTokenState("");
         setAccountsListState([]);
         resetUserData();
-        setKeepLoggedIn(false);
         setIsLoggedIn(false);
         // abort tous les fetch en cours pour éviter une reconnexion à partir du nouveau token renvoyé par l'API
         for (let controller of abortControllers.current) {
@@ -3284,7 +3377,7 @@ export default function App({ edpFetch }) {
                                 isFullScreen={isFullScreen}
                                 logout={logout}
                             />
-                            {(!isLoggedIn && <LoginBottomSheet keepLoggedIn={keepLoggedIn} setKeepLoggedIn={setKeepLoggedIn} A2FInfo={A2FInfo} setRequireA2F={setRequireA2F} bufferUserIds={bufferUserIds} fetchLogin={fetchLogin} logout={logout} loginFromOldAuthInfo={loginFromOldAuthInfo} backgroundTask={keepLoggedIn && !!userIds.username && !!userIds.password && !requireA2F} onClose={() => setIsLoggedIn(true)} close={keepLoggedIn && !!userIds.username && !!userIds.password && !requireA2F} />)}
+                            {(!isLoggedIn && <LoginBottomSheet keepLoggedIn={keepLoggedIn} setKeepLoggedIn={setKeepLoggedIn} A2FInfo={A2FInfo} setRequireA2F={setRequireA2F} bufferUserIds={bufferUserIds} fetchLogin={fetchLogin} logout={logout} loginFromOldAuthInfo={loginFromOldAuthInfo} backgroundTask={keepLoggedIn && (!!readReloginToken() || (!!userIds.username && !!userIds.password)) && !requireA2F} onClose={() => setIsLoggedIn(true)} close={keepLoggedIn && (!!readReloginToken() || (!!userIds.username && !!userIds.password)) && !requireA2F} />)}
                         </>),
                     path: "app",
                     children: [
@@ -3475,6 +3568,42 @@ export default function App({ edpFetch }) {
 
     // Pour l'abonnement push (utils/push.js) : identifiants de la session et
     // jetons de double authentification. Jamais stockes par cette fonction.
+    // Test depuis Parametres > Connexion : une vraie reconnexion par jeton,
+    // sans mot de passe. Renvoie { ok, code, message }. Ne deconnecte jamais.
+    async function testTokenRelogin() {
+        const reloginToken = readReloginToken();
+        if (!reloginToken) {
+            return { ok: false, code: null, message: "Aucun jeton enregistré sur ce téléphone." };
+        }
+        try {
+            const payload = {
+                identifiant: encodeURIComponent(reloginToken.identifiant),
+                uuid: reloginToken.uuid || getDeviceUuid(),
+                isReLogin: true,
+                typeCompte: reloginToken.typeCompte || "E",
+                accesstoken: reloginToken.accessToken,
+                fa: Object.keys(A2FInfo).length > 0 ? [A2FInfo] : [],
+            };
+            const response = await fetch(`${apiRoot()}/v3/login.awp?v=${apiVersion}`, {
+                body: "data=" + JSON.stringify(payload),
+                method: "POST",
+                referrerPolicy: "no-referrer",
+                headers: { "Content-Type": bodyContentType() },
+            });
+            const data = JSON.parse((await response.text()) || "{}");
+            if (data.code === 200) {
+                const newToken = response.headers.get("x-token") || data.token;
+                if (newToken) setTokenState(newToken);
+                const newAccessToken = findAccessToken(data);
+                writeReloginToken({ ...reloginToken, accessToken: newAccessToken ?? reloginToken.accessToken });
+                return { ok: true, code: 200, message: newAccessToken && newAccessToken !== reloginToken.accessToken ? "Reconnecté sans mot de passe (nouveau jeton reçu)." : "Reconnecté sans mot de passe." };
+            }
+            return { ok: false, code: data.code ?? response.status, message: data.message || "EcoleDirecte a refusé le jeton." };
+        } catch (error) {
+            return { ok: false, code: null, message: "Pas de réponse : vérifie ta connexion internet." };
+        }
+    }
+
     function getPushCredentials() {
         return { username: userIds?.username, password: userIds?.password, cn: A2FInfo?.cn, cv: A2FInfo?.cv };
     }
@@ -3536,6 +3665,7 @@ export default function App({ edpFetch }) {
         checkForUpdates,
         markUpdatesShown,
         getPushCredentials,
+        testTokenRelogin,
     }), [
         useUserData,
         useUserSettings,
