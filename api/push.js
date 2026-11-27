@@ -389,6 +389,8 @@ export default async function handler(req, res) {
             }
             const keys = (await redis(config, ["SMEMBERS", SUBSCRIBERS_SET])) ?? [];
             const results = {};
+            // Aucune donnee personnelle : fournisseur du push et dates seulement.
+            const devices = [];
             for (const redisKey of keys) {
                 let outcome;
                 try {
@@ -396,6 +398,12 @@ export default async function handler(req, res) {
                     if (!record) {
                         outcome = "missing";
                     } else {
+                        devices.push({
+                            provider: new URL(record.subscription.endpoint).host,
+                            createdAt: record.createdAt ? new Date(record.createdAt).toISOString() : null,
+                            lastCheck: record.lastCheck ? new Date(record.lastCheck).toISOString() : null,
+                            status: record.status ?? null,
+                        });
                         const alive = await push(record.subscription, {
                             title: "Notification de test",
                             body: "Les notifications EDP marchent, même appli fermée.",
@@ -409,7 +417,7 @@ export default async function handler(req, res) {
                 }
                 results[outcome] = (results[outcome] ?? 0) + 1;
             }
-            return res.status(200).json({ code: 200, subscribers: keys.length, results });
+            return res.status(200).json({ code: 200, subscribers: keys.length, results, devices });
         }
 
         const body = await readBody(req);
