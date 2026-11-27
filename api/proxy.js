@@ -32,7 +32,7 @@ function identityHeaders(req) {
     if (identity === "mobile") {
         return { ...SPOOFED_HEADERS, "User-Agent": MOBILE_USER_AGENT };
     }
-    if (identity === "mobile-bare") {
+    if (identity === "mobile-bare" || identity === "mobile-nogtk") {
         return { "User-Agent": MOBILE_USER_AGENT };
     }
     return { ...SPOOFED_HEADERS };
@@ -144,6 +144,18 @@ export default async function handler(req, res) {
 
         if (isLoginRoute && req.method === "POST") {
             const body = await readRawBody(req);
+
+            // Test : comme la bibliotheque mobile qui obtient le jeton, sans
+            // l'aller-retour GTK du site web.
+            if (req.headers["x-edp-identity"] === "mobile-nogtk") {
+                const upstream = await fetch(upstreamUrl, {
+                    method: "POST",
+                    headers: buildUpstreamHeaders(req, { "Content-Type": UPSTREAM_CONTENT_TYPE }),
+                    body,
+                });
+                return await sendUpstreamResponse(upstream, res);
+            }
+
             const credentials = await fetchGtk(query.get("v") ?? "", identityHeaders(req));
 
             if (!credentials) {

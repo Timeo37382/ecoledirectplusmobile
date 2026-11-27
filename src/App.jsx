@@ -3638,11 +3638,19 @@ export default function App({ edpFetch }) {
         if (!isProxyTransport()) {
             return [{ identity: "-", summary: "Test possible seulement via le serveur de l'appli." }];
         }
+        // Comme la bibliotheque mobile qui obtient le jeton : mot de passe en
+        // clair dans le JSON, le tout encode en formulaire. On s'arrete des
+        // qu'EcoleDirecte ne dit plus "mot de passe invalide" (505), pour ne
+        // pas multiplier les tentatives refusees.
+        const variants = [
+            { identity: "mobile-bare", label: "mobile", version: apiVersion },
+            { identity: "mobile-nogtk", label: "mobile sans GTK", version: "8.0.0" },
+        ];
         const results = [];
-        for (const identity of ["mobile", "mobile-bare"]) {
+        for (const { identity, label, version } of variants) {
             const payload = {
-                identifiant: encodeURIComponent(userIds.username),
-                motdepasse: encodeURIComponent(userIds.password),
+                identifiant: userIds.username,
+                motdepasse: userIds.password,
                 isReLogin: false,
                 sesouvenirdemoi: true,
                 uuid: getDeviceUuid(),
@@ -3650,8 +3658,8 @@ export default function App({ edpFetch }) {
                 fa: Object.keys(A2FInfo).length > 0 ? [A2FInfo] : [],
             };
             try {
-                const response = await fetch(`${apiRoot()}/v3/login.awp?v=${apiVersion}`, {
-                    body: "data=" + JSON.stringify(payload),
+                const response = await fetch(`${apiRoot()}/v3/login.awp?v=${version}`, {
+                    body: "data=" + encodeURIComponent(JSON.stringify(payload)),
                     method: "POST",
                     referrerPolicy: "no-referrer",
                     headers: { "Content-Type": bodyContentType(), "x-edp-identity": identity },
@@ -3660,17 +3668,19 @@ export default function App({ edpFetch }) {
                 let data = null;
                 try { data = JSON.parse(text); } catch { /* reponse non JSON */ }
                 if (!data) {
-                    results.push({ identity, summary: `HTTP ${response.status}, réponse illisible (${text.length} caractères).` });
-                    continue;
+                    results.push({ identity: label, summary: `HTTP ${response.status}, réponse illisible (${text.length} caractères).` });
+                    break;
                 }
                 const account = data.data?.accounts?.find((item) => item.typeCompte !== "P") ?? data.data?.accounts?.[0];
                 const field = account && Object.keys(account).find((key) => /^access_?token$/i.test(key));
                 const tokenInfo = data.code === 200
                     ? (field ? `jeton ${String(account[field] ?? "").length ? `reçu (${String(account[field]).length} caractères)` : "vide"}` : "pas de jeton")
                     : "";
-                results.push({ identity, summary: `HTTP ${response.status}, code ${data.code}${data.message ? ` « ${data.message} »` : ""}${tokenInfo ? `, ${tokenInfo}` : ""}.` });
+                results.push({ identity: label, summary: `HTTP ${response.status}, code ${data.code}${data.message ? ` « ${data.message} »` : ""}${tokenInfo ? `, ${tokenInfo}` : ""}.` });
+                if (data.code !== 505) break;
             } catch {
-                results.push({ identity, summary: "Pas de réponse (réseau)." });
+                results.push({ identity: label, summary: "Pas de réponse (réseau)." });
+                break;
             }
         }
         return results;
