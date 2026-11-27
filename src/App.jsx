@@ -3636,44 +3636,6 @@ export default function App({ edpFetch }) {
 
     // Pour l'abonnement push (utils/push.js) : identifiants de la session et
     // jetons de double authentification. Jamais stockes par cette fonction.
-    // Test depuis Parametres > Connexion : une vraie reconnexion par jeton,
-    // sans mot de passe. Renvoie { ok, code, message }. Ne deconnecte jamais.
-    async function testTokenRelogin() {
-        const reloginToken = readReloginToken();
-        if (!reloginToken) {
-            return { ok: false, code: null, message: "Aucun jeton enregistré sur ce téléphone." };
-        }
-        try {
-            const payload = {
-                identifiant: reloginToken.identifiant,
-                motdepasse: "???",
-                uuid: reloginToken.uuid || getDeviceUuid(),
-                isReLogin: true,
-                typeCompte: reloginToken.typeCompte || "E",
-                accesstoken: reloginToken.accessToken,
-                fa: Object.keys(A2FInfo).length > 0 ? [A2FInfo] : [],
-            };
-            const response = await fetch(`${apiRoot()}/v3/login.awp?v=${MOBILE_API_VERSION}`, {
-                body: "data=" + encodeURIComponent(JSON.stringify(payload)),
-                method: "POST",
-                referrerPolicy: "no-referrer",
-                headers: { "Content-Type": bodyContentType(), [SESSION_IDENTITY_HEADER]: SESSION_IDENTITY.MOBILE },
-            });
-            const data = JSON.parse((await response.text()) || "{}");
-            if (data.code === 200) {
-                setSessionIdentity(SESSION_IDENTITY.MOBILE);
-                const newToken = response.headers.get("x-token") || data.token;
-                if (newToken) setTokenState(newToken);
-                const newAccessToken = findAccessToken(data);
-                writeReloginToken({ ...reloginToken, accessToken: newAccessToken ?? reloginToken.accessToken });
-                return { ok: true, code: 200, message: newAccessToken && newAccessToken !== reloginToken.accessToken ? "Reconnecté sans mot de passe (nouveau jeton reçu)." : "Reconnecté sans mot de passe." };
-            }
-            return { ok: false, code: data.code ?? response.status, message: data.message || "EcoleDirecte a refusé le jeton." };
-        } catch (error) {
-            return { ok: false, code: null, message: "Pas de réponse : vérifie ta connexion internet." };
-        }
-    }
-
     function getPushCredentials() {
         return { username: userIds?.username, password: userIds?.password, cn: A2FInfo?.cn, cv: A2FInfo?.cv };
     }
@@ -3735,7 +3697,6 @@ export default function App({ edpFetch }) {
         checkForUpdates,
         markUpdatesShown,
         getPushCredentials,
-        testTokenRelogin,
     }), [
         useUserData,
         useUserSettings,

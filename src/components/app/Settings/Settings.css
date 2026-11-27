@@ -468,14 +468,12 @@ body:has(#settings) {
 }
 
 #connection-settings .connection-state,
-#connection-settings .connection-diagnostic,
-#connection-settings .connection-test-result {
+#connection-settings .connection-diagnostic {
     font-size: 1.3rem;
     color: rgb(var(--text-color-alt));
 }
 
-#connection-settings .connection-state.active,
-#connection-settings .connection-test-result.ok {
+#connection-settings .connection-state.active {
     color: rgb(var(--border-color-success));
 }
 
@@ -483,12 +481,4 @@ body:has(#settings) {
     margin-top: 6px;
     font-size: 1.2rem;
     opacity: .8;
-}
-
-#connection-settings .connection-test-result {
-    margin-top: 8px;
-}
-
-#connection-settings .connection-test-result.error {
-    color: rgb(var(--text-color-soft-error-alt));
 }
