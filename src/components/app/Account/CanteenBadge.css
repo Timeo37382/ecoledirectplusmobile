@@ -228,25 +228,24 @@
     letter-spacing: .15em;
 }
 
-/* Regime et repas de la semaine type (plein ecran, sous le code) */
+/* Regime et repas de la semaine type : bloc sous la carte Badge (profil) */
 .canteen-meals {
-    width: 100%;
     display: flex;
     flex-flow: column nowrap;
-    gap: 16px;
-    margin-top: 10px;
-    padding-top: 18px;
-    border-top: 1px solid #e4e4e4;
-    text-align: left;
+    gap: 14px;
+    padding: 14px 16px 16px;
+    border-radius: 16px;
+    background-color: rgba(var(--background-color-0), 0.35);
 }
 
 .canteen-meals .canteen-regime {
-    font-size: var(--font-size-18);
-    color: #111;
+    font-size: var(--font-size-16);
+    color: rgb(var(--text-color-alt));
 }
 
 .canteen-meals .canteen-regime strong {
     font-weight: var(--font-weight-extra-bold);
+    color: rgb(var(--text-color-main));
 }
 
 .canteen-meal-week {
@@ -257,10 +256,14 @@
 }
 
 .canteen-meal-week .canteen-meal-icon {
-    flex: 0 0 30px;
-    width: 30px;
-    height: 30px;
-    color: #555;
+    flex: 0 0 26px;
+    width: 26px;
+    height: 26px;
+    color: rgb(var(--text-color-alt));
+}
+
+.canteen-meal-week .canteen-meal-icon path {
+    fill: rgb(var(--text-color-alt));
 }
 
 .canteen-meal-week-body {
@@ -272,8 +275,9 @@
 }
 
 .canteen-meal-week-title {
-    font-size: var(--font-size-16);
+    font-size: var(--font-size-15);
     font-weight: var(--font-weight-extra-bold);
+    color: rgb(var(--text-color-main));
 }
 
 .canteen-meal-days {
@@ -292,24 +296,25 @@
 }
 
 .canteen-meal-day {
-    font-size: var(--font-size-16);
+    font-size: var(--font-size-15);
     font-weight: var(--font-weight-extra-bold);
+    color: rgb(var(--text-color-main));
 }
 
-.canteen-fullscreen .canteen-meal-mark {
-    width: 20px;
-    height: 20px;
+.canteen-meals .canteen-meal-mark {
+    width: 19px;
+    height: 19px;
     display: inline-grid;
     place-items: center;
     border-radius: 50%;
     font-size: 1.1rem;
     font-weight: var(--font-weight-extra-bold);
     color: #fff;
-    background-color: #9a9a9a;
+    background-color: rgba(var(--text-color-alt), 0.45);
 }
 
-.canteen-fullscreen .canteen-meal-days li.taken .canteen-meal-mark {
-    background-color: #1f9d55;
+.canteen-meals .canteen-meal-days li.taken .canteen-meal-mark {
+    background-color: rgb(var(--border-color-success));
 }
 
 @keyframes canteen-fade-in {

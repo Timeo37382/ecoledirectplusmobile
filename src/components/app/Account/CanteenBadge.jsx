@@ -81,6 +81,19 @@ function MealWeek({ title, days }) {
     );
 }
 
+/** Regime et repas de la semaine type, sous l'apercu du badge (carte Profil). */
+export function CanteenMeals({ account, isStreamer }) {
+    const meals = canteenMeals(account);
+    if (!meals || isStreamer) return null;
+    return (
+        <section className="canteen-meals" aria-label="Régime et repas">
+            {meals.regime && <p className="canteen-regime">Régime : <strong>{meals.regime}</strong></p>}
+            {meals.midi && <MealWeek title="Midi (semaine type)" days={meals.midi} />}
+            {meals.soir && <MealWeek title="Soir (semaine type)" days={meals.soir} />}
+        </section>
+    );
+}
+
 /** QR code dessine en SVG a partir de ses modules (net a toutes les tailles). */
 function QrCode({ value, className = "" }) {
     const { size, path } = useMemo(() => {
@@ -135,7 +148,6 @@ function BadgeCode({ format, value, className }) {
 
 export default function CanteenBadge({ account, isStreamer }) {
     const number = canteenBadgeNumber(account);
-    const meals = canteenMeals(account);
     const isDemo = account?.firstName === "Guest";
     const [format, setFormat] = useState(() => (localStorage.getItem(FORMAT_KEY) === "qr" ? "qr" : "barcode"));
     const [isOpen, setIsOpen] = useState(false);
@@ -228,13 +240,6 @@ export default function CanteenBadge({ account, isStreamer }) {
                         <span className="canteen-fullscreen-name">{account.firstName} {(account.lastName ?? "").toUpperCase()}</span>
                         <BadgeCode format={format} value={number} className="large" />
                         <span className="canteen-fullscreen-number">{number}</span>
-                        {meals && (
-                            <div className="canteen-meals">
-                                {meals.regime && <p className="canteen-regime">Régime : <strong>{meals.regime}</strong></p>}
-                                {meals.midi && <MealWeek title="Midi (semaine type)" days={meals.midi} />}
-                                {meals.soir && <MealWeek title="Soir (semaine type)" days={meals.soir} />}
-                            </div>
-                        )}
                     </div>
                 </div>,
                 document.body,

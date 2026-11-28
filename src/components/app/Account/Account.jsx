@@ -1,7 +1,7 @@
 import { useRef, useEffect, useContext, useState } from "react";
 import { pictureUrl } from "../../../utils/api";
 import { framePhoto } from "../../../utils/photoFraming";
-import CanteenBadge from "./CanteenBadge";
+import CanteenBadge, { CanteenMeals } from "./CanteenBadge";
 import { AppContext } from "../../../App";
 
 import DropDownMenu from "../../generic/UserInputs/DropDownMenu";
@@ -162,6 +162,7 @@ export default function Account({ schoolLife, fetchSchoolLife, fetchAdministrati
                 </dl>
 
                 <CanteenBadge account={account} isStreamer={isStreamer} />
+                <CanteenMeals account={account} isStreamer={isStreamer} />
             </section>
             <section className="frame" id="documents">
                 {module?.enable ? (

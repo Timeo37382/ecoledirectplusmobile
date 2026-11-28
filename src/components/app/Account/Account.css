@@ -375,13 +375,15 @@ body:has(#account) {
 /* Contenu du profil : petite cascade a l'interieur de la carte */
 #profile .profile-hero,
 #profile .profile-details,
-#profile .canteen-badge {
+#profile .canteen-badge,
+#profile .canteen-meals {
     animation: account-rise-in .45s var(--timing-function-spring-effect) both;
 }
 
 #profile .profile-hero { animation-delay: 120ms; }
 #profile .profile-details { animation-delay: 170ms; }
 #profile .canteen-badge { animation-delay: 220ms; }
+#profile .canteen-meals { animation-delay: 270ms; }
 
 #profile #profile-picture-container {
     animation: account-pop-in .5s var(--timing-function-spring-effect) 150ms both;
