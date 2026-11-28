@@ -359,3 +359,58 @@ body:has(#account) {
     height: 100px;
     margin: 0 auto;
 }
+
+/* - - - ANIMATIONS (memes que le reste de l'appli) - - -
+ * Cartes : "go-in" des fenetres de l'accueil (rebond, cascade de 50 ms).
+ * Les modes Equilibre / Performance coupent deja toutes les animations. */
+
+#account > .frame {
+    animation: account-go-in .5s var(--timing-function-spring-effect) both;
+}
+
+#account > .frame:nth-child(1) { animation-delay: 0ms; }
+#account > .frame:nth-child(2) { animation-delay: 50ms; }
+#account > .frame:nth-child(3) { animation-delay: 100ms; }
+
+/* Contenu du profil : petite cascade a l'interieur de la carte */
+#profile .profile-hero,
+#profile .profile-details,
+#profile .canteen-badge {
+    animation: account-rise-in .45s var(--timing-function-spring-effect) both;
+}
+
+#profile .profile-hero { animation-delay: 120ms; }
+#profile .profile-details { animation-delay: 170ms; }
+#profile .canteen-badge { animation-delay: 220ms; }
+
+#profile #profile-picture-container {
+    animation: account-pop-in .5s var(--timing-function-spring-effect) 150ms both;
+}
+
+/* Compteurs de vie scolaire : le chiffre "saute" quand il arrive */
+#account .behavior-type .count:not(.loading) {
+    animation: account-pop-in .4s var(--timing-function-spring-effect) both;
+}
+
+@keyframes account-go-in {
+    from { opacity: 0; scale: .85; }
+    to { opacity: 1; scale: 1; }
+}
+
+@keyframes account-rise-in {
+    from { opacity: 0; translate: 0 10px; }
+    to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes account-pop-in {
+    from { opacity: 0; scale: .6; }
+    to { opacity: 1; scale: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #account > .frame,
+    #account .frame *,
+    #account .behavior-type .count {
+        animation: none !important;
+    }
+}

@@ -83,6 +83,31 @@ export default function CanteenBadge({ account, isStreamer }) {
     const isDemo = account?.firstName === "Guest";
     const [format, setFormat] = useState(() => (localStorage.getItem(FORMAT_KEY) === "qr" ? "qr" : "barcode"));
     const [isOpen, setIsOpen] = useState(false);
+    // Fermeture animee (blur-out, comme les pop-ups de l'appli) avant de
+    // retirer le plein ecran.
+    const [isClosing, setIsClosing] = useState(false);
+    const closeTimer = useRef(null);
+
+    const open = () => {
+        clearTimeout(closeTimer.current);
+        setIsClosing(false);
+        setIsOpen(true);
+    };
+
+    const close = () => {
+        if (!isOpen || isClosing) return;
+        setIsClosing(true);
+        // Secours si animationend n'arrive pas (animations coupees...).
+        closeTimer.current = setTimeout(finishClose, 400);
+    };
+
+    function finishClose() {
+        clearTimeout(closeTimer.current);
+        setIsOpen(false);
+        setIsClosing(false);
+    }
+
+    useEffect(() => () => clearTimeout(closeTimer.current), []);
 
     const chooseFormat = (value) => {
         setFormat(value);
@@ -94,13 +119,13 @@ export default function CanteenBadge({ account, isStreamer }) {
         if (!isOpen) return undefined;
         let wakeLock = null;
         navigator.wakeLock?.request("screen").then((lock) => { wakeLock = lock; }).catch(() => {});
-        const onKey = (event) => { if (event.key === "Escape") setIsOpen(false); };
+        const onKey = (event) => { if (event.key === "Escape") close(); };
         window.addEventListener("keydown", onKey);
         return () => {
             window.removeEventListener("keydown", onKey);
             wakeLock?.release().catch(() => {});
         };
-    }, [isOpen]);
+    }, [isOpen, isClosing]);
 
     if (!number) {
         return (
@@ -124,22 +149,26 @@ export default function CanteenBadge({ account, isStreamer }) {
         <section className="canteen-badge" aria-label="Badge cantine">
             <div className="canteen-header">
                 <h3 className="canteen-title">Badge cantine{isDemo && <span className="canteen-demo"> (exemple)</span>}</h3>
-                <div className="canteen-switch" role="radiogroup" aria-label="Format du badge">
+                <div className={`canteen-switch ${format}`} role="radiogroup" aria-label="Format du badge">
+                    <span className="canteen-switch-thumb" aria-hidden="true" />
                     <button type="button" role="radio" aria-checked={format === "barcode"} className={format === "barcode" ? "active" : ""} onClick={() => chooseFormat("barcode")}>Code-barres</button>
                     <button type="button" role="radio" aria-checked={format === "qr"} className={format === "qr" ? "active" : ""} onClick={() => chooseFormat("qr")}>QR code</button>
                 </div>
             </div>
 
-            <button type="button" className={`canteen-preview ${format}`} onClick={() => setIsOpen(true)} aria-label="Afficher le badge en plein écran">
-                <BadgeCode format={format} value={number} />
+            <button type="button" className={`canteen-preview ${format}`} onClick={open} aria-label="Afficher le badge en plein écran">
+                {/* key : le code change d'element au changement de format, ce qui rejoue son animation */}
+                <span className="canteen-code-swap" key={format}>
+                    <BadgeCode format={format} value={number} />
+                </span>
                 <span className="canteen-number">{number}</span>
                 <span className="canteen-hint">Touche pour l'agrandir</span>
             </button>
 
             {isOpen && createPortal(
-                <div className="canteen-fullscreen" role="dialog" aria-modal="true" aria-label="Badge cantine en plein écran" onClick={() => setIsOpen(false)}>
-                    <button type="button" className="canteen-close" onClick={() => setIsOpen(false)} aria-label="Fermer">✕</button>
-                    <div className="canteen-fullscreen-content">
+                <div className={`canteen-fullscreen${isClosing ? " closing" : ""}`} role="dialog" aria-modal="true" aria-label="Badge cantine en plein écran" onClick={close}>
+                    <button type="button" className="canteen-close" onClick={(event) => { event.stopPropagation(); close(); }} aria-label="Fermer">✕</button>
+                    <div className="canteen-fullscreen-content" onAnimationEnd={(event) => { if (isClosing && event.target === event.currentTarget) finishClose(); }}>
                         <span className="canteen-fullscreen-name">{account.firstName} {(account.lastName ?? "").toUpperCase()}</span>
                         <BadgeCode format={format} value={number} className="large" />
                         <span className="canteen-fullscreen-number">{number}</span>

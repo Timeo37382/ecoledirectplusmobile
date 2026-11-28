@@ -43,13 +43,33 @@
 
 /* Choix QR code / code-barres */
 .canteen-switch {
-    display: inline-flex;
+    position: relative;
+    display: inline-grid;
+    grid-template-columns: 1fr 1fr;
     padding: 3px;
     border-radius: 999px;
     background-color: rgba(var(--background-color-0), 0.6);
 }
 
+/* Pastille qui glisse sous l'option choisie (rebond de l'appli) */
+.canteen-switch .canteen-switch-thumb {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc(50% - 3px);
+    border-radius: 999px;
+    background-color: rgb(var(--border-color-0));
+    box-shadow: 0 2px 8px rgba(var(--border-color-0), 0.45);
+    transition: translate .45s var(--timing-function-spring-effect);
+}
+
+.canteen-switch.qr .canteen-switch-thumb {
+    translate: 100% 0;
+}
+
 .canteen-switch button {
+    position: relative; /* au-dessus de la pastille */
     min-height: 30px;
     padding: 0 12px;
     border: none;
@@ -64,7 +84,6 @@
 }
 
 .canteen-switch button.active {
-    background-color: rgb(var(--border-color-0));
     color: white;
 }
 
@@ -85,6 +104,14 @@
 
 .canteen-preview:active {
     scale: .98;
+}
+
+/* Changement de format : le nouveau code apparait comme une pop-up (blur-in) */
+.canteen-preview .canteen-code-swap {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    animation: canteen-blur-in .4s var(--timing-function-spring-effect) both;
 }
 
 .canteen-preview .canteen-qr {
@@ -125,7 +152,28 @@
     place-items: center;
     padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
     background-color: #fff;
-    animation: canteen-fade-in .25s ease both;
+    animation: canteen-fade-in .3s ease both;
+}
+
+.canteen-fullscreen.closing {
+    animation: canteen-fade-out .3s ease both;
+}
+
+/* Contenu : blur-in / blur-out des pop-ups de l'appli */
+.canteen-fullscreen .canteen-fullscreen-content {
+    animation: canteen-blur-in .35s var(--timing-function-spring-effect) both;
+}
+
+.canteen-fullscreen.closing .canteen-fullscreen-content {
+    animation: canteen-blur-out .3s ease-out both;
+}
+
+.canteen-fullscreen .canteen-close {
+    animation: canteen-pop-in .4s var(--timing-function-spring-effect) .1s both;
+}
+
+.canteen-fullscreen.closing .canteen-close {
+    animation: canteen-fade-out .2s ease both;
 }
 
 .canteen-fullscreen * {
@@ -193,8 +241,34 @@
     to { opacity: 1; }
 }
 
+@keyframes canteen-fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes canteen-blur-in {
+    from { opacity: 0; filter: blur(10px); scale: .8; }
+    to { opacity: 1; filter: blur(0); scale: 1; }
+}
+
+@keyframes canteen-blur-out {
+    from { opacity: 1; filter: blur(0); scale: 1; }
+    to { opacity: 0; filter: blur(10px); scale: .8; }
+}
+
+@keyframes canteen-pop-in {
+    from { opacity: 0; scale: .5; }
+    to { opacity: 1; scale: 1; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .canteen-fullscreen {
-        animation: none;
+    .canteen-fullscreen,
+    .canteen-fullscreen *,
+    .canteen-preview .canteen-code-swap {
+        animation-duration: 1ms !important;
+    }
+
+    .canteen-switch .canteen-switch-thumb {
+        transition: none;
     }
 }
