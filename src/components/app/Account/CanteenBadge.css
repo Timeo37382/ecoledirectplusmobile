@@ -227,16 +227,7 @@
     letter-spacing: .15em;
 }
 
-.canteen-fullscreen-tip {
-    font-size: var(--font-size-14);
-    color: #555;
-}
-
-.canteen-fullscreen .canteen-fullscreen-tip {
-    color: #555;
-}
-
-@keyframes canteen-fade-in {
+.canteen-fullscreen @keyframes canteen-fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
 }

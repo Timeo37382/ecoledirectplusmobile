@@ -172,7 +172,6 @@ export default function CanteenBadge({ account, isStreamer }) {
                         <span className="canteen-fullscreen-name">{account.firstName} {(account.lastName ?? "").toUpperCase()}</span>
                         <BadgeCode format={format} value={number} className="large" />
                         <span className="canteen-fullscreen-number">{number}</span>
-                        <span className="canteen-fullscreen-tip">Monte la luminosité au maximum pour que la borne le lise bien.</span>
                     </div>
                 </div>,
                 document.body,
