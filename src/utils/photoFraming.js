@@ -124,4 +124,7 @@ export function framePhoto(img) {
         transform: "none",
     });
     img.dataset.framed = "1";
+    // Fondu d'apparition : la classe etait ajoutee par un ecouteur pose
+    // apres coup, qui ratait les images deja en cache (photo invisible).
+    img.classList.add("loaded");
 }
