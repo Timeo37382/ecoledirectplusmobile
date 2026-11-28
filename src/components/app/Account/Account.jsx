@@ -1,6 +1,7 @@
 import { useRef, useEffect, useContext, useState } from "react";
 import { pictureUrl } from "../../../utils/api";
 import { framePhoto } from "../../../utils/photoFraming";
+import CanteenBadge from "./CanteenBadge";
 import { AppContext } from "../../../App";
 
 import HolographicDiv from "../../generic/CustomDivs/HolographicDiv";
@@ -160,6 +161,8 @@ export default function Account({ schoolLife, fetchSchoolLife, fetchAdministrati
                         <dd>{isStreamer ? "00 00 00 00 00" : account.phoneNumber}</dd>
                     </div>}
                 </dl>
+
+                <CanteenBadge account={account} isStreamer={isStreamer} />
             </HolographicDiv>
             <section className="frame" id="documents">
                 {module?.enable ? (

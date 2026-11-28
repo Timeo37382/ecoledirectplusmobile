@@ -1,0 +1,200 @@
+/* Badge cantine (onglet Compte). 1rem = 10px. Les codes restent noir sur
+ * blanc quel que soit le theme : c'est ce que lisent les bornes. */
+
+.canteen-badge {
+    padding: 14px 16px 16px;
+    border-radius: 16px;
+    background-color: rgba(var(--background-color-0), 0.35);
+}
+
+.canteen-badge .canteen-header {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.canteen-badge .canteen-title {
+    font-size: var(--font-size-13);
+    font-weight: var(--font-weight-extra-bold);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: rgb(var(--text-color-alt));
+}
+
+.canteen-badge .canteen-demo {
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: var(--font-weight-semi-bold);
+    color: rgb(var(--text-color-alt));
+}
+
+.canteen-badge.empty .canteen-title {
+    margin-bottom: 6px;
+}
+
+.canteen-badge .canteen-empty-text {
+    font-size: var(--font-size-14);
+    line-height: 1.4;
+    color: rgb(var(--text-color-alt));
+}
+
+/* Choix QR code / code-barres */
+.canteen-switch {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 999px;
+    background-color: rgba(var(--background-color-0), 0.6);
+}
+
+.canteen-switch button {
+    min-height: 30px;
+    padding: 0 12px;
+    border: none;
+    border-radius: 999px;
+    background: none;
+    color: rgb(var(--text-color-alt));
+    font: inherit;
+    font-size: var(--font-size-13);
+    font-weight: var(--font-weight-semi-bold);
+    cursor: pointer;
+    transition: background-color .2s ease, color .2s ease;
+}
+
+.canteen-switch button.active {
+    background-color: rgb(var(--border-color-0));
+    color: white;
+}
+
+/* Apercu (cliquable) */
+.canteen-preview {
+    width: 100%;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 12px 12px;
+    border: none;
+    border-radius: 14px;
+    background-color: #fff;
+    cursor: pointer;
+    transition: scale .15s ease;
+}
+
+.canteen-preview:active {
+    scale: .98;
+}
+
+.canteen-preview .canteen-qr {
+    width: 150px;
+    height: 150px;
+}
+
+.canteen-preview .canteen-barcode {
+    width: 100%;
+    max-width: 320px;
+    height: 90px;
+}
+
+.canteen-preview .canteen-number {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: var(--font-size-16);
+    font-weight: var(--font-weight-semi-bold);
+    letter-spacing: .12em;
+    color: #111;
+}
+
+.canteen-preview .canteen-hint {
+    font-size: var(--font-size-12);
+    color: #666;
+}
+
+.canteen-badge .canteen-error {
+    color: #b00020;
+    font-size: var(--font-size-13);
+}
+
+/* Plein ecran : fond blanc pour la borne */
+.canteen-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: grid;
+    place-items: center;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 0px));
+    background-color: #fff;
+    animation: canteen-fade-in .25s ease both;
+}
+
+.canteen-fullscreen * {
+    color: #111;
+}
+
+.canteen-fullscreen .canteen-close {
+    position: absolute;
+    top: calc(14px + env(safe-area-inset-top, 0px));
+    right: 14px;
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background-color: #eee;
+    font-size: var(--font-size-18);
+    font-weight: var(--font-weight-extra-bold);
+    cursor: pointer;
+}
+
+.canteen-fullscreen-content {
+    width: min(100%, 520px);
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+}
+
+.canteen-fullscreen-name {
+    font-size: var(--font-size-20);
+    font-weight: var(--font-weight-extra-bold);
+}
+
+.canteen-fullscreen .canteen-qr.large {
+    width: min(78vw, 60vh, 420px);
+    height: min(78vw, 60vh, 420px);
+}
+
+.canteen-fullscreen .canteen-barcode.large {
+    width: 100%;
+    height: min(30vh, 200px);
+}
+
+.canteen-fullscreen-number {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: var(--font-size-24);
+    font-weight: var(--font-weight-semi-bold);
+    letter-spacing: .15em;
+}
+
+.canteen-fullscreen-tip {
+    font-size: var(--font-size-14);
+    color: #555;
+}
+
+.canteen-fullscreen .canteen-fullscreen-tip {
+    color: #555;
+}
+
+@keyframes canteen-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .canteen-fullscreen {
+        animation: none;
+    }
+}
