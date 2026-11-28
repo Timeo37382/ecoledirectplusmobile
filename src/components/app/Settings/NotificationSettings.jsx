@@ -111,7 +111,7 @@ export default function NotificationSettings() {
     };
 
     return (
-        <div id="notification-settings">
+        <section className="settings-section" id="notification-settings">
             <h2 className="heading">Notifications</h2>
 
             <div className="setting" id="notification-permission">
@@ -169,6 +169,6 @@ export default function NotificationSettings() {
                 </div>
                 <Button onClick={checkNow}>Vérifier</Button>
             </div>
-        </div>
+        </section>
     );
 }

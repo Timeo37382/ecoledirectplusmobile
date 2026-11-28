@@ -7,7 +7,8 @@
     --switch-pad: 2px;
     --switch-thumb: calc(var(--switch-height) - 2 * var(--switch-pad));
     --switch-stretch: 7px; /* la pastille s'etire quand on appuie */
-    --switch-on: 52, 199, 89; /* vert iOS */
+    /* Couleur d'accent du theme actif (violet, bleu-vert...). */
+    --switch-on: var(--border-color-0);
     --switch-spring: cubic-bezier(.3, 1.4, .5, 1);
 
     display: flex;
@@ -43,12 +44,9 @@
     height: var(--switch-height);
     position: relative;
     border-radius: 999px;
-    background-color: rgba(120, 120, 128, 0.36);
-    transition: background-color .25s ease;
-}
-
-.light .switch .switch-track {
-    background-color: rgba(120, 120, 128, 0.22);
+    background-color: rgba(var(--text-color-alt), 0.28);
+    box-shadow: inset 0 0 0 1px rgba(var(--text-color-alt), 0.12);
+    transition: background-color .25s ease, box-shadow .25s ease;
 }
 
 .switch .switch-thumb {
@@ -69,6 +67,7 @@
 /* Allume */
 .switch .switch-input:checked + .switch-track {
     background-color: rgb(var(--switch-on));
+    box-shadow: inset 0 0 0 1px rgba(var(--border-color-1), 0.6), 0 0 12px rgba(var(--switch-on), 0.35);
 }
 
 .switch .switch-input:checked + .switch-track .switch-thumb {

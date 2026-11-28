@@ -114,182 +114,158 @@ export default function Settings({ usersSettings, accountsList, getCurrentSchool
             <div id="settings-box">
                 <h1>Paramètres</h1>
 
-                <div className="setting" id="display-theme">
-                    <span>Thème d'affichage</span> <DisplayThemeController id="display-theme-sc" selected={settings.get("displayTheme")} onChange={(value) => { settings.set("displayTheme", value) }} fieldsetName="display-theme" />
-                </div>
+                {/* - - - Apparence - - - */}
+                <section className="settings-section" id="appearance-settings">
+                    <h2 className="heading">Apparence</h2>
 
-                <div className="setting" id="grade-scale">
-                    <Switch id="grade-scale-cb" label={<span>Tous les barèmes sur</span>} checked={!!settings.get("isGradeScaleEnabled")} onChange={handleGradeScaleEnableChange} />
-                    <NumberInput min={settings.object("gradeScale").min} max={settings.object("gradeScale").max} value={settings.get("gradeScale")} onChange={handleGradeScaleValueChange} active={settings.get("isGradeScaleEnabled")} />
-                </div>
-
-                <div className="setting" id="display-mode">
-                    <div className="setting-label">
-                        <span>Mode d'affichage</span>
-                        <InfoButton className="setting-tooltip display-mode-ib">
-                            <table id="demo-table">
-                                <thead>
-                                    <tr>
-                                        <th></th>
-                                        <th className="column-header">Qualité</th>
-                                        <th className="column-header">Équilibré</th>
-                                        <th className="column-header">Performance</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <th className="row-header">Coins arrondis</th>
-                                        <td>Oui</td>
-                                        <td>Oui</td>
-                                        <td>Non</td>
-                                    </tr>
-
-                                    <tr>
-                                        <th className="row-header">Ombres portées</th>
-                                        <td>Oui</td>
-                                        <td>Oui</td>
-                                        <td>Non</td>
-                                    </tr>
-
-                                    <tr>
-                                        <th className="row-header">Effets graphiques</th>
-                                        <td>Oui</td>
-                                        <td>Oui</td>
-                                        <td>Non</td>
-                                    </tr>
-                                    <tr>
-                                        <th className="row-header">Transitions</th>
-                                        <td>Oui</td>
-                                        <td>Non</td>
-                                        <td>Non</td>
-                                    </tr>
-                                    <tr>
-                                        <th className="row-header">Animations</th>
-                                        <td>Oui</td>
-                                        <td>Non</td>
-                                        <td>Non</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </InfoButton>
+                    <div className="setting" id="display-theme">
+                        <span>Thème</span> <DisplayThemeController id="display-theme-sc" selected={settings.get("displayTheme")} onChange={(value) => { settings.set("displayTheme", value) }} fieldsetName="display-theme" />
                     </div>
-                    {isTabletLayout
-                        ? <DropDownMenu id="display-mode-dd" name="display-mode-dm" options={settings.object("displayMode").values} displayedOptions={["Qualité", "Équilibré", "Performance"]} selected={settings.get("displayMode")} onChange={(value) => { settings.set("displayMode", value) }} />
-                        : <SegmentedControl id="display-mode-sc" segments={settings.object("displayMode").values} displayedSegments={["Qualité", "Équilibré", "Performance"]} selected={settings.get("displayMode")} onChange={(value) => { settings.set("displayMode", value) }} fieldsetName="display-mode" />}
-                </div>
 
-                <div className="setting" id="luciole-font">
-                    <Switch id="luciole-font-cb" checked={settings.get("lucioleFont")} onChange={(event) => { settings.set("lucioleFont", event.target.checked) }} label={<span>Police d'écriture optimisée pour les malvoyants (Luciole)</span>} />
-                </div>
-
-                <div className="setting">
-                    <div id="filters">
-                        <span>Options d'affichage :</span>
-                        <div id="filters-container">
-                            <div id="sepia-filter">
-                                <Switch id="sepia-filter-cb" label={<span>Filtre sepia</span>} checked={settings.get("isSepiaEnabled")} onChange={(event) => { settings.set("isSepiaEnabled", event.target.checked) }} />
-                            </div>
-
-                            <div id="high-contrast-filter">
-                                <Switch id="high-contrast-filter-cb" label={<span>Mode contraste élevé</span>} checked={settings.get("isHighContrastEnabled")} onChange={(event) => { settings.set("isHighContrastEnabled", event.target.checked) }} />
-                            </div>
-
-                            <div id="grayscale-filter">
-                                <Switch id="grayscale-filter-cb" label={<span>Mode Noir et Blanc</span>} checked={settings.get("isGrayscaleEnabled")} onChange={(event) => { settings.set("isGrayscaleEnabled", event.target.checked) }} />
-                            </div>
+                    <div className="setting" id="display-mode">
+                        <div className="setting-label">
+                            <span>Mode d'affichage</span>
+                            <InfoButton className="setting-tooltip display-mode-ib">
+                                <table id="demo-table">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th className="column-header">Qualité</th>
+                                            <th className="column-header">Équilibré</th>
+                                            <th className="column-header">Performance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <th className="row-header">Coins arrondis</th>
+                                            <td>Oui</td>
+                                            <td>Oui</td>
+                                            <td>Non</td>
+                                        </tr>
+                                        <tr>
+                                            <th className="row-header">Ombres portées</th>
+                                            <td>Oui</td>
+                                            <td>Oui</td>
+                                            <td>Non</td>
+                                        </tr>
+                                        <tr>
+                                            <th className="row-header">Effets graphiques</th>
+                                            <td>Oui</td>
+                                            <td>Oui</td>
+                                            <td>Non</td>
+                                        </tr>
+                                        <tr>
+                                            <th className="row-header">Transitions</th>
+                                            <td>Oui</td>
+                                            <td>Non</td>
+                                            <td>Non</td>
+                                        </tr>
+                                        <tr>
+                                            <th className="row-header">Animations</th>
+                                            <td>Oui</td>
+                                            <td>Non</td>
+                                            <td>Non</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </InfoButton>
                         </div>
+                        {isTabletLayout
+                            ? <DropDownMenu id="display-mode-dd" name="display-mode-dm" options={settings.object("displayMode").values} displayedOptions={["Qualité", "Équilibré", "Performance"]} selected={settings.get("displayMode")} onChange={(value) => { settings.set("displayMode", value) }} />
+                            : <SegmentedControl id="display-mode-sc" segments={settings.object("displayMode").values} displayedSegments={["Qualité", "Équilibré", "Performance"]} selected={settings.get("displayMode")} onChange={(value) => { settings.set("displayMode", value) }} fieldsetName="display-mode" />}
                     </div>
-                </div>
 
-
-                <div className="setting" id="photo-blur">
-                    <Switch id="photo-blur-cb" label={<span>Flouter la photo de profil</span>} checked={settings.get("isPhotoBlurEnabled")} onChange={(event) => { settings.set("isPhotoBlurEnabled", event.target.checked) }} />
-                </div>
-
-                <div className="setting" id="party-mode">
-                    <Switch id="party-mode-cb" ref={partyModeCheckbox} label={<span>Activer le mode festif 🎉</span>} checked={settings.get("isPartyModeEnabled")} onChange={(event) => { settings.set("isPartyModeEnabled", event.target.checked); if (event.target.checked) { confettiAnimation() } }} />
-                </div>
-
-                <div className="setting" id="period-event">
-                    <Switch
-                        id="period-event-cb"
-                        ref={periodEventCheckbox}
-                        label={<span>Activer les thèmes saisonniers ✨</span>}
-                        checked={isPeriodEventEnabled}
-                        onChange={handleIsPeriodEventEnabledChange}
-                    />
-                </div>
-
-                <div className="setting" id="reset-windows-layouts">
-                    <span>Réinitialiser l'agencement des fenêtres</span> <Button onClick={() => settings.set("windowArrangement", [])}>Réinitialiser</Button>
-                </div>
-
-                <div className="setting" id="allow-windows-arrangement">
-                    <Switch id="allow-windows-arrangement-cb" label={<span>Permettre le réarrangement des fenêtres</span>} checked={settings.get("allowWindowsArrangement")} onChange={(event) => settings.set("allowWindowsArrangement", event.target.checked)} />
-                </div>
-
-
-                {/^((?!chrome|android).)*safari/i.test(navigator.userAgent) && isStandaloneApp
-                    ? <div className="setting" id="refresh-user-data">
-                        <Button onClick={resetUserData}>Rafraîchir les informations</Button>
+                    <div className="setting" id="period-event">
+                        <Switch
+                            id="period-event-cb"
+                            ref={periodEventCheckbox}
+                            label={<span>Thèmes saisonniers ✨</span>}
+                            checked={isPeriodEventEnabled}
+                            onChange={handleIsPeriodEventEnabledChange}
+                        />
                     </div>
-                    : null
-                }
-                {false && <div id="face-your-fears">
-                    <h2 className="heading">AFFRONTER LA RÉALITÉ</h2>
-                    <div className="setting" id="show-old-streak">
-                        <Switch id="show-old-streak-cb" label={<span>Afficher les Streak passées</span>} />
-                    </div>
-                    <div className="setting" id="show-negative-badges">
-                        <Switch id="show-negative-badges-cb" label={<span>Afficher les Badges négatifs</span>} checked={settings.get("negativeBadges")} onChange={(event) => settings.set("negativeBadges", event.target.checked)} />
-                    </div>
-                    <div className="setting" id="weaknesses-badges">
-                        <Switch id="weaknesses-cb" label={<span>Afficher les points faibles</span>} />
-                    </div>
-                </div>}
 
+                    <div className="setting" id="party-mode">
+                        <Switch id="party-mode-cb" ref={partyModeCheckbox} label={<span>Mode festif 🎉</span>} checked={settings.get("isPartyModeEnabled")} onChange={(event) => { settings.set("isPartyModeEnabled", event.target.checked); if (event.target.checked) { confettiAnimation() } }} />
+                    </div>
+                </section>
 
-                {/* advanced settings */}
+                {/* - - - Notes - - - */}
+                <section className="settings-section" id="grades-settings">
+                    <h2 className="heading">Notes</h2>
+
+                    <div className="setting" id="grade-scale">
+                        <Switch id="grade-scale-cb" label={<span>Tous les barèmes sur</span>} checked={!!settings.get("isGradeScaleEnabled")} onChange={handleGradeScaleEnableChange} />
+                        <NumberInput min={settings.object("gradeScale").min} max={settings.object("gradeScale").max} value={settings.get("gradeScale")} onChange={handleGradeScaleValueChange} active={settings.get("isGradeScaleEnabled")} />
+                    </div>
+                </section>
+
+                {/* - - - Accessibilite - - - */}
+                <section className="settings-section" id="accessibility-settings">
+                    <h2 className="heading">Accessibilité</h2>
+
+                    <div className="setting" id="luciole-font">
+                        <Switch id="luciole-font-cb" checked={settings.get("lucioleFont")} onChange={(event) => { settings.set("lucioleFont", event.target.checked) }} label={<span>Police Luciole (malvoyants)</span>} />
+                    </div>
+
+                    <div className="setting" id="high-contrast-filter">
+                        <Switch id="high-contrast-filter-cb" label={<span>Contraste élevé</span>} checked={settings.get("isHighContrastEnabled")} onChange={(event) => { settings.set("isHighContrastEnabled", event.target.checked) }} />
+                    </div>
+
+                    <div className="setting" id="grayscale-filter">
+                        <Switch id="grayscale-filter-cb" label={<span>Noir et blanc</span>} checked={settings.get("isGrayscaleEnabled")} onChange={(event) => { settings.set("isGrayscaleEnabled", event.target.checked) }} />
+                    </div>
+
+                    <div className="setting" id="sepia-filter">
+                        <Switch id="sepia-filter-cb" label={<span>Filtre sépia</span>} checked={settings.get("isSepiaEnabled")} onChange={(event) => { settings.set("isSepiaEnabled", event.target.checked) }} />
+                    </div>
+                </section>
+
+                {/* - - - Accueil et fenetres - - - */}
+                <section className="settings-section" id="windows-settings">
+                    <h2 className="heading">Accueil et fenêtres</h2>
+
+                    <div className="setting" id="allow-windows-arrangement">
+                        <Switch id="allow-windows-arrangement-cb" label={<span>Pouvoir réarranger les fenêtres</span>} checked={settings.get("allowWindowsArrangement")} onChange={(event) => settings.set("allowWindowsArrangement", event.target.checked)} />
+                    </div>
+
+                    <div className="setting" id="reset-windows-layouts">
+                        <span>Agencement des fenêtres</span> <Button onClick={() => settings.set("windowArrangement", [])}>Réinitialiser</Button>
+                    </div>
+                </section>
+
+                {/* - - - Confidentialite - - - */}
+                <section className="settings-section" id="privacy-settings">
+                    <h2 className="heading">Confidentialité</h2>
+
+                    <div className="setting" id="photo-blur">
+                        <Switch id="photo-blur-cb" label={<span>Flouter la photo de profil</span>} checked={settings.get("isPhotoBlurEnabled")} onChange={(event) => { settings.set("isPhotoBlurEnabled", event.target.checked) }} />
+                    </div>
+
+                    <div className="setting" id="streamer-mode">
+                        <Switch id="streamer-mode-cb" label={<span>Mode streamer (bêta)</span>} checked={settings.get("isStreamerModeEnabled")} onChange={(event) => { settings.set("isStreamerModeEnabled", event.target.checked) }} /><InfoButton className="setting-tooltip">Anonymise les informations sensibles. Les données scolaires seront tout de même affichées. (Bêta : certaines informations qui devraient être masquées ne le seront peut-être pas.)</InfoButton>
+                    </div>
+
+                    <div className="setting" id="allow-anonymous-reports">
+                        <Switch id="allow-anonymous-reports-cb" label={<span>Envoyer des rapports d'erreurs anonymes</span>} checked={settings.get("allowAnonymousReports")} onChange={(event) => settings.set("allowAnonymousReports", event.target.checked)} />
+                    </div>
+                </section>
+
                 <ConnectionSettings />
 
                 <NotificationSettings />
 
-                <div id="advanced-settings">
-                    <h2 className="heading">Paramètres avancés</h2>
-                    {/* prevent switching to dev channel only if installed as standalone app and on safari due to redirecting issues */}
-                    <div className={`setting${isStandaloneApp ? " disabled" : ""}`} id="dev-channel">
-                        <div className="setting-label">
-                            <span>Basculer sur le canal {globalSettings.isDevChannel.value ? "stable" : "développeur"}</span>
-                            <InfoButton className="setting-tooltip">Profitez des dernières fonctionnalités en avant première. Avertissement : ce canal peut être instable et susceptible de dysfonctionner. Signalez nous quelconque problème à travers la page de retour</InfoButton>
-                        </div>
-                        <Button onClick={handleDevChannelSwitchingToggle} className="toggle-button">Basculer<ToggleEnd /></Button>
-                    </div>
+                {/* - - - Avance - - - */}
+                <section className="settings-section" id="advanced-settings">
+                    <h2 className="heading">Avancé</h2>
 
-                    <div className="setting" id="streamer-mode">
-                        <Switch id="streamer-mode-cb" label={<span>Activer le mode streamer (bêta)</span>} checked={settings.get("isStreamerModeEnabled")} onChange={(event) => { settings.set("isStreamerModeEnabled", event.target.checked) }} /><InfoButton className="setting-tooltip">Anonymise les informations sensibles. Les données scolaires seront tout de même affichées. (Bêta : certaines informations qui devraient être masquées ne le seront peut-être pas.)</InfoButton>
-                    </div>
-
-                    <div className="setting" id="allow-anonymous-reports">
-                        <Switch id="allow-anonymous-reports-cb" label={<span>Autoriser l'envoi de rapports d'erreurs anonymisés</span>} checked={settings.get("allowAnonymousReports")} onChange={(event) => settings.set("allowAnonymousReports", event.target.checked)} />
-                    </div>
-
-                    <div className="setting disabled" id="info-persistence">
-                        <Switch id="info-persistence-cb" label={<span>Activer la persistance des informations sur tous vos appareils</span>} /> <InfoButton className="setting-tooltip">Nous utilisons les serveurs d'EcoleDirecte pour stocker vos informations de configuration. Ainsi, vos informations EDP vous suiveront sur tous vos appareils dès lors que vous serez connectés à ce même compte</InfoButton>
-                    </div>
-                    <div className="setting" id="clear-local-storage">
-                        <div className="setting-label">
-                            <span>Nettoyer le localStorage et le sessionStorage</span>
-                            <InfoButton className="setting-tooltip">Efface toutes les données relatives à Ecole Directe Plus stockées sur votre appareil (action destructrice). Si vous rencontrez un problème, cela pourrait le résoudre. Il est recommandé de rafraichir la page (vous serez déconnecté)</InfoButton>
-                        </div>
-                        <div>
-                            <Button onClick={() => { localStorage.clear(); sessionStorage.clear() }}>Nettoyer</Button>
-                            <Button onClick={() => location.reload()} title="Rafraîchir la page" className="refresh-button"><RefreshIcon /></Button>
-                        </div>
-                    </div>
+                    {accountsList.length > 1 ? <div className="setting" id="sync-settings">
+                        <Switch id="synchronise-settings" label={<span>Mêmes paramètres pour tous les profils</span>} checked={globalSettings.shareSettings.value} onChange={() => { globalSettings.shareSettings.set(!globalSettings.shareSettings.value) }} /> <InfoButton className="setting-tooltip">Les paramètres seront synchronisés avec ceux du profil actif</InfoButton>
+                    </div> : null}
 
                     <div className="setting" id="school-year">
                         <div className="setting-label">
-                            <Switch id="school-year-cb" label={<span>Année scolaire (expérimental) </span>} checked={settings.get("isSchoolYearEnabled")} onChange={(event) => { settings.set("isSchoolYearEnabled", event.target.checked); resetUserData(false); }} />
+                            <Switch id="school-year-cb" label={<span>Année scolaire (expérimental)</span>} checked={settings.get("isSchoolYearEnabled")} onChange={(event) => { settings.set("isSchoolYearEnabled", event.target.checked); resetUserData(false); }} />
                             <InfoButton className="school-year">Expérimental : permet d'obtenir les informations des années scolaires précédentes. Nous tentons de reconstruire les données perdues mais ne garantissons pas la véracité totale des informations</InfoButton>
                         </div>
                         <div id="shool-year-ni">
@@ -297,18 +273,37 @@ export default function Settings({ usersSettings, accountsList, getCurrentSchool
                         </div>
                     </div>
 
-                    {accountsList.length > 1 ? <div className="setting" id="sync-settings">
-                        <Switch id="synchronise-settings" label={<span>Synchroniser les paramètres sur tous les profils</span>} checked={globalSettings.shareSettings.value} onChange={() => { globalSettings.shareSettings.set(!globalSettings.shareSettings.value) }} /> <InfoButton className="setting-tooltip">Les paramètres seront synchronisés avec ceux du profil actif</InfoButton>
-                    </div> : null}
-
-
-                    <div className="setting disabled" id="dynamic-loading">
+                    {/* prevent switching to dev channel only if installed as standalone app and on safari due to redirecting issues */}
+                    <div className={`setting${isStandaloneApp ? " disabled" : ""}`} id="dev-channel">
                         <div className="setting-label">
-                            <Switch id="dynamic-loading-cb" label={<span>Activer le chargement dynamique</span>} /> <InfoButton className="setting-tooltip">Charge le contenu uniquement lorsque vous en avez besoin (recommandé pour les petits forfaits)</InfoButton>
+                            <span>Canal {globalSettings.isDevChannel.value ? "développeur" : "stable"}</span>
+                            <InfoButton className="setting-tooltip">Profitez des dernières fonctionnalités en avant première. Avertissement : ce canal peut être instable et susceptible de dysfonctionner. Signalez nous quelconque problème à travers la page de retour</InfoButton>
                         </div>
+                        <Button onClick={handleDevChannelSwitchingToggle} className="toggle-button">Basculer<ToggleEnd /></Button>
                     </div>
 
-                    <h2 className="heading">Raccourcis claviers</h2>
+                    {/^((?!chrome|android).)*safari/i.test(navigator.userAgent) && isStandaloneApp
+                        ? <div className="setting" id="refresh-user-data">
+                            <span>Informations</span> <Button onClick={resetUserData}>Rafraîchir</Button>
+                        </div>
+                        : null
+                    }
+
+                    <div className="setting" id="clear-local-storage">
+                        <div className="setting-label">
+                            <span>Effacer les données locales</span>
+                            <InfoButton className="setting-tooltip">Efface toutes les données relatives à Ecole Directe Plus stockées sur votre appareil (action destructrice). Si vous rencontrez un problème, cela pourrait le résoudre. Il est recommandé de rafraichir la page (vous serez déconnecté)</InfoButton>
+                        </div>
+                        <div className="setting-actions">
+                            <Button onClick={() => { localStorage.clear(); sessionStorage.clear() }}>Effacer</Button>
+                            <Button onClick={() => location.reload()} title="Rafraîchir la page" className="refresh-button"><RefreshIcon /></Button>
+                        </div>
+                    </div>
+                </section>
+
+                {/* - - - Raccourcis clavier (ordinateur) - - - */}
+                {!isTabletLayout && <section className="settings-section" id="shortcuts-settings">
+                    <h2 className="heading">Raccourcis clavier</h2>
 
                     <div className="split-heading">
                         <hr />
@@ -386,7 +381,8 @@ export default function Settings({ usersSettings, accountsList, getCurrentSchool
                             </div>
                         </div>
                     </div>
-                </div>
+                </section>}
+
                 <p id="important-note">Ces paramètres sont exclusifs {usersSettings.syncNomDeDossierTier ? (globalSettings.shareSettings.value ? "à l'appareil et au compte" : "à l'appareil, au compte et au profil") : (globalSettings.shareSettings.value ? "au compte" : "au compte et au profil")} que vous utilisez en ce moment</p>
                 {/* Install as application (iOS/Android/Windows) */}
                 {!isStandaloneApp && promptInstallPWA !== null && <div className="setting" id="install-as-application-tutorials">

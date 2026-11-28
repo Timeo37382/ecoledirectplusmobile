@@ -26,7 +26,7 @@ export default function ConnectionSettings() {
     const [diagnostic] = useState(readDiagnostic);
 
     return (
-        <div id="connection-settings">
+        <section className="settings-section" id="connection-settings">
             <h2 className="heading">Connexion</h2>
 
             <div className="setting" id="token-relogin">
@@ -41,6 +41,6 @@ export default function ConnectionSettings() {
                     : "Inactive pour l'instant : l'appli utilise le mot de passe enregistré. Ferme puis rouvre l'appli pour qu'elle demande un jeton."}
             </p>
             <p className="connection-diagnostic">{describeDiagnostic(diagnostic)}</p>
-        </div>
+        </section>
     );
 }
