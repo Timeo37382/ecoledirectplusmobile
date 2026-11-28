@@ -268,9 +268,7 @@ export default function SchoolLife({ schoolLife, fetchSchoolLife, isLoggedIn, ac
                     ))}
                 </section>
 
-                {!selected ? (
-                    data && <p className="sl-hint">Touche une catégorie pour voir le détail.</p>
-                ) : (
+                {selected && (
                     <section className={`sl-card sl-list ${selected}`} id="sl-list" ref={listRef} key={selected} aria-label={KINDS[selected].plural}>
                         <div className="sl-list-header">
                             <KindIcon kind={selected} />

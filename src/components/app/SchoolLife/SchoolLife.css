@@ -125,13 +125,6 @@ body:has(#school-life) {
 
 /* - - - Liste de la categorie choisie - - - */
 
-.sl-hint {
-    text-align: center;
-    font-size: var(--font-size-14);
-    color: rgb(var(--text-color-alt));
-    animation: sl-rise-in .45s var(--timing-function-spring-effect) .2s both;
-}
-
 .sl-list {
     animation: sl-drop-in .45s var(--timing-function-spring-effect) both;
 }
