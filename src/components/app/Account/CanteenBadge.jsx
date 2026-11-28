@@ -7,8 +7,9 @@ import "./CanteenBadge.css";
 
 /**
  * Badge cantine : le numero de badge (module EcoleDirecte CANTINE_BARCODE,
- * params.numeroBadge) affiche en QR code (comme l'appli officielle) ou en
- * code-barres (Code 128), selon ce que lit la borne du self.
+ * params.numeroBadge) affiche en code-barres Code 39, exactement comme l'appli
+ * officielle (verifie en decodant son badge : *NUMERO*), ou en QR code si la
+ * borne du self lit plutot les QR codes.
  *
  * Un appui l'ouvre en plein ecran sur fond blanc, ecran maintenu allume.
  * Masque en mode streamer : le numero suffit pour passer a la cantine.
@@ -56,7 +57,7 @@ function Barcode({ value, className = "" }) {
         if (!ref.current) return;
         try {
             JsBarcode(ref.current, value, {
-                format: "CODE128",
+                format: "CODE39", // celui de l'appli officielle
                 displayValue: false,
                 margin: 10,
                 width: 2,
@@ -80,7 +81,7 @@ function BadgeCode({ format, value, className }) {
 export default function CanteenBadge({ account, isStreamer }) {
     const number = canteenBadgeNumber(account);
     const isDemo = account?.firstName === "Guest";
-    const [format, setFormat] = useState(() => (localStorage.getItem(FORMAT_KEY) === "barcode" ? "barcode" : "qr"));
+    const [format, setFormat] = useState(() => (localStorage.getItem(FORMAT_KEY) === "qr" ? "qr" : "barcode"));
     const [isOpen, setIsOpen] = useState(false);
 
     const chooseFormat = (value) => {
@@ -124,8 +125,8 @@ export default function CanteenBadge({ account, isStreamer }) {
             <div className="canteen-header">
                 <h3 className="canteen-title">Badge cantine{isDemo && <span className="canteen-demo"> (exemple)</span>}</h3>
                 <div className="canteen-switch" role="radiogroup" aria-label="Format du badge">
-                    <button type="button" role="radio" aria-checked={format === "qr"} className={format === "qr" ? "active" : ""} onClick={() => chooseFormat("qr")}>QR code</button>
                     <button type="button" role="radio" aria-checked={format === "barcode"} className={format === "barcode" ? "active" : ""} onClick={() => chooseFormat("barcode")}>Code-barres</button>
+                    <button type="button" role="radio" aria-checked={format === "qr"} className={format === "qr" ? "active" : ""} onClick={() => chooseFormat("qr")}>QR code</button>
                 </div>
             </div>
 
