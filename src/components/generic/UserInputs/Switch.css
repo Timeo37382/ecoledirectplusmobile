@@ -11,6 +11,10 @@
     --switch-on: var(--border-color-0);
     --switch-spring: cubic-bezier(.3, 1.4, .5, 1);
 
+    /* Contient la case cachee : sans ca, elle se positionne par rapport a la
+     * fenetre de l'appli, depasse en bas de page, et le navigateur fait
+     * defiler toute la page quand elle prend le focus. */
+    position: relative;
     display: flex;
     flex-flow: row nowrap;
     align-items: center;
@@ -30,8 +34,12 @@
 /* La vraie case reste accessible mais invisible. */
 .switch .switch-input {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 1px;
     height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
     margin: 0;
     padding: 0;
     opacity: 0;

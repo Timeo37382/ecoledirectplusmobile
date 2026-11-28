@@ -419,6 +419,9 @@ body:has(#settings) {
 }
 
 #settings .settings-section .setting {
+    /* Contient aussi les cases cachees des lignes ou l'interrupteur est en
+     * display: contents (bareme, lignes avec (i)). */
+    position: relative;
     min-height: 56px;
     margin: 0;
     padding: 12px 0;
