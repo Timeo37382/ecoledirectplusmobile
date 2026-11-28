@@ -37,6 +37,7 @@ const Timetable = lazy(() => import("./components/app/CoreApp").then((module) =>
 const Messaging = lazy(() => import("./components/app/CoreApp").then((module) => { return { default: module.Messaging } }));
 const Settings = lazy(() => import("./components/app/CoreApp").then((module) => { return { default: module.Settings } }));
 const Account = lazy(() => import("./components/app/CoreApp").then((module) => { return { default: module.Account } }));
+const SchoolLife = lazy(() => import("./components/app/CoreApp").then((module) => { return { default: module.SchoolLife } }));
 const Feedback = lazy(() => import("./components/app/CoreApp").then((module) => { return { default: module.Feedback } }));
 const LoginBottomSheet = lazy(() => import("./components/app/CoreApp").then((module) => { return { default: module.LoginBottomSheet } }));
 
@@ -3456,6 +3457,14 @@ export default function App({ edpFetch }) {
                         {
                             element: <Account schoolLife={schoolLife} fetchSchoolLife={fetchSchoolLife} fetchAdministrativeDocuments={fetchAdministrativeDocuments} sortSchoolLife={sortSchoolLife} isLoggedIn={isLoggedIn} activeAccount={activeAccount} />,
                             path: ":userId/account"
+                        },
+                        {
+                            element: <Navigate to={`/app/${activeAccount}/school-life`} replace={true} />,
+                            path: "school-life",
+                        },
+                        {
+                            element: <SchoolLife schoolLife={schoolLife} fetchSchoolLife={fetchSchoolLife} isLoggedIn={isLoggedIn} activeAccount={activeAccount} />,
+                            path: ":userId/school-life"
                         },
                         {
                             element: <Navigate to={`/app/${activeAccount}/settings`} replace={true} />,

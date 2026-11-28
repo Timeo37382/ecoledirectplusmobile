@@ -8,7 +8,7 @@ body:has(#account) {
 
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 2fr 1fr;
+    grid-template-rows: 1fr;
     gap: clamp(20px, 3vw, 50px);
 }
 
@@ -177,7 +177,7 @@ body:has(#account) {
 
 #account #documents {
     grid-column: 2 / 3;
-    grid-row: 1 / 3;
+    grid-row: 1 / 2;
 }
 
 
@@ -241,7 +241,7 @@ body:has(#account) {
 
     #account #documents {
         grid-column: auto;
-        grid-row: 3 / 4;
+        grid-row: auto;
     }
 
     #account .frame .frame-heading {

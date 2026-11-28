@@ -10,6 +10,7 @@ import Timetable from "./Timetable/Timetable";
 import Messaging from "./Messaging/Messaging";
 import Settings from "./Settings/Settings";
 import Account from "./Account/Account";
+import SchoolLife from "./SchoolLife/SchoolLife";
 import Feedback from "../Feedback/Feedback";
 import LoginBottomSheet from "../Login/LoginBottomSheet";
 
@@ -25,6 +26,7 @@ export { Timetable };
 export { Messaging };
 export { Settings };
 export { Account };
+export { SchoolLife };
 export { Feedback };
 export { LoginBottomSheet };
 

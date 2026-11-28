@@ -1,0 +1,389 @@
+/* Vie scolaire. Meme style que les Parametres / l'onglet Compte.
+ * 1rem = 10px. Animations : celles de l'appli (go-in, rebond). */
+
+body:has(#school-life) {
+    background-color: rgb(var(--background-color-1));
+}
+
+#school-life {
+    --sl-absence: 223, 98, 98;
+    --sl-delay: 236, 160, 60;
+    --sl-sanction: 176, 120, 240;
+    --sl-encouragement: 98, 207, 122;
+}
+
+#school-life-box {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 50px clamp(10px, calc(4vw - 5px), 30px) 30px;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 22px;
+}
+
+#school-life-box h1 {
+    font-size: var(--font-size-32);
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.sl-card {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid rgba(var(--border-color-0), 0.35);
+    border-radius: 18px;
+    background-color: rgba(var(--background-color-0), 0.35);
+    animation: sl-go-in .5s var(--timing-function-spring-effect) both;
+}
+
+.sl-list {
+    animation-delay: 60ms;
+}
+
+/* - - - Resume : tuiles - - - */
+
+.sl-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.sl-tile {
+    min-width: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 14px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    background-color: rgba(var(--background-color-0), 0.45);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    animation: sl-pop-in .45s var(--timing-function-spring-effect) both;
+    animation-delay: calc(80ms + var(--order, 0) * 50ms);
+    transition: border-color .2s ease, background-color .2s ease, scale .12s ease;
+}
+
+.sl-tile:active {
+    scale: .97;
+}
+
+.sl-tile.active {
+    border-color: rgb(var(--sl-color));
+    background-color: rgba(var(--sl-color), 0.14);
+}
+
+.sl-tile.absence { --sl-color: var(--sl-absence); }
+.sl-tile.delay { --sl-color: var(--sl-delay); }
+.sl-tile.sanction { --sl-color: var(--sl-sanction); }
+.sl-tile.encouragement { --sl-color: var(--sl-encouragement); }
+
+.sl-tile .sl-kind-icon {
+    margin-bottom: 6px;
+}
+
+.sl-tile-count {
+    font-size: var(--font-size-32);
+    font-weight: var(--font-weight-extra-bold);
+    line-height: 1;
+    color: rgb(var(--text-color-main));
+}
+
+.sl-tile-label {
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-semi-bold);
+    color: rgb(var(--text-color-main));
+}
+
+.sl-tile-sub {
+    min-height: 1.6rem;
+    font-size: var(--font-size-12);
+    color: rgb(var(--text-color-alt));
+}
+
+/* - - - Icone ronde par type - - - */
+
+.sl-kind-icon {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background-color: rgba(var(--sl-color), 0.18);
+}
+
+.sl-kind-icon svg {
+    width: 18px;
+    height: 18px;
+    color: rgb(var(--sl-color));
+}
+
+.sl-kind-icon.absence { --sl-color: var(--sl-absence); }
+.sl-kind-icon.delay { --sl-color: var(--sl-delay); }
+.sl-kind-icon.sanction { --sl-color: var(--sl-sanction); }
+.sl-kind-icon.encouragement { --sl-color: var(--sl-encouragement); }
+
+/* - - - Filtres - - - */
+
+.sl-filters {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 6px;
+    margin: -2px -16px 14px;
+    padding: 0 16px 2px;
+    overflow-x: auto; /* seuls les filtres defilent, jamais la page */
+    scrollbar-width: none;
+}
+
+.sl-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.sl-filters button {
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 0 14px;
+    border: 1px solid rgba(var(--text-color-alt), 0.25);
+    border-radius: 999px;
+    background: none;
+    color: rgb(var(--text-color-alt));
+    font: inherit;
+    font-size: var(--font-size-13);
+    font-weight: var(--font-weight-semi-bold);
+    cursor: pointer;
+    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+
+.sl-filters button.active {
+    border-color: rgb(var(--border-color-0));
+    background-color: rgb(var(--border-color-0));
+    color: white;
+}
+
+/* - - - Liste par mois - - - */
+
+.sl-month + .sl-month {
+    margin-top: 18px;
+}
+
+.sl-month-title {
+    margin-bottom: 8px;
+    font-size: var(--font-size-13);
+    font-weight: var(--font-weight-extra-bold);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: rgb(var(--text-color-alt));
+}
+
+.sl-events {
+    list-style: none;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 8px;
+}
+
+.sl-event {
+    border-radius: 14px;
+    background-color: rgba(var(--background-color-0), 0.45);
+    overflow: hidden;
+    animation: sl-rise-in .45s var(--timing-function-spring-effect) both;
+    animation-delay: calc(120ms + var(--order, 0) * 40ms);
+}
+
+.sl-event.skeleton {
+    height: 62px;
+    animation: sl-pulse 1.2s ease-in-out infinite alternate;
+}
+
+.sl-event-main {
+    width: 100%;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: none;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sl-event-main:disabled {
+    cursor: default;
+}
+
+.sl-event-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    gap: 2px;
+}
+
+.sl-event-title {
+    font-size: var(--font-size-15);
+    font-weight: var(--font-weight-extra-bold);
+    color: rgb(var(--text-color-main));
+    overflow-wrap: anywhere;
+}
+
+.sl-event-date {
+    font-size: var(--font-size-13);
+    color: rgb(var(--text-color-alt));
+    overflow-wrap: anywhere;
+}
+
+.sl-status {
+    flex: 0 0 auto;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: var(--font-size-12);
+    font-weight: var(--font-weight-semi-bold);
+    white-space: nowrap;
+}
+
+.sl-status.ok { background-color: rgba(var(--sl-encouragement), 0.18); color: rgb(var(--sl-encouragement)); }
+.sl-status.pending { background-color: rgba(var(--sl-delay), 0.18); color: rgb(var(--sl-delay)); }
+.sl-status.ko { background-color: rgba(var(--sl-absence), 0.18); color: rgb(var(--sl-absence)); }
+.sl-status.neutral { background-color: rgba(var(--text-color-alt), 0.15); color: rgb(var(--text-color-alt)); }
+
+.sl-chevron {
+    flex: 0 0 auto;
+    font-size: var(--font-size-20);
+    color: rgb(var(--text-color-alt));
+    transition: rotate .3s var(--timing-function-spring-effect);
+}
+
+.sl-event.open .sl-chevron {
+    rotate: 90deg;
+}
+
+/* Details depliables (hauteur animee) */
+.sl-event-details {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .3s ease;
+}
+
+.sl-event.open .sl-event-details {
+    grid-template-rows: 1fr;
+}
+
+.sl-event-details > dl {
+    min-height: 0;
+    overflow: hidden;
+    margin: 0 12px;
+}
+
+.sl-event.open .sl-event-details > dl {
+    padding: 2px 0 12px;
+    border-top: 1px solid rgba(var(--text-color-alt), 0.14);
+}
+
+.sl-detail {
+    display: flex;
+    flex-flow: row nowrap;
+    gap: 12px;
+    padding-top: 10px;
+}
+
+.sl-detail dt {
+    flex: 0 0 96px;
+    font-size: var(--font-size-13);
+    color: rgb(var(--text-color-alt));
+}
+
+.sl-detail dd {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: var(--font-size-14);
+    line-height: 1.4;
+    color: rgb(var(--text-color-main));
+    overflow-wrap: anywhere;
+}
+
+.sl-empty,
+.sl-demo-note {
+    padding: 18px 4px;
+    text-align: center;
+    font-size: var(--font-size-14);
+    color: rgb(var(--text-color-alt));
+}
+
+.sl-demo-note {
+    padding: 0;
+    font-size: var(--font-size-12);
+}
+
+/* - - - Telephone - - - */
+
+@media only screen and (max-width: 869px) {
+    #school-life-box {
+        padding-top: 24px;
+    }
+
+    .sl-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media only screen and (max-width: 450px) {
+    #school-life-box h1 {
+        font-size: var(--font-size-24);
+        margin-bottom: 4px;
+    }
+
+    .sl-card {
+        padding: 14px;
+    }
+
+    .sl-filters {
+        margin-inline: -14px;
+        padding-inline: 14px;
+    }
+
+    .sl-tile {
+        padding: 12px;
+    }
+
+    .sl-tile-count {
+        font-size: var(--font-size-24);
+    }
+
+    .sl-detail dt {
+        flex-basis: 84px;
+    }
+}
+
+@keyframes sl-go-in {
+    from { opacity: 0; scale: .85; }
+    to { opacity: 1; scale: 1; }
+}
+
+@keyframes sl-pop-in {
+    from { opacity: 0; scale: .7; }
+    to { opacity: 1; scale: 1; }
+}
+
+@keyframes sl-rise-in {
+    from { opacity: 0; translate: 0 10px; }
+    to { opacity: 1; translate: 0 0; }
+}
+
+@keyframes sl-pulse {
+    from { opacity: .45; }
+    to { opacity: .9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #school-life * {
+        animation: none !important;
+        transition: none !important;
+    }
+}

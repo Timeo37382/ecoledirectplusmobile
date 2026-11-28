@@ -59,23 +59,6 @@ export default function Account({ schoolLife, fetchSchoolLife, fetchAdministrati
         }
     }, [profilePictureRefs.current]);
 
-    useEffect(() => {
-        const controller = new AbortController();
-        if (isLoggedIn) {
-            if (schoolLife.length < 1 || schoolLife[activeAccount] === undefined) {
-                console.log("fetchSchoolLife");
-                fetchSchoolLife(controller);
-            } else {
-                console.log("schoolLife:", schoolLife);
-                sortSchoolLife(schoolLife, activeAccount);
-            }
-        }
-
-        return () => {
-            controller.abort();
-        }
-    }, [schoolLife, isLoggedIn, activeAccount]);
-
     const [oldCurrentYear, setOldCurrentYear] = useState('');
 
     const [selectedYear, setSelectedYear] = useState(settings.get("isSchoolYearEnabled") ? settings.get("schoolYear").join("-") : availableYearsArray[availableYearsArray.length - 1]);
@@ -325,27 +308,6 @@ export default function Account({ schoolLife, fetchSchoolLife, fetchAdministrati
                         <ConfusedCanardman className="sleeping-logo" />
                     </div>
                 )}
-            </section>
-            <section className="frame" id="behavior">
-                <h2 className="frame-heading">Comportement</h2>
-                <div className="behavior-types">
-                    <div className="behavior-type">
-                        <span>Retards</span>
-                        <span className={"count" + (!userData.get("sortedSchoolLife")?.delays.length ? " loading" : "")}>{userData.get("sortedSchoolLife")?.delays.length ?? <><span style={{ "--index": 0 }}>.</span><span style={{ "--index": 1 }}>.</span><span style={{ "--index": 2 }}>.</span></>}</span>
-                    </div>
-                    <div className="behavior-type">
-                        <span>Absences</span>
-                        <span className={"count" + (!userData.get("sortedSchoolLife")?.absences.length ? " loading" : "")}>{userData.get("sortedSchoolLife")?.absences.length ?? <><span style={{ "--index": 3 }}>.</span><span style={{ "--index": 4 }}>.</span><span style={{ "--index": 5 }}>.</span></>}</span>
-                    </div>
-                    <div className="behavior-type">
-                        <span>Sanctions</span>
-                        <span className={"count" + (!userData.get("sortedSchoolLife")?.sanctions.length ? " loading" : "")}>{userData.get("sortedSchoolLife")?.sanctions.length ?? <><span style={{ "--index": 6 }}>.</span><span style={{ "--index": 7 }}>.</span><span style={{ "--index": 8 }}>.</span></>}</span>
-                    </div>
-                    <div className="behavior-type">
-                        <span>Incidents</span>
-                        <span className={"count" + (!userData.get("sortedSchoolLife")?.incidents.length ? " loading" : "")}>{userData.get("sortedSchoolLife")?.incidents.length ?? <><span style={{ "--index": 9 }}>.</span><span style={{ "--index": 10 }}>.</span><span style={{ "--index": 11 }}>.</span></>}</span>
-                    </div>
-                </div>
             </section>
         </div>
     )
