@@ -88,8 +88,8 @@ export function CanteenMeals({ account, isStreamer }) {
     return (
         <section className="canteen-meals" aria-label="Régime et repas">
             {meals.regime && <p className="canteen-regime">Régime : <strong>{meals.regime}</strong></p>}
-            {meals.midi && <MealWeek title="Midi (semaine type)" days={meals.midi} />}
-            {meals.soir && <MealWeek title="Soir (semaine type)" days={meals.soir} />}
+            {meals.midi && <MealWeek title="Midi" days={meals.midi} />}
+            {meals.soir && <MealWeek title="Soir" days={meals.soir} />}
         </section>
     );
 }

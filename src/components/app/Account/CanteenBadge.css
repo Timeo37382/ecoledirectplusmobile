@@ -283,16 +283,37 @@
 .canteen-meal-days {
     list-style: none;
     display: grid;
-    grid-template-columns: repeat(7, auto); /* les 7 jours sur une ligne */
-    justify-content: space-between;
-    gap: 6px;
-    max-width: 340px;
+    /* Les 7 jours se partagent la largeur : jamais de debordement. */
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+    max-width: 360px;
 }
 
 .canteen-meal-days li {
+    min-width: 0;
     display: inline-flex;
     align-items: center;
+    justify-content: flex-start;
     gap: 3px;
+}
+
+/* Petit ecran : lettre au-dessus de la coche, plus compact */
+@media only screen and (max-width: 420px) {
+    .canteen-meal-days li {
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .canteen-meal-week {
+        gap: 10px;
+    }
+
+    .canteen-meal-week .canteen-meal-icon {
+        flex-basis: 22px;
+        width: 22px;
+        height: 22px;
+    }
 }
 
 .canteen-meal-day {

@@ -12,17 +12,23 @@ body:has(#account) {
     gap: clamp(20px, 3vw, 50px);
 }
 
+/* Cartes : meme style que les sections des Parametres */
 #account .frame {
-    background-color: rgba(var(--border-color-0), 0.2);
-    border: 1px solid rgb(var(--border-color-0));
-    border-radius: 10px;
-    padding: 15px;
+    min-width: 0;
+    background-color: rgba(var(--background-color-0), 0.35);
+    border: 1px solid rgba(var(--border-color-0), 0.35);
+    border-radius: 18px;
+    padding: 16px;
 }
 
 #account .frame .frame-heading {
-    text-align: center;
-    font-size: var(--font-size-20);
-    padding-block: 20px;
+    text-align: left;
+    padding: 2px 0 12px;
+    font-size: var(--font-size-13);
+    font-weight: var(--font-weight-extra-bold);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: rgb(var(--text-color-alt));
 }
 
 /* - - - PROFIL - - - */
@@ -199,7 +205,7 @@ body:has(#account) {
 }
 
 #account .behavior-type:not(:last-child) {
-    border-right: 1px solid rgb(var(--border-color-0));
+    border-right: 1px solid rgba(var(--text-color-alt), 0.14);
 }
 
 #account .behavior-type .count {
@@ -227,7 +233,9 @@ body:has(#account) {
 @media only screen and (max-width: 869px) {
     #account {
         height: auto;
-        grid-template-columns: auto;
+        /* minmax(0, 1fr) : la colonne ne s'elargit jamais au-dela de l'ecran
+           (avec "auto", le contenu le plus large faisait deborder la page). */
+        grid-template-columns: minmax(0, 1fr);
         grid-template-rows: auto;
     }
 
@@ -237,7 +245,7 @@ body:has(#account) {
     }
 
     #account .frame .frame-heading {
-        padding-block: 10px;
+        padding-block: 2px 10px;
     }
 
 }
@@ -283,7 +291,7 @@ body:has(#account) {
     height: 1px;
     margin-left: 15px;
     /* Space between title and the line */
-    background-color: rgb(var(--border-color-0));
+    background-color: rgba(var(--text-color-alt), 0.14);
     /* Customize color as needed */
     border: none;
 }
@@ -295,14 +303,15 @@ body:has(#account) {
 .frame-heading-container {
     display: flex;
     flex: auto 200px;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    gap: 10px;
+    margin-bottom: 14px;
 }
 
-.frame-heading-documents {
-    margin: 0 auto;
-    padding-left: 160px;
+#account .frame .frame-heading-documents {
+    margin: 0;
+    padding: 2px 0;
 }
 
 @media only screen and (max-width: 1150px) {
