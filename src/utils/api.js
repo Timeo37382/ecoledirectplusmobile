@@ -171,11 +171,12 @@ export function bodyContentType() {
  * dans AccountSelector.jsx : selon la forme recue, l'un des deux affichait la
  * photo et l'autre non. On normalise ici une bonne fois.
  *
- * Les images sont chargees en direct depuis ED, sans passer par le proxy : son
- * serveur de medias ne filtre pas le Referer, et les relayer couterait de la
- * bande passante pour rien.
+ * Le serveur de medias d'EcoleDirecte refuse les images demandees depuis un
+ * autre site que le sien (EDP d'origine passe par son extension). En mode
+ * proxy, les photos hebergees chez EcoleDirecte passent donc par notre relais
+ * /edp-photo (api/photo.js), qui les demande comme le site officiel.
  */
-export function pictureUrl(raw) {
+function absolutePictureUrl(raw) {
     if (!raw || typeof raw !== "string") {
         return "";
     }
@@ -199,4 +200,20 @@ export function pictureUrl(raw) {
         return "https://" + value;
     }
     return value;
+}
+
+export function pictureUrl(raw) {
+    const url = absolutePictureUrl(raw);
+    if (!url || !isProxyTransport()) {
+        return url;
+    }
+    try {
+        const host = new URL(url).hostname;
+        if (/(^|\.)ecoledirecte\.com$/i.test(host)) {
+            return `/edp-photo?u=${encodeURIComponent(url)}`;
+        }
+    } catch {
+        // chemin local ou valeur inattendue : telle quelle
+    }
+    return url;
 }
