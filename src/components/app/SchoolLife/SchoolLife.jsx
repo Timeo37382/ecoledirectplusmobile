@@ -185,7 +185,8 @@ export default function SchoolLife({ schoolLife, fetchSchoolLife, isLoggedIn, ac
     const isGuest = account?.firstName === "Guest";
     const raw = isGuest ? DEMO : schoolLife?.[activeAccount];
     const data = useMemo(() => normalizeSchoolLife(raw), [raw]);
-    const [filter, setFilter] = useState("all");
+    // Categorie dont la liste est depliee (null = aucune).
+    const [selected, setSelected] = useState(null);
     const listRef = useRef(null);
 
     useEffect(() => {
@@ -231,7 +232,7 @@ export default function SchoolLife({ schoolLife, fetchSchoolLife, isLoggedIn, ac
         encouragement: () => (counts.encouragement.length ? "Bravo !" : "Aucun"),
     };
 
-    const filtered = (data?.items ?? []).filter((item) => filter === "all" || item.kind === filter);
+    const filtered = selected ? (data?.items ?? []).filter((item) => item.kind === selected) : [];
     const months = [];
     filtered.forEach((item) => {
         const label = item.date ? capitalize(item.date.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })) : "Sans date";
@@ -240,9 +241,13 @@ export default function SchoolLife({ schoolLife, fetchSchoolLife, isLoggedIn, ac
         else months.push({ label, items: [item] });
     });
 
-    const chooseFilter = (kind) => {
-        setFilter(kind);
-        listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const toggle = (kind) => {
+        const next = selected === kind ? null : kind;
+        setSelected(next);
+        if (next) {
+            // Laisse la liste apparaitre, puis la montre.
+            setTimeout(() => listRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 80);
+        }
     };
 
     let runningIndex = 0;
@@ -254,7 +259,7 @@ export default function SchoolLife({ schoolLife, fetchSchoolLife, isLoggedIn, ac
 
                 <section className="sl-card sl-summary" aria-label="Résumé">
                     {visibleKinds.map((kind, index) => (
-                        <button type="button" key={kind} className={`sl-tile ${kind}${filter === kind ? " active" : ""}`} style={{ "--order": index }} onClick={() => chooseFilter(filter === kind ? "all" : kind)}>
+                        <button type="button" key={kind} className={`sl-tile ${kind}${selected === kind ? " active" : ""}`} style={{ "--order": index }} onClick={() => toggle(kind)} aria-expanded={selected === kind} aria-controls="sl-list">
                             <KindIcon kind={kind} />
                             <span className="sl-tile-count">{data ? counts[kind].length : "…"}</span>
                             <span className="sl-tile-label">{KINDS[kind].plural}</span>
@@ -263,32 +268,34 @@ export default function SchoolLife({ schoolLife, fetchSchoolLife, isLoggedIn, ac
                     ))}
                 </section>
 
-                <section className="sl-card sl-list" ref={listRef} aria-label="Historique">
-                    <div className="sl-filters" role="tablist" aria-label="Filtrer">
-                        {["all", ...visibleKinds].map((kind) => (
-                            <button type="button" role="tab" key={kind} aria-selected={filter === kind} className={filter === kind ? "active" : ""} onClick={() => setFilter(kind)}>
-                                {kind === "all" ? "Tout" : KINDS[kind].plural}
-                            </button>
-                        ))}
-                    </div>
+                {!selected ? (
+                    data && <p className="sl-hint">Touche une catégorie pour voir le détail.</p>
+                ) : (
+                    <section className={`sl-card sl-list ${selected}`} id="sl-list" ref={listRef} key={selected} aria-label={KINDS[selected].plural}>
+                        <div className="sl-list-header">
+                            <KindIcon kind={selected} />
+                            <h2 className="sl-list-title">{KINDS[selected].plural}</h2>
+                            <button type="button" className="sl-list-close" onClick={() => setSelected(null)} aria-label="Fermer la liste">✕</button>
+                        </div>
 
-                    {!data ? (
-                        <ul className="sl-events">
-                            {[0, 1, 2].map((index) => <li key={index} className="sl-event skeleton" />)}
-                        </ul>
-                    ) : filtered.length === 0 ? (
-                        <p className="sl-empty">{filter === "all" ? "Rien à signaler cette année. 🎉" : `Aucun${filter === "absence" || filter === "sanction" ? "e" : ""} ${KINDS[filter].label.toLowerCase()} cette année.`}</p>
-                    ) : (
-                        months.map((month) => (
-                            <div className="sl-month" key={month.label}>
-                                <h2 className="sl-month-title">{month.label}</h2>
-                                <ul className="sl-events">
-                                    {month.items.map((item) => <EventCard key={item.key} item={item} index={runningIndex++} />)}
-                                </ul>
-                            </div>
-                        ))
-                    )}
-                </section>
+                        {!data ? (
+                            <ul className="sl-events">
+                                {[0, 1, 2].map((index) => <li key={index} className="sl-event skeleton" />)}
+                            </ul>
+                        ) : filtered.length === 0 ? (
+                            <p className="sl-empty">{`Aucun${selected === "absence" || selected === "sanction" ? "e" : ""} ${KINDS[selected].label.toLowerCase()} cette année. 🎉`}</p>
+                        ) : (
+                            months.map((month) => (
+                                <div className="sl-month" key={month.label}>
+                                    <h3 className="sl-month-title">{month.label}</h3>
+                                    <ul className="sl-events">
+                                        {month.items.map((item) => <EventCard key={item.key} item={item} index={runningIndex++} />)}
+                                    </ul>
+                                </div>
+                            ))
+                        )}
+                    </section>
+                )}
 
                 {isGuest && <p className="sl-demo-note">Compte invité : données d'exemple.</p>}
             </div>

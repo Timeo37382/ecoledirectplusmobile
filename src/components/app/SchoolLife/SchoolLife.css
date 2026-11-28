@@ -37,10 +37,6 @@ body:has(#school-life) {
     animation: sl-go-in .5s var(--timing-function-spring-effect) both;
 }
 
-.sl-list {
-    animation-delay: 60ms;
-}
-
 /* - - - Resume : tuiles - - - */
 
 .sl-summary {
@@ -127,41 +123,56 @@ body:has(#school-life) {
 .sl-kind-icon.sanction { --sl-color: var(--sl-sanction); }
 .sl-kind-icon.encouragement { --sl-color: var(--sl-encouragement); }
 
-/* - - - Filtres - - - */
+/* - - - Liste de la categorie choisie - - - */
 
-.sl-filters {
+.sl-hint {
+    text-align: center;
+    font-size: var(--font-size-14);
+    color: rgb(var(--text-color-alt));
+    animation: sl-rise-in .45s var(--timing-function-spring-effect) .2s both;
+}
+
+.sl-list {
+    animation: sl-drop-in .45s var(--timing-function-spring-effect) both;
+}
+
+.sl-list.absence { border-color: rgba(var(--sl-absence), 0.45); }
+.sl-list.delay { border-color: rgba(var(--sl-delay), 0.45); }
+.sl-list.sanction { border-color: rgba(var(--sl-sanction), 0.45); }
+.sl-list.encouragement { border-color: rgba(var(--sl-encouragement), 0.45); }
+
+.sl-list-header {
     display: flex;
     flex-flow: row nowrap;
-    gap: 6px;
-    margin: -2px -16px 14px;
-    padding: 0 16px 2px;
-    overflow-x: auto; /* seuls les filtres defilent, jamais la page */
-    scrollbar-width: none;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
-.sl-filters::-webkit-scrollbar {
-    display: none;
+.sl-list-title {
+    flex: 1;
+    font-size: var(--font-size-18);
+    font-weight: var(--font-weight-extra-bold);
+    color: rgb(var(--text-color-main));
 }
 
-.sl-filters button {
-    flex: 0 0 auto;
-    min-height: 32px;
-    padding: 0 14px;
-    border: 1px solid rgba(var(--text-color-alt), 0.25);
-    border-radius: 999px;
-    background: none;
+.sl-list-close {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border: none;
+    border-radius: 50%;
+    background-color: rgba(var(--text-color-main), 0.08);
     color: rgb(var(--text-color-alt));
-    font: inherit;
-    font-size: var(--font-size-13);
-    font-weight: var(--font-weight-semi-bold);
+    font-size: var(--font-size-14);
+    font-weight: var(--font-weight-extra-bold);
     cursor: pointer;
-    transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+    transition: scale .12s ease;
 }
 
-.sl-filters button.active {
-    border-color: rgb(var(--border-color-0));
-    background-color: rgb(var(--border-color-0));
-    color: white;
+.sl-list-close:active {
+    scale: .9;
 }
 
 /* - - - Liste par mois - - - */
@@ -343,11 +354,6 @@ body:has(#school-life) {
         padding: 14px;
     }
 
-    .sl-filters {
-        margin-inline: -14px;
-        padding-inline: 14px;
-    }
-
     .sl-tile {
         padding: 12px;
     }
@@ -364,6 +370,11 @@ body:has(#school-life) {
 @keyframes sl-go-in {
     from { opacity: 0; scale: .85; }
     to { opacity: 1; scale: 1; }
+}
+
+@keyframes sl-drop-in {
+    from { opacity: 0; translate: 0 -12px; scale: .96; }
+    to { opacity: 1; translate: 0 0; scale: 1; }
 }
 
 @keyframes sl-pop-in {
