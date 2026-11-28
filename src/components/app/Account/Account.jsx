@@ -4,7 +4,6 @@ import { framePhoto } from "../../../utils/photoFraming";
 import { AppContext } from "../../../App";
 
 import HolographicDiv from "../../generic/CustomDivs/HolographicDiv";
-import Button from "../../generic/UserInputs/Button";
 import DropDownMenu from "../../generic/UserInputs/DropDownMenu";
 import FileComponent from "../../generic/FileComponent";
 import ContentLoader from "react-content-loader";
@@ -12,6 +11,17 @@ import CanardmanSleeping from "../../graphics/CanardmanSleeping";
 import ConfusedCanardman from "../../graphics/ConfusedCanardman";
 
 import "./Account.css";
+
+// "aujourd'hui à 16:50", "hier à 08:12", sinon "samedi 28 novembre 2026 à 16:50".
+function formatLastConnection(date) {
+    const time = date.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" });
+    const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    const days = Math.round((startOfDay(new Date()) - startOfDay(date)) / 86400000);
+    if (days === 0) return `aujourd'hui à ${time}`;
+    if (days === 1) return `hier à ${time}`;
+    const day = date.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    return `${day} à ${time}`;
+}
 
 export default function Account({ schoolLife, fetchSchoolLife, fetchAdministrativeDocuments, sortSchoolLife, isLoggedIn, activeAccount }) {
     const { actualDisplayTheme, accountsListState, useUserData, useUserSettings } = useContext(AppContext)
@@ -104,39 +114,52 @@ export default function Account({ schoolLife, fetchSchoolLife, fetchAdministrati
         }
     }, [oldCurrentYear, selectedYear, isLoggedIn, userData.get("administrativeDocuments")]);
 
+    // Profil
+    const account = accountsListState[activeAccount];
+    const isStreamer = settings.get("isStreamerModeEnabled") && account.firstName !== "Guest";
+    const className = isStreamer ? "Classe" : (account.class?.[1] && account.class[1] !== "inconnu" ? account.class[1] : "");
+    const schoolName = isStreamer ? "Établissement" : (account.schoolName ?? "");
+    // "2026-11-28 16:50:12" : Safari ne lit pas l'espace, on met un "T".
+    const lastConnectionDate = account.lastConnection ? new Date(typeof account.lastConnection === "string" ? account.lastConnection.replace(" ", "T") : account.lastConnection) : null;
+    const lastConnection = lastConnectionDate && !Number.isNaN(lastConnectionDate.getTime()) ? lastConnectionDate : null;
+
     return (
         <div id="account">
             <HolographicDiv borderRadius={10} intensity={.2} className="frame" id="profile">
-                <h2 className="frame-heading">Profil</h2>
-                <div id="student-informations">
+                <div className="profile-hero">
                     <div id="profile-picture-container">
                         <img
                             ref={(el) => (profilePictureRefs.current[0] = el)}
                             className="profile-picture"
                             onLoad={(event) => framePhoto(event.currentTarget)}
-                            src={(settings.get("isStreamerModeEnabled") && accountsListState[activeAccount].firstName !== "Guest" ? "/images/scholar-canardman.png" : pictureUrl(accountsListState[activeAccount].picture))}
-                            alt={"Photo de profil de " + accountsListState[activeAccount].firstName}
+                            src={(isStreamer ? "/images/scholar-canardman.png" : pictureUrl(account.picture))}
+                            alt={"Photo de profil de " + account.firstName}
                         />
                     </div>
-                    <address id="informations-container">
-                        <span>Dernière connexion : <time dateTime={(new Date(accountsListState[activeAccount].lastConnection ?? Date.now())).toISOString()}>
-                            {new Date(accountsListState[activeAccount].lastConnection ?? Date.now()).toLocaleDateString("fr-FR", {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric',
-                                hour: "numeric",
-                                minute: "numeric"
-                            }).replace(",", " à")}
-                        </time></span>
-                        <span>Email : {settings.get("isStreamerModeEnabled") ? "contact@ecole-directe.plus" : accountsListState[activeAccount].email}</span>
-                        {accountsListState[activeAccount].phoneNumber &&
-                            <span>Num. téléphone : {settings.get("isStreamerModeEnabled") ? "00 00 00 00 00" : accountsListState[activeAccount].phoneNumber}</span>}
-                    </address>
-                    <Button disabled={true} id="statistics">Statistiques</Button>
+                    <div className="profile-identity">
+                        <h2 className="profile-name">
+                            {isStreamer ? "Canardman" : <>{account.firstName} <span className="profile-last-name">{(account.lastName ?? "").toUpperCase()}</span></>}
+                        </h2>
+                        {className && <span className="profile-class">{className}</span>}
+                        {schoolName && <span className="profile-school">{schoolName}</span>}
+                        <span className="profile-badge">{account.accountType === "P" ? "Compte parent" : "Compte élève"}</span>
+                    </div>
                 </div>
-                <div className="coming-soon">
-                    En cours de développement (bientôt disponible)
-                </div>
+
+                <dl className="profile-details">
+                    <div className="profile-detail">
+                        <dt>Dernière connexion</dt>
+                        <dd>{lastConnection ? <time dateTime={lastConnection.toISOString()}>{formatLastConnection(lastConnection)}</time> : "Inconnue"}</dd>
+                    </div>
+                    {(isStreamer || account.email) && <div className="profile-detail">
+                        <dt>Email</dt>
+                        <dd className="profile-email">{isStreamer ? "contact@ecole-directe.plus" : account.email}</dd>
+                    </div>}
+                    {account.phoneNumber && <div className="profile-detail">
+                        <dt>Téléphone</dt>
+                        <dd>{isStreamer ? "00 00 00 00 00" : account.phoneNumber}</dd>
+                    </div>}
+                </dl>
             </HolographicDiv>
             <section className="frame" id="documents">
                 {module?.enable ? (
