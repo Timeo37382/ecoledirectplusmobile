@@ -377,6 +377,33 @@ export default async function handler(req, res) {
             return res.status(200).json({ code: 200, subscribers: keys.length, results });
         }
 
+        // Etat des abonnements (administrateur, lecture seule, rien n'est envoye).
+        if (action === "status") {
+            const given = createHash("sha256").update(String(req.headers["x-edp-admin"] ?? "")).digest();
+            const expected = createHash("sha256").update(process.env.PUSH_ENCRYPTION_KEY ?? "").digest();
+            if (!req.headers["x-edp-admin"] || !timingSafeEqual(given, expected)) {
+                return res.status(403).json({ code: 403, message: "Accès refusé." });
+            }
+            const keys = (await redis(config, ["SMEMBERS", SUBSCRIBERS_SET])) ?? [];
+            const devices = [];
+            for (const redisKey of keys) {
+                try {
+                    const record = await readRecord(config, key, redisKey);
+                    devices.push(record ? {
+                        provider: new URL(record.subscription.endpoint).host,
+                        createdAt: record.createdAt ? new Date(record.createdAt).toISOString() : null,
+                        lastCheck: record.lastCheck ? new Date(record.lastCheck).toISOString() : null,
+                        status: record.status ?? null,
+                        hasSnapshot: !!record.snapshot,
+                    } : { missing: true });
+                } catch (error) {
+                    devices.push({ error: error?.message ?? "unknown" });
+                }
+            }
+            const lockTtl = await redis(config, ["TTL", CHECK_LOCK_KEY]);
+            return res.status(200).json({ code: 200, now: new Date().toISOString(), lockTtl, subscribers: keys.length, devices });
+        }
+
         if (req.method !== "POST") {
             res.setHeader("Allow", "POST");
             return res.status(405).json({ code: 405, message: "Méthode non autorisée." });
