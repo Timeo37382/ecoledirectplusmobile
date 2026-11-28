@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useRef, useContext } from "react";
 import { pictureUrl } from "../../../utils/api";
+import { framePhoto } from "../../../utils/photoFraming";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import DisplayThemeController from "../../generic/UserInputs/DisplayThemeController";
@@ -136,7 +137,7 @@ export default function AccountSelector({ accountsList, activeAccount, setActive
                 <div id="active-account" onClick={handleClick} role="button" tabIndex="0" onKeyDown={handleKeyDown}>
                     <div className="account">
                         <div className="pp-container">
-                            <img ref={(el) => (profilePictureRefs.current[0] = el)} className="profile-picture" src={(settings.get("isStreamerModeEnabled") && accountsList[activeAccount].firstName !== "Guest"
+                            <img ref={(el) => (profilePictureRefs.current[0] = el)} className="profile-picture" onLoad={(event) => framePhoto(event.currentTarget)} src={(settings.get("isStreamerModeEnabled") && accountsList[activeAccount].firstName !== "Guest"
                                 ? "/images/scholar-canardman.png"
                                 : pictureUrl(accountsList[activeAccount].picture)
                             )} alt={"Photo de profil de " + accountsList[activeAccount].firstName} />
@@ -157,7 +158,7 @@ export default function AccountSelector({ accountsList, activeAccount, setActive
                                     return <div className="alt-account" key={account.id} role="button" tabIndex="0" onKeyDown={(event) => handleKeyDown2(event, () => { switchAccount(index); handleClose() })} onClick={() => { switchAccount(index); handleClose() }}>
                                         <div className="account">
                                             <div className="pp-container">
-                                                <img ref={(el) => (profilePictureRefs.current[index+1] = el)} className="profile-picture" src={pictureUrl(account.picture)} alt={"Photo de profil de " + account.firstName} />
+                                                <img ref={(el) => (profilePictureRefs.current[index+1] = el)} className="profile-picture" onLoad={(event) => framePhoto(event.currentTarget)} src={pictureUrl(account.picture)} alt={"Photo de profil de " + account.firstName} />
                                             </div>
                                             <address className="account-info">
                                                 <span className="name"><span className="first-name">{account.firstName}</span> <span className="last-name">{account.lastName.toUpperCase()}</span></span>
