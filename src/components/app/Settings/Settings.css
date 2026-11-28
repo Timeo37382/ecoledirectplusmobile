@@ -57,6 +57,12 @@ body:has(#settings) {
     flex-wrap: nowrap;
 }
 
+/* Interrupteurs : texte a gauche, interrupteur a droite, sur toute la ligne. */
+#settings .setting .switch {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
 #settings .setting .button {
     font-size: var(--font-size-14);
     margin: 0 5px;

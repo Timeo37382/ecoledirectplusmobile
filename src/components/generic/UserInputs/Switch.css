@@ -1,0 +1,108 @@
+/* Interrupteur facon iOS. 1rem = 10px dans ce projet.
+ * Dimensions iOS : piste 51 x 31, pastille 27, marge 2. */
+
+.switch {
+    --switch-width: 51px;
+    --switch-height: 31px;
+    --switch-pad: 2px;
+    --switch-thumb: calc(var(--switch-height) - 2 * var(--switch-pad));
+    --switch-stretch: 7px; /* la pastille s'etire quand on appuie */
+    --switch-on: 52, 199, 89; /* vert iOS */
+    --switch-spring: cubic-bezier(.3, 1.4, .5, 1);
+
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+.switch .text-label {
+    flex: 1;
+    color: rgb(var(--text-color-main));
+    cursor: pointer;
+}
+
+/* La vraie case reste accessible mais invisible. */
+.switch .switch-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.switch .switch-track {
+    flex: 0 0 var(--switch-width);
+    width: var(--switch-width);
+    height: var(--switch-height);
+    position: relative;
+    border-radius: 999px;
+    background-color: rgba(120, 120, 128, 0.36);
+    transition: background-color .25s ease;
+}
+
+.light .switch .switch-track {
+    background-color: rgba(120, 120, 128, 0.22);
+}
+
+.switch .switch-thumb {
+    position: absolute;
+    top: var(--switch-pad);
+    left: var(--switch-pad);
+    width: var(--switch-thumb);
+    height: var(--switch-thumb);
+    border-radius: 999px;
+    background-color: white;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .15), 0 3px 1px rgba(0, 0, 0, .06), 0 0 0 .5px rgba(0, 0, 0, .04);
+    transition:
+        translate .35s var(--switch-spring),
+        width .2s ease,
+        background-color .2s ease;
+}
+
+/* Allume */
+.switch .switch-input:checked + .switch-track {
+    background-color: rgb(var(--switch-on));
+}
+
+.switch .switch-input:checked + .switch-track .switch-thumb {
+    translate: calc(var(--switch-width) - var(--switch-thumb) - 2 * var(--switch-pad)) 0;
+}
+
+/* Appui : la pastille s'etire vers le centre, comme sur iOS */
+.switch:active .switch-input:not(:disabled) + .switch-track .switch-thumb {
+    width: calc(var(--switch-thumb) + var(--switch-stretch));
+}
+
+.switch:active .switch-input:not(:disabled):checked + .switch-track .switch-thumb {
+    translate: calc(var(--switch-width) - var(--switch-thumb) - var(--switch-stretch) - 2 * var(--switch-pad)) 0;
+}
+
+/* Clavier */
+.switch .switch-input:focus-visible + .switch-track {
+    outline: 2px solid rgb(var(--border-color-0));
+    outline-offset: 2px;
+}
+
+/* Desactive */
+.switch:has(.switch-input:disabled) {
+    opacity: .5;
+    cursor: not-allowed;
+}
+
+.switch:has(.switch-input:disabled) .text-label {
+    cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .switch .switch-track,
+    .switch .switch-thumb {
+        transition: none;
+    }
+}

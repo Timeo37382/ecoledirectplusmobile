@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 
-import CheckBox from "../../generic/UserInputs/CheckBox";
+import Switch from "../../generic/UserInputs/Switch";
 import InfoButton from "../../generic/Informative/InfoButton";
 import Button from "../../generic/UserInputs/Button";
 import { AppContext } from "../../../App";
@@ -124,7 +124,7 @@ export default function NotificationSettings() {
             <p className={`notification-permission-state ${permission}`}>{PERMISSION_TEXT[permission] ?? ""}</p>
 
             <div className={`setting${!pushSupported() ? " disabled" : ""}`} id="push-notifications">
-                <CheckBox
+                <Switch
                     id="push-notifications-cb"
                     label={<span>Même quand l'appli est fermée</span>}
                     checked={pushState === "on" || pushState === "working"}
@@ -153,7 +153,7 @@ export default function NotificationSettings() {
 
             {NOTIFICATION_TYPES.map(({ setting, label }) => (
                 <div className="setting" id={`${setting}-setting`} key={setting}>
-                    <CheckBox
+                    <Switch
                         id={`${setting}-cb`}
                         label={<span>{label}</span>}
                         checked={settings.get(setting) !== false}
