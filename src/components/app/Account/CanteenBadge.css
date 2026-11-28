@@ -227,7 +227,7 @@
     letter-spacing: .15em;
 }
 
-.canteen-fullscreen @keyframes canteen-fade-in {
+@keyframes canteen-fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
 }
