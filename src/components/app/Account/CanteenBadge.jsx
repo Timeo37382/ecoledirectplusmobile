@@ -26,6 +26,61 @@ export function canteenBadgeNumber(account) {
     return module?.enable !== false && number ? String(number).trim() : null;
 }
 
+/**
+ * Regime et repas de la semaine type : module RESERVATIONS du compte,
+ * params { regime, repasmidi_1..7, repassoir_1..7 } ("1" = repas pris),
+ * 1 = lundi ... 7 = dimanche. Present meme quand le module est "desactive".
+ */
+const DAYS = ["L", "M", "M", "J", "V", "S", "D"];
+const DAY_NAMES = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+
+export function canteenMeals(account) {
+    if (!account) return null;
+    if (account.firstName === "Guest") {
+        return { regime: "Demi-pensionnaire", midi: [true, true, false, true, true, false, false], soir: Array(7).fill(false) };
+    }
+    const params = (account.modules ?? []).find((item) => item.code === "RESERVATIONS")?.params;
+    if (!params) return null;
+    const read = (meal) => DAYS.map((_, index) => {
+        const value = params[`repas${meal}_${index + 1}`];
+        return value === undefined ? null : String(value) === "1";
+    });
+    const midi = read("midi");
+    const soir = read("soir");
+    const hasMeals = (list) => list.some((value) => value !== null);
+    const regime = typeof params.regime === "string" ? params.regime.trim() : "";
+    if (!regime && !hasMeals(midi) && !hasMeals(soir)) return null;
+    return { regime, midi: hasMeals(midi) ? midi : null, soir: hasMeals(soir) ? soir : null };
+}
+
+function MealIcon() {
+    return (
+        <svg className="canteen-meal-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M7 2v7.5a2.5 2.5 0 0 0 2 2.45V22h2V11.95A2.5 2.5 0 0 0 13 9.5V2h-1.5v6h-1V2h-1v6h-1V2z" fill="currentColor" />
+            <path d="M17.5 2c-1.66 0-3 2.24-3 5v6h2.5v9h2V2z" fill="currentColor" />
+        </svg>
+    );
+}
+
+function MealWeek({ title, days }) {
+    return (
+        <div className="canteen-meal-week">
+            <MealIcon />
+            <div className="canteen-meal-week-body">
+                <span className="canteen-meal-week-title">{title}</span>
+                <ul className="canteen-meal-days">
+                    {days.map((taken, index) => (
+                        <li key={index} className={taken ? "taken" : "not-taken"} aria-label={`${DAY_NAMES[index]} : ${taken ? "repas pris" : "pas de repas"}`}>
+                            <span className="canteen-meal-day">{DAYS[index]}</span>
+                            <span className="canteen-meal-mark" aria-hidden="true">{taken ? "✓" : "✕"}</span>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
+    );
+}
+
 /** QR code dessine en SVG a partir de ses modules (net a toutes les tailles). */
 function QrCode({ value, className = "" }) {
     const { size, path } = useMemo(() => {
@@ -80,6 +135,7 @@ function BadgeCode({ format, value, className }) {
 
 export default function CanteenBadge({ account, isStreamer }) {
     const number = canteenBadgeNumber(account);
+    const meals = canteenMeals(account);
     const isDemo = account?.firstName === "Guest";
     const [format, setFormat] = useState(() => (localStorage.getItem(FORMAT_KEY) === "qr" ? "qr" : "barcode"));
     const [isOpen, setIsOpen] = useState(false);
@@ -129,26 +185,26 @@ export default function CanteenBadge({ account, isStreamer }) {
 
     if (!number) {
         return (
-            <section className="canteen-badge empty" aria-label="Badge cantine">
-                <h3 className="canteen-title">Badge cantine</h3>
-                <p className="canteen-empty-text">Pas de badge cantine sur ce compte : ton établissement ne l'a pas activé sur EcoleDirecte.</p>
+            <section className="canteen-badge empty" aria-label="Badge">
+                <h3 className="canteen-title">Badge</h3>
+                <p className="canteen-empty-text">Pas de badge sur ce compte : ton établissement ne l'a pas activé sur EcoleDirecte.</p>
             </section>
         );
     }
 
     if (isStreamer) {
         return (
-            <section className="canteen-badge" aria-label="Badge cantine">
-                <h3 className="canteen-title">Badge cantine</h3>
+            <section className="canteen-badge" aria-label="Badge">
+                <h3 className="canteen-title">Badge</h3>
                 <p className="canteen-empty-text">Masqué en mode streamer.</p>
             </section>
         );
     }
 
     return (
-        <section className="canteen-badge" aria-label="Badge cantine">
+        <section className="canteen-badge" aria-label="Badge">
             <div className="canteen-header">
-                <h3 className="canteen-title">Badge cantine{isDemo && <span className="canteen-demo"> (exemple)</span>}</h3>
+                <h3 className="canteen-title">Badge{isDemo && <span className="canteen-demo"> (exemple)</span>}</h3>
                 <div className={`canteen-switch ${format}`} role="radiogroup" aria-label="Format du badge">
                     <span className="canteen-switch-thumb" aria-hidden="true" />
                     <button type="button" role="radio" aria-checked={format === "barcode"} className={format === "barcode" ? "active" : ""} onClick={() => chooseFormat("barcode")}>Code-barres</button>
@@ -166,12 +222,19 @@ export default function CanteenBadge({ account, isStreamer }) {
             </button>
 
             {isOpen && createPortal(
-                <div className={`canteen-fullscreen${isClosing ? " closing" : ""}`} role="dialog" aria-modal="true" aria-label="Badge cantine en plein écran" onClick={close}>
+                <div className={`canteen-fullscreen${isClosing ? " closing" : ""}`} role="dialog" aria-modal="true" aria-label="Badge en plein écran" onClick={close}>
                     <button type="button" className="canteen-close" onClick={(event) => { event.stopPropagation(); close(); }} aria-label="Fermer">✕</button>
                     <div className="canteen-fullscreen-content" onAnimationEnd={(event) => { if (isClosing && event.target === event.currentTarget) finishClose(); }}>
                         <span className="canteen-fullscreen-name">{account.firstName} {(account.lastName ?? "").toUpperCase()}</span>
                         <BadgeCode format={format} value={number} className="large" />
                         <span className="canteen-fullscreen-number">{number}</span>
+                        {meals && (
+                            <div className="canteen-meals">
+                                {meals.regime && <p className="canteen-regime">Régime : <strong>{meals.regime}</strong></p>}
+                                {meals.midi && <MealWeek title="Midi (semaine type)" days={meals.midi} />}
+                                {meals.soir && <MealWeek title="Soir (semaine type)" days={meals.soir} />}
+                            </div>
+                        )}
                     </div>
                 </div>,
                 document.body,
