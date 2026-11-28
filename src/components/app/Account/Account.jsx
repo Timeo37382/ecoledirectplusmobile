@@ -4,7 +4,6 @@ import { framePhoto } from "../../../utils/photoFraming";
 import CanteenBadge from "./CanteenBadge";
 import { AppContext } from "../../../App";
 
-import HolographicDiv from "../../generic/CustomDivs/HolographicDiv";
 import DropDownMenu from "../../generic/UserInputs/DropDownMenu";
 import FileComponent from "../../generic/FileComponent";
 import ContentLoader from "react-content-loader";
@@ -126,7 +125,7 @@ export default function Account({ schoolLife, fetchSchoolLife, fetchAdministrati
 
     return (
         <div id="account">
-            <HolographicDiv borderRadius={10} intensity={.2} className="frame" id="profile">
+            <section className="frame" id="profile">
                 <div className="profile-hero">
                     <div id="profile-picture-container">
                         <img
@@ -163,7 +162,7 @@ export default function Account({ schoolLife, fetchSchoolLife, fetchAdministrati
                 </dl>
 
                 <CanteenBadge account={account} isStreamer={isStreamer} />
-            </HolographicDiv>
+            </section>
             <section className="frame" id="documents">
                 {module?.enable ? (
                     <>

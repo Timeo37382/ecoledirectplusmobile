@@ -169,16 +169,6 @@ body:has(#account) {
     font-size: 18px;
 }
 
-#account #profile {
-    --diagonal: repeating-linear-gradient(128deg,
-            rgb(14, 21, 46) 0%,
-            rgb(31, 25, 100) 3.8%,
-            rgb(31, 25, 100) 4.5%,
-            rgb(31, 25, 100) 5.2%,
-            rgb(14, 21, 46) 10%,
-            rgb(14, 21, 46) 12%);
-}
-
 #account #documents {
     grid-column: 2 / 3;
     grid-row: 1 / 3;
